@@ -1,35 +1,18 @@
-# Dependencies
-node_modules/
-target/
-.cargo/
+# Rust
+/target/
+**/*.rs.bk
 
-# Environment
-.env
-.env.local
+# Cargo
+Cargo.lock
 
-# Logs
-*.log
-
-# Build outputs
-/build
-/dist
-
-# IDEs
+# IDE/editor
 .vscode/
 .idea/
+*.iml
 
 # OS
 .DS_Store
+Thumbs.db
 
-# Database
-*.db
-dump.rdb
-
-# Docker
-.docker/
-
-# Backup files
-backups/
-.vs/
-/.vs
-.vs/slnx.sqlite
+# Logs
+*.log
