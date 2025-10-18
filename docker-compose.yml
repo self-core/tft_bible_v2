@@ -23,6 +23,27 @@ services:
     networks:
       - tft-network
 
+  tft-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - tft-backend
+    volumes:
+      # Mount source code for hot reloading during development
+      - ./frontend:/app
+      - /app/node_modules  # Don't mount node_modules to avoid conflicts
+    environment:
+      - VITE_API_URL=http://localhost:8080
+    networks:
+      - tft-network
+    # For development with hot reloading, use this instead:
+    # command: npm run dev -- --host 0.0.0.0
+    # ports:
+    #   - "3000:3000"
+
   mongodb:
     image: mongo:7.0
     ports:
