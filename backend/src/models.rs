@@ -678,14 +678,15 @@ pub struct Set {
     pub updated_at: DateTime,
 
     // Set 15 specific fields
-    pub theme: String,       // "Cinder" for Set 15
+    pub theme: String,       // "K.O Colosseum" for Set 15
     pub total_champions: u32,
     pub total_traits: u32,
     pub total_items: u32,
     pub total_augments: u32,
-    pub board_size: (u32, u32), // (7, 4) for standard TFT board
-    pub max_level: u32,      // Usually 9
+    pub board_size: (u32, u32), // (7, 4) for standard TFT board, can expand to (8, 4) with items
+    pub max_level: u32,      // Usually 10 (corrected from 9)
     pub interest_cap: u32,   // Usually 10
+    pub champion_pool: ChampionPool, // Champion availability by tier
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -707,11 +708,12 @@ pub struct Trait {
     pub updated_at: DateTime,
 
     // Set 15 specific fields
-    pub style_name: Option<String>, // "Bronze", "Silver", "Gold", etc.
     pub set_number: u32,           // 15 for Set 15
-    pub is_unique_trait: bool,     // Whether this is a unique trait
+    pub trait_category: String,    // "Origin", "Class", "Special" (corrected from "Unique")
+    pub is_unique_trait: bool,     // Whether this is a special/unique trait
     pub champion_count: u32,       // Total champions with this trait
     pub max_bonus_count: u32,      // Maximum breakpoint count
+    pub tier_progression: Vec<String>, // ["Bronze", "Silver", "Gold", "Prismatic"] - mostly origins
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -719,6 +721,24 @@ pub struct TraitBreakpoint {
     pub count: u32,
     pub description: String,
     pub bonuses: HashMap<String, f64>, // Flexible stat bonuses
+    pub style: String, // "Bronze", "Silver", "Gold", "Prismatic"
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct ChampionPool {
+    pub tier_1_copies: u32, // 22 copies
+    pub tier_2_copies: u32, // 20 copies
+    pub tier_3_copies: u32, // 17 copies
+    pub tier_4_copies: u32, // 10 copies
+    pub tier_5_copies: u32, // 9 copies
+    pub shared_pool: bool, // true (shared between 8 players)
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct ChampionUpgrade {
+    pub copies_needed: u32, // 3 for 2-star, 9 for 3-star
+    pub star_level: u32,    // 2 or 3
+    pub gold_cost: u32,     // Cost to upgrade
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -750,15 +770,10 @@ pub struct Champion {
     #[serde(rename = "updatedAt")]
     pub updated_at: DateTime,
 
-    // Set 15 specific fields
+    // Set 15 specific fields - simplified for composition focus
     pub set_number: u32,           // 15 for Set 15
-    pub health_scaling: f64,       // Health scaling factor
-    pub damage_scaling: f64,       // Damage scaling factor
     pub is_new: bool,              // Whether this champion is new to Set 15
     pub is_rework: bool,           // Whether this champion was reworked
-    pub recommended_items: Vec<String>, // Recommended item combinations
-    pub counter_champions: Vec<String>, // Champions this unit counters
-    pub countered_by: Vec<String>, // Champions that counter this unit
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -1069,7 +1084,7 @@ pub struct CompositionMeta {
     pub tier: String,        // "S", "A", "B", "C", "D"
     pub difficulty: u32,     // 1-5 scale
     pub cost: String,        // "Budget", "Expensive", "Flexible"
-    pub patch: String,       // "14.23"
+    pub patch: String,       // "15.23" for Set 15
     pub playstyle: String,   // "Aggressive", "Greedy", "Flexible"
 
     // Performance metrics
