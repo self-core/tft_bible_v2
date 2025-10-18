@@ -378,7 +378,7 @@ pub struct CompositionMeta {
     pub tier: String,        // "S", "A", "B", "C", "D"
     pub difficulty: u32,     // 1-5 scale
     pub cost: String,        // "Budget", "Expensive", "Flexible"
-    pub patch: String,       // "14.23"
+    pub patch: String,       // "15.23" for Set 15
     pub playstyle: String,   // "Aggressive", "Greedy", "Flexible"
 
     // Performance metrics
@@ -388,6 +388,13 @@ pub struct CompositionMeta {
     pub playrate: f64,       // How popular the comp is
     #[serde(rename = "contestRate")]
     pub contest_rate: f64,   // How often it's contested
+
+    // Set 15 specific fields
+    pub set_version: String, // "15" for Set 15
+    pub min_round: Option<u32>, // Minimum round this comp becomes viable
+    pub max_round: Option<u32>, // Round where comp peaks
+    pub econ_type: Option<String>, // "Early", "Mid", "Late", "All"
+    pub positioning_style: Option<String>, // "Frontline", "Backline", "Split"
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -652,10 +659,10 @@ impl CreateCompositionRequest {
 pub struct Set {
     #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
     pub id: Option<ObjectId>,
-    pub name: String,
+    pub name: String,        // "TFT Set 15: Cinder"
     #[serde(rename = "shortName")]
-    pub short_name: String,
-    pub version: String,
+    pub short_name: String,  // "Set 15"
+    pub version: String,     // "15.23"
     #[serde(rename = "isActive")]
     pub is_active: bool,
     #[serde(rename = "releaseDate")]
@@ -669,6 +676,16 @@ pub struct Set {
     pub created_at: DateTime,
     #[serde(rename = "updatedAt")]
     pub updated_at: DateTime,
+
+    // Set 15 specific fields
+    pub theme: String,       // "Cinder" for Set 15
+    pub total_champions: u32,
+    pub total_traits: u32,
+    pub total_items: u32,
+    pub total_augments: u32,
+    pub board_size: (u32, u32), // (7, 4) for standard TFT board
+    pub max_level: u32,      // Usually 9
+    pub interest_cap: u32,   // Usually 10
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -688,6 +705,13 @@ pub struct Trait {
     pub created_at: DateTime,
     #[serde(rename = "updatedAt")]
     pub updated_at: DateTime,
+
+    // Set 15 specific fields
+    pub style_name: Option<String>, // "Bronze", "Silver", "Gold", etc.
+    pub set_number: u32,           // 15 for Set 15
+    pub is_unique_trait: bool,     // Whether this is a unique trait
+    pub champion_count: u32,       // Total champions with this trait
+    pub max_bonus_count: u32,      // Maximum breakpoint count
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -725,6 +749,16 @@ pub struct Champion {
     pub created_at: DateTime,
     #[serde(rename = "updatedAt")]
     pub updated_at: DateTime,
+
+    // Set 15 specific fields
+    pub set_number: u32,           // 15 for Set 15
+    pub health_scaling: f64,       // Health scaling factor
+    pub damage_scaling: f64,       // Damage scaling factor
+    pub is_new: bool,              // Whether this champion is new to Set 15
+    pub is_rework: bool,           // Whether this champion was reworked
+    pub recommended_items: Vec<String>, // Recommended item combinations
+    pub counter_champions: Vec<String>, // Champions this unit counters
+    pub countered_by: Vec<String>, // Champions that counter this unit
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -812,6 +846,15 @@ pub struct Item {
     pub created_at: DateTime,
     #[serde(rename = "updatedAt")]
     pub updated_at: DateTime,
+
+    // Set 15 specific fields
+    pub set_number: u32,           // 15 for Set 15
+    pub is_new: bool,              // Whether this item is new to Set 15
+    pub is_artifact: bool,         // Whether this is an artifact item
+    pub champion_synergies: Vec<String>, // Champions this item works well with
+    pub trait_synergies: Vec<String>,    // Traits this item supports
+    pub optimal_cost: Vec<u32>,    // Optimal cost ranges for this item (1-5)
+    pub counter_items: Vec<String>, // Items that counter this item
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -874,6 +917,14 @@ pub struct Augment {
     pub created_at: DateTime,
     #[serde(rename = "updatedAt")]
     pub updated_at: DateTime,
+
+    // Set 15 specific fields
+    pub set_number: u32,           // 15 for Set 15
+    pub stage_unlocked: u32,       // Stage when this augment becomes available (2, 3, 4)
+    pub is_hero_augment: bool,     // Whether this is a hero augment
+    pub is_prismatic: bool,        // Whether this is a prismatic augment
+    pub synergy_requirements: Vec<String>, // Traits required for this augment
+    pub recommended_comps: Vec<String>,    // Recommended compositions for this augment
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
