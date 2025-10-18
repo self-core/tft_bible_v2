@@ -17,7 +17,7 @@ pub async fn get_champions(
     Query(params): Query<ChampionQuery>,
 ) -> Result<Json<PaginatedResponse<ChampionSummary>>, ApiError> {
     let service = ChampionService::new(&state.db);
-    let result = service.get_champions(params).await.unwrap();
+    let result = service.get_champions(params).await?;
     Ok(Json(result))
 }
 
@@ -26,11 +26,11 @@ pub async fn get_champion_by_id(
     Path(id): Path<String>,
 ) -> Result<Json<Champion>, ApiError> {
     let object_id = ObjectId::parse_str(&id)
-        .map_err(|_| ApiError::BadRequest("Invalid champion ID".to_string()));
-    
+        .map_err(|_| ApiError::BadRequest("Invalid champion ID".to_string()))?;
+
     let service = ChampionService::new(&state.db);
-    let champion = service.get_by_id(object_id).await.unwrap();
-    
+    let champion = service.get_by_id(object_id).await?;
+
     Ok(Json(champion))
 }
 
@@ -39,7 +39,7 @@ pub async fn get_champions_by_trait(
     Path(trait_name): Path<String>,
 ) -> Result<Json<Vec<ChampionSummary>>, ApiError> {
     let service = ChampionService::new(&state.db);
-    let champions = service.get_by_trait(&trait_name).await.unwrap();
-    
+    let champions = service.get_by_trait(&trait_name).await?;
+
     Ok(Json(champions))
 }

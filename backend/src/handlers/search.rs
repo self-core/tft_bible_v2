@@ -17,8 +17,8 @@ pub async fn search(
     Query(params): Query<SearchQuery>,
 ) -> Result<Json<Value>, ApiError> {
     let service = SearchService::new(&state.db);
-    let results = service.search(params).await.unwrap();
-    
+    let results = service.search(params).await?;
+
     Ok(Json(json!({
         "query": results.query,
         "total_results": results.total_results,

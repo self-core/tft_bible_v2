@@ -17,7 +17,7 @@ pub async fn get_items(
     Query(params): Query<ItemQuery>,
 ) -> Result<Json<PaginatedResponse<ItemSummary>>, ApiError> {
     let service = ItemService::new(&state.db);
-    let result = service.get_items(params).await.unwrap();
+    let result = service.get_items(params).await?;
     Ok(Json(result))
 }
 
@@ -39,10 +39,10 @@ pub async fn get_item_recommendations(
     Path(champion_id): Path<String>,
 ) -> Result<Json<Vec<ItemSummary>>, ApiError> {
     let object_id = ObjectId::parse_str(&champion_id)
-        .map_err(|_| ApiError::BadRequest("Invalid champion ID".to_string()));
-    
+        .map_err(|_| ApiError::BadRequest("Invalid champion ID".to_string()))?;
+
     let service = ItemService::new(&state.db);
-    let recommendations = service.get_recommendations_for_champion(object_id).await.unwrap();
-    
+    let recommendations = service.get_recommendations_for_champion(object_id).await?;
+
     Ok(Json(recommendations))
 }
