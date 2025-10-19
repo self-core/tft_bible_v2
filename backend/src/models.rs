@@ -207,11 +207,9 @@ pub struct Augment {
     pub updated_at: DateTime,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone)]
 pub struct HeroChampion {
-    #[serde(rename = "championId")]
     pub champion_id: ObjectId,
-    #[serde(rename = "starLevel")]
     pub star_level: u32,
 }
 
