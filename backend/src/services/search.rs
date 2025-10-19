@@ -24,12 +24,12 @@ impl SearchService {
         let start_time = Instant::now();
 
         // Mock search results - combine results from all services
-        let mut compositions = Vec::new();
-        let mut champions = Vec::new();
-        let mut items = Vec::new();
+        let compositions = Vec::new();
+        let champions = Vec::new();
+        let items = Vec::new();
 
         // Simple text matching across all entities
-        let query_lower = params.q.to_lowercase();
+        let _query_lower = params.q.to_lowercase();
 
         // Mock compositions search
         if params.search_type.as_ref().map_or(true, |t| t == "compositions" || t == "all") {

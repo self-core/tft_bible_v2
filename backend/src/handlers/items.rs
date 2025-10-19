@@ -26,8 +26,8 @@ pub async fn get_item_by_id(
     Path(id): Path<String>,
 ) -> Result<Json<Item>, ApiError> {
     let object_id = ObjectId::parse_str(&id)
-        .map_err(|_| ApiError::BadRequest("Invalid item ID".to_string()));
-    
+        .map_err(|_| ApiError::BadRequest("Invalid item ID".to_string()))?;
+
     let service = ItemService::new(&state.db);
     let item = service.get_by_id(object_id).await?;
     
