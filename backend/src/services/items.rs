@@ -155,7 +155,7 @@ impl ItemService {
             }).collect();
         }
 
-        let mut items: Vec<Item> = filtered.collect();
+        let mut items: Vec<Item> = filtered.into_iter().collect();
 
         // Sorting: by priority then name
         items.sort_by(|a, b| {

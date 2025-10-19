@@ -450,11 +450,9 @@ pub struct Votes {
 
 #[derive(Debug, Clone)]
 pub struct User {
-    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
     pub id: Option<ObjectId>,
     pub username: String,
     pub email: String,
-    #[serde(rename = "passwordHash")]
     pub password_hash: String,
 
     pub profile: UserProfile,
@@ -462,20 +460,15 @@ pub struct User {
     pub preferences: UserPreferences,
     pub roles: Vec<String>,
 
-    #[serde(rename = "lastLogin")]
     pub last_login: Option<DateTime>,
-    #[serde(rename = "lastActiveSet")]
     pub last_active_set: Option<ObjectId>,
 
-    #[serde(rename = "createdAt")]
     pub created_at: DateTime,
-    #[serde(rename = "updatedAt")]
     pub updated_at: DateTime,
 }
 
 #[derive(Debug, Clone)]
 pub struct UserProfile {
-    #[serde(rename = "displayName")]
     pub display_name: String,
     pub avatar: Option<String>,
     pub bio: Option<String>,
@@ -486,51 +479,35 @@ pub struct UserProfile {
 
 #[derive(Debug, Clone)]
 pub struct UserStats {
-    #[serde(rename = "compositionsCreated")]
     pub compositions_created: u32,
-    #[serde(rename = "totalViews")]
     pub total_views: u32,
-    #[serde(rename = "totalUpvotes")]
     pub total_upvotes: u32,
     pub reputation: i32,
 }
 
 #[derive(Debug, Clone)]
 pub struct UserPreferences {
-    #[serde(rename = "favoriteCompositions")]
     pub favorite_compositions: Vec<ObjectId>,
-    #[serde(rename = "followingUsers")]
     pub following_users: Vec<ObjectId>,
-    #[serde(rename = "preferredSets")]
     pub preferred_sets: Vec<ObjectId>,
-    #[serde(rename = "emailNotifications")]
     pub email_notifications: bool,
-    #[serde(rename = "publicProfile")]
     pub public_profile: bool,
 }
 
 #[derive(Debug, Clone)]
 pub struct Comment {
-    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
     pub id: Option<ObjectId>,
-    #[serde(rename = "compositionId")]
     pub composition_id: ObjectId,
-    #[serde(rename = "authorId")]
     pub author_id: ObjectId,
-    #[serde(rename = "parentCommentId")]
     pub parent_comment_id: Option<ObjectId>,
 
     pub content: String,
     pub votes: Votes,
 
-    #[serde(rename = "isDeleted")]
     pub is_deleted: bool,
-    #[serde(rename = "isEdited")]
     pub is_edited: bool,
-    #[serde(rename = "editedAt")]
     pub edited_at: Option<DateTime>,
 
-    #[serde(rename = "createdAt")]
     pub created_at: DateTime,
 }
 

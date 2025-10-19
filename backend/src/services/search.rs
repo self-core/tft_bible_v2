@@ -1,4 +1,3 @@
-use bson::oid::ObjectId;
 use std::time::Instant;
 
 use crate::models::*;

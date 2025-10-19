@@ -3,7 +3,7 @@ use axum::{
     http::StatusCode,
     response::Json,
 };
-use bson::{doc, oid::ObjectId};
+use bson::oid::ObjectId;
 use std::sync::Arc;
 
 use crate::{
