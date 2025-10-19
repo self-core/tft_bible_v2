@@ -2,44 +2,6 @@ use bson::{oid::ObjectId, DateTime};
 use serde::{Deserialize, Serialize, Serializer, Deserializer};
 use std::collections::HashMap;
 
-// Custom serde implementations for BSON types
-pub mod serde_helpers {
-    use super::*;
-    use serde::{de::Error, Deserialize, Deserializer, Serialize, Serializer};
-
-    pub fn serialize_object_id<S>(oid: &ObjectId, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        oid.to_hex().serialize(serializer)
-    }
-
-    pub fn deserialize_object_id<'de, D>(deserializer: D) -> Result<ObjectId, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let hex = String::deserialize(deserializer)?;
-        ObjectId::parse_str(&hex).map_err(D::Error::custom)
-    }
-
-    pub fn serialize_datetime<S>(dt: &DateTime, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        dt.to_chrono().to_rfc3339().serialize(serializer)
-    }
-
-    pub fn deserialize_datetime<'de, D>(deserializer: D) -> Result<DateTime, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let rfc3339 = String::deserialize(deserializer)?;
-        chrono::DateTime::parse_from_rfc3339(&rfc3339)
-            .map(|dt| DateTime::from_chrono(dt))
-            .map_err(D::Error::custom)
-    }
-}
-
 // Custom serialization for ObjectId and DateTime to handle serde issues
 pub mod serde_helpers {
     use bson::{oid::ObjectId, DateTime};
