@@ -284,7 +284,7 @@ pub struct CompositionAugments {
     pub avoid: Vec<ObjectId>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone)]
 pub struct PositioningStrategy {
     pub strategy: String,
     pub description: String,

@@ -1,4 +1,4 @@
-use std::time::Instant;
+muuse std::time::Instant;
 
 use crate::models::*;
 use crate::errors::ApiError;
