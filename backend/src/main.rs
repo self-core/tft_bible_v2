@@ -40,7 +40,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let db = client.database(&config.database_name);
     
     // Test database connection
-    db.run_command(mongodb::bson::doc! { "ping": 1 }, None).await.unwrap();
+    db.run_command(mongodb::bson::doc! { "ping": 1 }).await.unwrap();
     println!("✅ Connected to MongoDB: {}", config.database_name);
     
     // Create app state

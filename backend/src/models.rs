@@ -356,6 +356,50 @@ use bson::{oid::ObjectId, DateTime};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+// Custom serialization for ObjectId and DateTime to handle serde issues
+mod serde_helpers {
+    use bson::{oid::ObjectId, DateTime};
+    use serde::{Deserialize, Deserializer, Serializer};
+
+    pub fn serialize_object_id<S>(oid: &Option<ObjectId>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match oid {
+            Some(oid) => serializer.serialize_str(&oid.to_hex()),
+            None => serializer.serialize_none(),
+        }
+    }
+
+    pub fn deserialize_object_id<'de, D>(deserializer: D) -> Result<Option<ObjectId>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s: Option<String> = Option::deserialize(deserializer)?;
+        match s {
+            Some(s) => ObjectId::parse_str(&s)
+                .map(Some)
+                .map_err(serde::de::Error::custom),
+            None => Ok(None),
+        }
+    }
+
+    pub fn serialize_datetime<S>(dt: &DateTime, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_i64(dt.timestamp_millis())
+    }
+
+    pub fn deserialize_datetime<'de, D>(deserializer: D) -> Result<DateTime, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let timestamp: i64 = i64::deserialize(deserializer)?;
+        Ok(DateTime::from_millis(timestamp))
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct GamePhase {
     pub description: String,
@@ -657,7 +701,7 @@ impl CreateCompositionRequest {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Set {
-    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "_id", skip_serializing_if = "Option::is_none", serialize_with = "serde_helpers::serialize_object_id", deserialize_with = "serde_helpers::deserialize_object_id")]
     pub id: Option<ObjectId>,
     pub name: String,        // "TFT Set 15: Cinder"
     #[serde(rename = "shortName")]
@@ -665,9 +709,9 @@ pub struct Set {
     pub version: String,     // "15.23"
     #[serde(rename = "isActive")]
     pub is_active: bool,
-    #[serde(rename = "releaseDate")]
+    #[serde(rename = "releaseDate", serialize_with = "serde_helpers::serialize_datetime", deserialize_with = "serde_helpers::deserialize_datetime")]
     pub release_date: DateTime,
-    #[serde(rename = "endDate")]
+    #[serde(rename = "endDate", serialize_with = "serde_helpers::serialize_datetime", deserialize_with = "serde_helpers::deserialize_datetime")]
     pub end_date: Option<DateTime>,
     pub description: Option<String>,
     #[serde(rename = "imageUrl")]
