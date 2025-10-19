@@ -45,7 +45,22 @@ mod serde_helpers {
     use bson::{oid::ObjectId, DateTime};
     use serde::{Deserialize, Deserializer, Serializer};
 
-    pub fn serialize_object_id<S>(oid: &Option<ObjectId>, serializer: S) -> Result<S::Ok, S::Error>
+    pub fn serialize_object_id<S>(oid: &ObjectId, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(&oid.to_hex())
+    }
+
+    pub fn deserialize_object_id<'de, D>(deserializer: D) -> Result<ObjectId, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s: String = String::deserialize(deserializer)?;
+        ObjectId::parse_str(&s).map_err(serde::de::Error::custom)
+    }
+
+    pub fn serialize_option_object_id<S>(oid: &Option<ObjectId>, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
@@ -55,7 +70,7 @@ mod serde_helpers {
         }
     }
 
-    pub fn deserialize_object_id<'de, D>(deserializer: D) -> Result<Option<ObjectId>, D::Error>
+    pub fn deserialize_option_object_id<'de, D>(deserializer: D) -> Result<Option<ObjectId>, D::Error>
     where
         D: Deserializer<'de>,
     {
@@ -84,28 +99,43 @@ mod serde_helpers {
             .map(|dt| DateTime::from_chrono(dt))
             .map_err(serde::de::Error::custom)
     }
+
+    pub fn serialize_option_datetime<S>(dt: &Option<DateTime>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match dt {
+            Some(dt) => serializer.serialize_str(&dt.to_chrono().to_rfc3339()),
+            None => serializer.serialize_none(),
+        }
+    }
+
+    pub fn deserialize_option_datetime<'de, D>(deserializer: D) -> Result<Option<DateTime>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s: Option<String> = Option::deserialize(deserializer)?;
+        match s {
+            Some(rfc3339) => chrono::DateTime::parse_from_rfc3339(&rfc3339)
+                .map(|dt| Some(DateTime::from_chrono(dt)))
+                .map_err(serde::de::Error::custom),
+            None => Ok(None),
+        }
+    }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone)]
 pub struct Set {
-    #[serde(rename = "_id", skip_serializing_if = "Option::is_none", serialize_with = "serde_helpers::serialize_object_id", deserialize_with = "serde_helpers::deserialize_object_id")]
     pub id: Option<ObjectId>,
     pub name: String,
-    #[serde(rename = "shortName")]
     pub short_name: String,
     pub version: String,
-    #[serde(rename = "isActive")]
     pub is_active: bool,
-    #[serde(rename = "releaseDate", serialize_with = "serde_helpers::serialize_datetime", deserialize_with = "serde_helpers::deserialize_datetime")]
     pub release_date: DateTime,
-    #[serde(rename = "endDate", serialize_with = "serde_helpers::serialize_datetime", deserialize_with = "serde_helpers::deserialize_datetime")]
     pub end_date: Option<DateTime>,
     pub description: Option<String>,
-    #[serde(rename = "imageUrl")]
     pub image_url: Option<String>,
-    #[serde(rename = "createdAt")]
     pub created_at: DateTime,
-    #[serde(rename = "updatedAt")]
     pub updated_at: DateTime,
 }
 
@@ -626,6 +656,7 @@ pub struct ApiResponse<T> {
 #[derive(Debug, Serialize)]
 pub struct HealthCheck {
     pub status: String,
+    #[serde(serialize_with = "serde_helpers::serialize_datetime")]
     pub timestamp: DateTime,
     pub version: String,
     pub database: String,
@@ -634,6 +665,7 @@ pub struct HealthCheck {
 
 #[derive(Debug, Serialize)]
 pub struct CompositionSummary {
+    #[serde(serialize_with = "serde_helpers::serialize_object_id")]
     pub id: ObjectId,
     pub name: String,
     pub category: String,
@@ -645,11 +677,13 @@ pub struct CompositionSummary {
     pub author: Option<String>,
     pub champion_count: u32,
     pub main_champions: Vec<String>, // Top 3 champion names
+    #[serde(serialize_with = "serde_helpers::serialize_datetime")]
     pub created_at: DateTime,
 }
 
 #[derive(Debug, Serialize)]
 pub struct ChampionSummary {
+    #[serde(serialize_with = "serde_helpers::serialize_object_id")]
     pub id: ObjectId,
     pub name: String,
     pub cost: u32,
@@ -662,6 +696,7 @@ pub struct ChampionSummary {
 
 #[derive(Debug, Serialize)]
 pub struct ItemSummary {
+    #[serde(serialize_with = "serde_helpers::serialize_object_id")]
     pub id: ObjectId,
     pub name: String,
     pub category: String,
@@ -674,6 +709,7 @@ pub struct ItemSummary {
 
 #[derive(Debug, Serialize)]
 pub struct TraitSummary {
+    #[serde(serialize_with = "serde_helpers::serialize_object_id")]
     pub id: ObjectId,
     pub name: String,
     pub trait_type: String,
