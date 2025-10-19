@@ -53,6 +53,41 @@ export interface CompositionSummary {
   created_at: string;
 }
 
+export interface Composition {
+  id: string;
+  set_id: string;
+  author_id?: string;
+  name: string;
+  description: string;
+  category: string;
+  tags: string[];
+  champions: any[]; // Simplified for now
+  augments: any; // Simplified for now
+  meta: {
+    tier: string;
+    difficulty: number;
+    cost: string;
+    patch: string;
+    playstyle: string;
+    winrate: number;
+    avg_placement: number;
+    playrate: number;
+    contest_rate: number;
+  };
+  votes: {
+    upvotes: number;
+    downvotes: number;
+  };
+  views: number;
+  favorites: number;
+  comments: string[];
+  is_public: boolean;
+  is_verified: boolean;
+  is_featured: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface ChampionSummary {
   id: string;
   name: string;

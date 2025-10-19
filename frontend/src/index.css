@@ -51,9 +51,43 @@
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-gray-200;
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* TFT Theme Colors */
+@layer utilities {
+  .text-tft-gold {
+    color: #ffd700;
+  }
+  .bg-tft-gold {
+    background-color: #ffd700;
+  }
+  .text-tft-blue {
+    color: #3b82f6;
+  }
+  .bg-tft-blue {
+    background-color: #3b82f6;
+  }
+  .text-tft-green {
+    color: #10b981;
+  }
+  .bg-tft-green {
+    background-color: #10b981;
+  }
+  .text-tft-red {
+    color: #ef4444;
+  }
+  .bg-tft-red {
+    background-color: #ef4444;
+  }
+  .border-tft-gold {
+    border-color: #ffd700;
+  }
+  .ring-tft-gold {
+    --tw-ring-color: #ffd700;
   }
 }

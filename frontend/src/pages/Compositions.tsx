@@ -12,7 +12,7 @@ const Compositions = () => {
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['compositions', filters],
-    queryFn: () => compositionsApi.getCompositions(filters),
+    queryFn: () => compositionsApi.getCompositions(filters).then(res => res.data),
   })
 
   const handleFilterChange = (key: keyof CompositionQuery, value: string | number) => {
@@ -103,7 +103,7 @@ const Compositions = () => {
 
           <select
             value={filters.difficulty || ''}
-            onChange={(e) => handleFilterChange('difficulty', Number(e.target.value) || undefined)}
+            onChange={(e) => handleFilterChange('difficulty', e.target.value ? Number(e.target.value) : '')}
             className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-tft-gold focus:border-transparent"
           >
             <option value="">All Difficulties</option>

@@ -294,6 +294,7 @@ dependencies = [
  "tokio-test",
  "tower",
  "tower-http",
+ "windows-targets 0.53.5",
 ]
 
 [[package]]
