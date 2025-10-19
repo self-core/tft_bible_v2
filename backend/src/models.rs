@@ -311,20 +311,14 @@ pub struct GamePlan {
     pub late: GamePhase,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone)]
 pub struct GamePhase {
     pub description: String,
-    #[serde(rename = "levelingPattern")]
     pub leveling_pattern: String,
-    #[serde(rename = "keyItems")]
     pub key_items: Vec<ObjectId>,
-    #[serde(rename = "transitionTriggers")]
     pub transition_triggers: Vec<String>,
-    #[serde(rename = "pivotOptions")]
     pub pivot_options: Vec<ObjectId>,
-    #[serde(rename = "keyPowerSpikes")]
     pub key_power_spikes: Vec<String>,
-    #[serde(rename = "winCondition")]
     pub win_condition: Option<String>,
 }
 
