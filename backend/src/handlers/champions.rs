@@ -7,7 +7,7 @@ use std::sync::Arc;
 
 use crate::{
     models::*,
-    services::ChampionService,
+    services::champions::ChampionService,
     errors::ApiError,
     AppState,
 };

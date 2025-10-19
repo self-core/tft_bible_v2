@@ -708,7 +708,7 @@ pub struct CreateCommentRequest {
 // Validation implementation
 impl CreateCompositionRequest {
     pub fn validate(&self) -> Result<(), Vec<String>> {
-        let mut errors = Vec::new>();
+        let mut errors = Vec::new();
 
         if self.name.trim().is_empty() {
             errors.push("Name cannot be empty".to_string());

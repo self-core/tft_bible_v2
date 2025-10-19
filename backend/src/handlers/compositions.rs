@@ -8,7 +8,7 @@ use std::sync::Arc;
 
 use crate::{
     models::*,
-    services::CompositionService,
+    services::compositions::CompositionService,
     errors::ApiError,
     AppState,
 };
