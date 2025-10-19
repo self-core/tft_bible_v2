@@ -135,26 +135,24 @@ impl ItemService {
         let data = ITEMS.read().unwrap().clone();
 
         // Filtering
-        let mut filtered = data.into_iter();
+        let mut filtered: Vec<Item> = data.into_iter().collect();
 
         // category
         if let Some(ref category) = params.category {
-            filtered = Box::new(filtered.filter(move |i| i.category.eq_ignore_ascii_case(category)));
-        } else {
-            filtered = Box::new(filtered);
+            filtered = filtered.into_iter().filter(|i| i.category.eq_ignore_ascii_case(category)).collect();
         }
 
         // type
         if let Some(ref item_type) = params.item_type {
-            filtered = Box::new(filtered.filter(move |i| i.item_type.eq_ignore_ascii_case(item_type)));
+            filtered = filtered.into_iter().filter(|i| i.item_type.eq_ignore_ascii_case(item_type)).collect();
         }
 
         // search (name/description)
         if let Some(ref search) = params.search {
             let sl = search.to_lowercase();
-            filtered = Box::new(filtered.filter(move |i| {
+            filtered = filtered.into_iter().filter(|i| {
                 i.name.to_lowercase().contains(&sl) || i.description.to_lowercase().contains(&sl)
-            }));
+            }).collect();
         }
 
         let mut items: Vec<Item> = filtered.collect();

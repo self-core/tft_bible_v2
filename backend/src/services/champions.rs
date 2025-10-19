@@ -176,7 +176,7 @@ impl ChampionService {
             }).collect();
         }
 
-        let mut items: Vec<Champion> = filtered.collect();
+        let mut items: Vec<Champion> = filtered.into_iter().collect();
 
         // Sorting: by cost then name
         items.sort_by(|a, b| {

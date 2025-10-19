@@ -448,7 +448,7 @@ pub struct Votes {
     pub downvotes: u32,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone)]
 pub struct User {
     #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
     pub id: Option<ObjectId>,
@@ -473,7 +473,7 @@ pub struct User {
     pub updated_at: DateTime,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone)]
 pub struct UserProfile {
     #[serde(rename = "displayName")]
     pub display_name: String,
@@ -484,7 +484,7 @@ pub struct UserProfile {
     pub lolpuuid: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone)]
 pub struct UserStats {
     #[serde(rename = "compositionsCreated")]
     pub compositions_created: u32,
@@ -495,7 +495,7 @@ pub struct UserStats {
     pub reputation: i32,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone)]
 pub struct UserPreferences {
     #[serde(rename = "favoriteCompositions")]
     pub favorite_compositions: Vec<ObjectId>,
@@ -699,7 +699,7 @@ pub struct VoteRequest {
     pub vote_type: String, // "upvote" or "downvote"
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug)]
 pub struct CreateCommentRequest {
     pub content: String,
     pub parent_comment_id: Option<ObjectId>,

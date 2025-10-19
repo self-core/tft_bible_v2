@@ -4,5 +4,12 @@ pub mod services;
 pub mod config;
 pub mod errors;
 
-// Re-export AppState from main.rs for testing
-pub use crate::main::AppState;
+// Define AppState here for testing
+use mongodb::Database;
+
+#[derive(Clone)]
+pub struct AppState {
+    pub db: Database,
+    pub config: config::Config,
+    pub start_time: u64,
+}
