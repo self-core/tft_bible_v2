@@ -41,9 +41,9 @@ pub mod serde_helpers {
 }
 
 // Custom serialization for ObjectId and DateTime to handle serde issues
-mod serde_helpers {
+pub mod serde_helpers {
     use bson::{oid::ObjectId, DateTime};
-    use serde::{Deserialize, Deserializer, Serializer};
+    use serde::Serializer;
 
     pub fn serialize_object_id<S>(oid: &ObjectId, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -52,75 +52,11 @@ mod serde_helpers {
         serializer.serialize_str(&oid.to_hex())
     }
 
-    pub fn deserialize_object_id<'de, D>(deserializer: D) -> Result<ObjectId, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let s: String = String::deserialize(deserializer)?;
-        ObjectId::parse_str(&s).map_err(serde::de::Error::custom)
-    }
-
-    pub fn serialize_option_object_id<S>(oid: &Option<ObjectId>, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        match oid {
-            Some(oid) => serializer.serialize_str(&oid.to_hex()),
-            None => serializer.serialize_none(),
-        }
-    }
-
-    pub fn deserialize_option_object_id<'de, D>(deserializer: D) -> Result<Option<ObjectId>, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let s: Option<String> = Option::deserialize(deserializer)?;
-        match s {
-            Some(s) => ObjectId::parse_str(&s)
-                .map(Some)
-                .map_err(serde::de::Error::custom),
-            None => Ok(None),
-        }
-    }
-
     pub fn serialize_datetime<S>(dt: &DateTime, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
         serializer.serialize_str(&dt.to_chrono().to_rfc3339())
-    }
-
-    pub fn deserialize_datetime<'de, D>(deserializer: D) -> Result<DateTime, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let rfc3339: String = String::deserialize(deserializer)?;
-        chrono::DateTime::parse_from_rfc3339(&rfc3339)
-            .map(|dt| DateTime::from_chrono(dt))
-            .map_err(serde::de::Error::custom)
-    }
-
-    pub fn serialize_option_datetime<S>(dt: &Option<DateTime>, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        match dt {
-            Some(dt) => serializer.serialize_str(&dt.to_chrono().to_rfc3339()),
-            None => serializer.serialize_none(),
-        }
-    }
-
-    pub fn deserialize_option_datetime<'de, D>(deserializer: D) -> Result<Option<DateTime>, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let s: Option<String> = Option::deserialize(deserializer)?;
-        match s {
-            Some(rfc3339) => chrono::DateTime::parse_from_rfc3339(&rfc3339)
-                .map(|dt| Some(DateTime::from_chrono(dt)))
-                .map_err(serde::de::Error::custom),
-            None => Ok(None),
-        }
     }
 }
 
@@ -139,22 +75,16 @@ pub struct Set {
     pub updated_at: DateTime,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone)]
 pub struct Trait {
-    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
     pub id: Option<ObjectId>,
-    #[serde(rename = "setId")]
     pub set_id: ObjectId,
     pub name: String,
     pub description: String,
-    #[serde(rename = "type")]
     pub trait_type: String, // "Origin", "Class", "Unique"
-    #[serde(rename = "imageUrl")]
     pub image_url: Option<String>,
     pub breakpoints: Vec<TraitBreakpoint>,
-    #[serde(rename = "createdAt")]
     pub created_at: DateTime,
-    #[serde(rename = "updatedAt")]
     pub updated_at: DateTime,
 }
 
@@ -165,33 +95,23 @@ pub struct TraitBreakpoint {
     pub bonuses: HashMap<String, f64>, // Flexible stat bonuses
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone)]
 pub struct Champion {
-    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
     pub id: Option<ObjectId>,
-    #[serde(rename = "setId")]
     pub set_id: ObjectId,
     pub name: String,
-    #[serde(rename = "displayName")]
     pub display_name: Option<String>,
     pub cost: u32, // 1-5
     pub traits: Vec<String>,
     pub stats: ChampionStats,
-    #[serde(rename = "starScaling")]
     pub star_scaling: StarScaling,
     pub ability: ChampionAbility,
-    #[serde(rename = "imageUrl")]
     pub image_url: Option<String>,
-    #[serde(rename = "splashUrl")]
     pub splash_url: Option<String>,
     pub rarity: String,
-    #[serde(rename = "releaseVersion")]
     pub release_version: Option<String>,
-    #[serde(rename = "isEnabled")]
     pub is_enabled: bool,
-    #[serde(rename = "createdAt")]
     pub created_at: DateTime,
-    #[serde(rename = "updatedAt")]
     pub updated_at: DateTime,
 }
 
@@ -253,32 +173,23 @@ pub struct AbilityScaling {
     pub additional_effects: HashMap<String, f64>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone)]
 pub struct Item {
-    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
     pub id: Option<ObjectId>,
-    #[serde(rename = "setId")]
     pub set_id: ObjectId,
     pub name: String,
     pub description: String,
-    #[serde(rename = "type")]
     pub item_type: String, // "Component", "Completed", "Radiant", "Artifact"
     pub category: String,  // "AD", "AP", "Tank", "Utility"
     pub stats: ItemStats,
     pub recipe: Option<ItemRecipe>,
-    #[serde(rename = "buildsInto")]
     pub builds_into: Vec<ObjectId>,
     pub effects: Vec<ItemEffect>,
     pub priority: u32,
-    #[serde(rename = "isUnique")]
     pub is_unique: bool,
-    #[serde(rename = "isRadiant")]
     pub is_radiant: bool,
-    #[serde(rename = "imageUrl")]
     pub image_url: Option<String>,
-    #[serde(rename = "createdAt")]
     pub created_at: DateTime,
-    #[serde(rename = "updatedAt")]
     pub updated_at: DateTime,
 }
 
@@ -315,32 +226,22 @@ pub struct ItemEffect {
     pub cooldown: Option<f64>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone)]
 pub struct Augment {
-    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
     pub id: Option<ObjectId>,
-    #[serde(rename = "setId")]
     pub set_id: ObjectId,
     pub name: String,
     pub description: String,
-    #[serde(rename = "type")]
     pub augment_type: String, // "Silver", "Gold", "Prismatic"
     pub category: String,      // "Combat", "Economy", "Synergy", "Hero"
     pub tier: u32,            // 1 = Silver, 2 = Gold, 3 = Prismatic
-    #[serde(rename = "heroChampion")]
     pub hero_champion: Option<HeroChampion>,
     pub effects: Vec<AugmentEffect>,
-    #[serde(rename = "winrateImpact")]
     pub winrate_impact: Option<f64>,
-    #[serde(rename = "pickRate")]
     pub pick_rate: Option<f64>,
-    #[serde(rename = "isEnabled")]
     pub is_enabled: bool,
-    #[serde(rename = "imageUrl")]
     pub image_url: Option<String>,
-    #[serde(rename = "createdAt")]
     pub created_at: DateTime,
-    #[serde(rename = "updatedAt")]
     pub updated_at: DateTime,
 }
 
@@ -362,13 +263,10 @@ pub struct AugmentEffect {
     pub is_percentage: bool,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone)]
 pub struct Composition {
-    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
     pub id: Option<ObjectId>,
-    #[serde(rename = "setId")]
     pub set_id: ObjectId,
-    #[serde(rename = "authorId")]
     pub author_id: Option<ObjectId>,
 
     // Basic info
@@ -394,16 +292,11 @@ pub struct Composition {
     pub comments: Vec<ObjectId>,
 
     // Moderation
-    #[serde(rename = "isPublic")]
     pub is_public: bool,
-    #[serde(rename = "isVerified")]
     pub is_verified: bool,
-    #[serde(rename = "isFeatured")]
     pub is_featured: bool,
 
-    #[serde(rename = "createdAt")]
     pub created_at: DateTime,
-    #[serde(rename = "updatedAt")]
     pub updated_at: DateTime,
 }
 
