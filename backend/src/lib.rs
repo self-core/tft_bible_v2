@@ -4,8 +4,5 @@ pub mod services;
 pub mod config;
 pub mod errors;
 
-pub use models::*;
-pub use handlers::*;
-pub use services::*;
-pub use config::*;
-pub use errors::*;
+// Re-export AppState from main.rs for testing
+pub use crate::main::AppState;

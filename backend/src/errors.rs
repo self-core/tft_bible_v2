@@ -85,7 +85,7 @@ impl From<mongodb::error::Error> for ApiError {
 }
 
 impl From<bson::error::Error> for ApiError {
-    fn from(_err: bson::oid::Error) -> Self {
+    fn from(_err: bson::error::Error) -> Self {
         ApiError::BadRequest("Invalid ObjectId format".to_string())
     }
 }

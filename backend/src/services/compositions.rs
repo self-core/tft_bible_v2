@@ -33,11 +33,6 @@ static COMPOSITIONS: Lazy<RwLock<Vec<Composition>>> = Lazy::new(|| {
                 avg_placement: 3.9,
                 playrate: 0.12,
                 contest_rate: 0.18,
-                set_version: "15".to_string(),
-                min_round: Some(3),
-                max_round: Some(6),
-                econ_type: Some("Mid".to_string()),
-                positioning_style: Some("Frontline".to_string()),
             },
             matchups: None,
             votes: Votes { upvotes: 0, downvotes: 0 },
@@ -72,11 +67,6 @@ static COMPOSITIONS: Lazy<RwLock<Vec<Composition>>> = Lazy::new(|| {
                 avg_placement: 3.4,
                 playrate: 0.16,
                 contest_rate: 0.25,
-                set_version: "15".to_string(),
-                min_round: Some(2),
-                max_round: Some(5),
-                econ_type: Some("Early".to_string()),
-                positioning_style: Some("Split".to_string()),
             },
             matchups: None,
             votes: Votes { upvotes: 0, downvotes: 0 },
@@ -107,50 +97,48 @@ impl CompositionService {
         let data = COMPOSITIONS.read().unwrap().clone();
 
         // Filtering
-        let mut filtered = data.into_iter().filter(|c| c.is_public);
+        let mut filtered: Vec<Composition> = data.into_iter().filter(|c| c.is_public).collect();
 
         // tier
         if let Some(ref tier) = params.tier {
-            filtered = Box::new(filtered.filter(move |c| c.meta.tier.eq_ignore_ascii_case(tier)));
-        } else {
-            filtered = Box::new(filtered);
+            filtered = filtered.into_iter().filter(|c| c.meta.tier.eq_ignore_ascii_case(tier)).collect();
         }
 
         // category
         if let Some(ref category) = params.category {
-            filtered = Box::new(filtered.filter(move |c| c.category.eq_ignore_ascii_case(category)));
+            filtered = filtered.into_iter().filter(|c| c.category.eq_ignore_ascii_case(category)).collect();
         }
 
         // tags (comma-separated)
         if let Some(ref tags) = params.tags {
             let wanted: Vec<String> = tags.split(',').map(|s| s.trim().to_lowercase()).collect();
-            filtered = Box::new(filtered.filter(move |c| {
+            filtered = filtered.into_iter().filter(|c| {
                 let set: std::collections::HashSet<String> = c.tags.iter().map(|t| t.to_lowercase()).collect();
                 wanted.iter().all(|t| set.contains(t))
-            }));
+            }).collect();
         }
 
         // text search on name/description
         if let Some(ref q) = params.champion { // reuse 'champion' param as generic search? we also have SearchQuery elsewhere
             let ql = q.to_lowercase();
-            filtered = Box::new(filtered.filter(move |c| {
+            filtered = filtered.into_iter().filter(|c| {
                 c.name.to_lowercase().contains(&ql) || c.description.to_lowercase().contains(&ql)
-            }));
+            }).collect();
         }
 
         // patch
         if let Some(ref patch) = params.patch {
-            filtered = Box::new(filtered.filter(move |c| c.meta.patch == *patch));
+            filtered = filtered.into_iter().filter(|c| c.meta.patch == *patch).collect();
         }
 
         // difficulty
         if let Some(diff) = params.difficulty {
-            filtered = Box::new(filtered.filter(move |c| c.meta.difficulty == diff));
+            filtered = filtered.into_iter().filter(|c| c.meta.difficulty == diff).collect();
         }
 
         // TODO: traits and augments filters will be parsed once added to DTOs
 
-        let mut items: Vec<Composition> = filtered.collect();
+        let mut items: Vec<Composition> = filtered;
 
         // Sorting: by tier then difficulty
         fn tier_rank(t: &str) -> u8 {
