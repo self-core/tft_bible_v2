@@ -291,11 +291,10 @@ pub struct PositioningStrategy {
     pub variations: Vec<PositioningVariation>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone)]
 pub struct PositioningVariation {
     pub name: String,
     pub description: String,
-    #[serde(rename = "modifiedPositions")]
     pub modified_positions: Vec<ModifiedPosition>,
 }
 
