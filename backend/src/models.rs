@@ -210,7 +210,7 @@ pub struct ItemStats {
     pub mana: Option<f64>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone)]
 pub struct ItemRecipe {
     pub component1: ObjectId,
     pub component2: ObjectId,
@@ -300,16 +300,13 @@ pub struct Composition {
     pub updated_at: DateTime,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone)]
 pub struct CompositionChampion {
-    #[serde(rename = "championId")]
     pub champion_id: ObjectId,
-    #[serde(rename = "starLevel")]
     pub star_level: u32,
     pub items: Vec<ObjectId>,
     pub position: Position,
     pub priority: u32,
-    #[serde(rename = "isCore")]
     pub is_core: bool,
     pub alternatives: Vec<ObjectId>,
 }
@@ -342,11 +339,9 @@ pub struct PositioningVariation {
     pub modified_positions: Vec<ModifiedPosition>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone)]
 pub struct ModifiedPosition {
-    #[serde(rename = "championId")]
     pub champion_id: ObjectId,
-    #[serde(rename = "newPosition")]
     pub new_position: Position,
 }
 
