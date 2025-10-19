@@ -277,7 +277,7 @@ pub struct Position {
     pub y: u32, // 0-3
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone)]
 pub struct CompositionAugments {
     pub preferred: Vec<ObjectId>,
     pub acceptable: Vec<ObjectId>,
