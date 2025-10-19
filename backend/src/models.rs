@@ -304,7 +304,7 @@ pub struct ModifiedPosition {
     pub new_position: Position,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone)]
 pub struct GamePlan {
     pub early: GamePhase,
     pub mid: GamePhase,
