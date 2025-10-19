@@ -350,11 +350,49 @@ pub struct GamePlan {
     pub late: GamePhase,
 }
 
-//#[derive(Debug, Serialize, Deserialize,
-// src/models.rs
-use bson::{oid::ObjectId, DateTime};
-use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+// Custom serialization for ObjectId and DateTime to handle serde issues
+mod serde_helpers {
+    use bson::{oid::ObjectId, DateTime};
+    use serde::{Deserialize, Deserializer, Serializer};
+
+    pub fn serialize_object_id<S>(oid: &Option<ObjectId>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match oid {
+            Some(oid) => serializer.serialize_str(&oid.to_hex()),
+            None => serializer.serialize_none(),
+        }
+    }
+
+    pub fn deserialize_object_id<'de, D>(deserializer: D) -> Result<Option<ObjectId>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s: Option<String> = Option::deserialize(deserializer)?;
+        match s {
+            Some(s) => ObjectId::parse_str(&s)
+                .map(Some)
+                .map_err(serde::de::Error::custom),
+            None => Ok(None),
+        }
+    }
+
+    pub fn serialize_datetime<S>(dt: &DateTime, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_i64(dt.timestamp_millis())
+    }
+
+    pub fn deserialize_datetime<'de, D>(deserializer: D) -> Result<DateTime, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let timestamp: i64 = i64::deserialize(deserializer)?;
+        Ok(DateTime::from_millis(timestamp))
+    }
+}
 
 // Custom serialization for ObjectId and DateTime to handle serde issues
 mod serde_helpers {
@@ -400,29 +438,13 @@ mod serde_helpers {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct GamePhase {
-    pub description: String,
-    #[serde(rename = "levelingPattern")]
-    pub leveling_pattern: String,
-    #[serde(rename = "keyItems")]
-    pub key_items: Vec<ObjectId>,
-    #[serde(rename = "transitionTriggers")]
-    pub transition_triggers: Vec<String>,
-    #[serde(rename = "pivotOptions")]
-    pub pivot_options: Vec<ObjectId>,
-    #[serde(rename = "keyPowerSpikes")]
-    pub key_power_spikes: Vec<String>,
-    #[serde(rename = "winCondition")]
-    pub win_condition: Option<String>,
-}
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CompositionMeta {
     pub tier: String,        // "S", "A", "B", "C", "D"
     pub difficulty: u32,     // 1-5 scale
     pub cost: String,        // "Budget", "Expensive", "Flexible"
-    pub patch: String,       // "15.23" for Set 15
+    pub patch: String,       // "14.23"
     pub playstyle: String,   // "Aggressive", "Greedy", "Flexible"
 
     // Performance metrics
@@ -432,13 +454,6 @@ pub struct CompositionMeta {
     pub playrate: f64,       // How popular the comp is
     #[serde(rename = "contestRate")]
     pub contest_rate: f64,   // How often it's contested
-
-    // Set 15 specific fields
-    pub set_version: String, // "15" for Set 15
-    pub min_round: Option<u32>, // Minimum round this comp becomes viable
-    pub max_round: Option<u32>, // Round where comp peaks
-    pub econ_type: Option<String>, // "Early", "Mid", "Late", "All"
-    pub positioning_style: Option<String>, // "Frontline", "Backline", "Split"
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
