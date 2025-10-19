@@ -1094,6 +1094,13 @@ pub struct CompositionMeta {
     pub playrate: f64,       // How popular the comp is
     #[serde(rename = "contestRate")]
     pub contest_rate: f64,   // How often it's contested
+
+    // Set 15 specific fields
+    pub set_version: String, // "15" for Set 15
+    pub min_round: Option<u32>, // Minimum round this comp becomes viable
+    pub max_round: Option<u32>, // Round where comp peaks
+    pub econ_type: Option<String>, // "Early", "Mid", "Late", "All"
+    pub positioning_style: Option<String>, // "Frontline", "Backline", "Split"
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

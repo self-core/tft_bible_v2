@@ -33,7 +33,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
     
     // Load configuration
-    let config = Config::from_env();
+    let config = Config::from_env().expect("Failed to load configuration");
     
     // Connect to MongoDB
     let client = Client::with_uri_str(&config.mongodb_url).await.unwrap();
