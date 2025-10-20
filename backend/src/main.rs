@@ -1,11 +1,7 @@
-﻿use axum::{
-    routing::{get, post},
-    Router,
-};
+﻿use axum::Router;
 use mongodb::{Client, Database};
 use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
-use tower_http::cors::CorsLayer;
 use dotenv::dotenv;
 
 mod models;
@@ -13,6 +9,7 @@ mod handlers;
 mod services;
 mod config;
 mod errors;
+mod router;
 
 use config::Config;
 use handlers::*;
@@ -56,7 +53,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
     
     // Create router with all routes
-    let app = create_router().with_state(Arc::new(state));
+    let app = router::create_router().with_state(Arc::new(state));
     
     // Start server
     let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", config.port)).await.unwrap();
@@ -67,26 +64,3 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-pub fn create_router() -> Router<Arc<AppState>> {
-    Router::new()
-        // Health check
-        .route("/api/v1/health", get(health_check))
-
-        // Compositions endpoints
-        .route("/api/v1/compositions", get(handlers::compositions::get_compositions))
-        .route("/api/v1/compositions/:id/vote", post(handlers::compositions::vote_composition))
-
-        // Champions endpoints
-        .route("/api/v1/champions", get(handlers::champions::get_champions))
-        .route("/api/v1/champions/trait/:trait", get(handlers::champions::get_champions_by_trait))
-
-        // Items endpoints
-        .route("/api/v1/items", get(handlers::items::get_items))
-        .route("/api/v1/items/recommendations/:champion_id", get(handlers::items::get_item_recommendations))
-
-        // Search endpoint
-        .route("/api/v1/search", get(handlers::search::search))
-
-        // CORS middleware
-        .layer(CorsLayer::permissive())
-}

@@ -24,8 +24,8 @@ mod tests {
         assert!(result.is_ok());
 
         let response = result.unwrap();
-        assert_eq!(response.total, 3); // We have 3 mock items
-        assert_eq!(response.data.len(), 3);
+        assert_eq!(response.total, 4); // We have 4 mock items
+        assert_eq!(response.data.len(), 4);
         assert_eq!(response.page, 1);
         assert_eq!(response.per_page, 10);
     }
@@ -51,8 +51,8 @@ mod tests {
         assert!(result.is_ok());
 
         let response = result.unwrap();
-        assert_eq!(response.total, 1); // Bloodthirster is AD category
-        assert_eq!(response.data.len(), 1);
+        assert_eq!(response.total, 2); // Bloodthirster and Infinity Edge are AD category
+        assert_eq!(response.data.len(), 2);
 
         let names: Vec<String> = response.data.iter().map(|i| i.name.clone()).collect();
         assert!(names.contains(&"Bloodthirster".to_string()));
@@ -79,8 +79,8 @@ mod tests {
         assert!(result.is_ok());
 
         let response = result.unwrap();
-        assert_eq!(response.total, 3); // All mock items are "Completed"
-        assert_eq!(response.data.len(), 3);
+        assert_eq!(response.total, 4); // All mock items are "Completed"
+        assert_eq!(response.data.len(), 4);
     }
 
     #[tokio::test]
@@ -174,7 +174,7 @@ mod tests {
         assert!(result.is_ok());
 
         let recommendations = result.unwrap();
-        assert_eq!(recommendations.len(), 3); // Returns all mock items for now
+        assert_eq!(recommendations.len(), 4); // Returns all mock items for now
     }
 
     #[tokio::test]
@@ -198,7 +198,7 @@ mod tests {
         assert!(result.is_ok());
 
         let response = result.unwrap();
-        assert_eq!(response.total, 3);
+        assert_eq!(response.total, 4);
         assert_eq!(response.data.len(), 2); // Only 2 items per page
         assert_eq!(response.page, 1);
         assert_eq!(response.per_page, 2);
@@ -226,11 +226,12 @@ mod tests {
         assert!(result.is_ok());
 
         let response = result.unwrap();
-        assert_eq!(response.data.len(), 3);
+        assert_eq!(response.data.len(), 4);
 
         // Check that items are sorted by priority (Warmog's has priority 2, others have 1)
         assert_eq!(response.data[0].priority, 1);
         assert_eq!(response.data[1].priority, 1);
-        assert_eq!(response.data[2].priority, 2);
+        assert_eq!(response.data[2].priority, 1);
+        assert_eq!(response.data[3].priority, 2);
     }
 }
