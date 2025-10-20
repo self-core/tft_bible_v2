@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use backend::models::{ItemQuery, ItemSummary};
+    use backend::models::ItemQuery;
     use backend::services::items::ItemService;
 
     #[tokio::test]
@@ -51,12 +51,11 @@ mod tests {
         assert!(result.is_ok());
 
         let response = result.unwrap();
-        assert_eq!(response.total, 0); // Mock doesn't implement category filtering
-        assert_eq!(response.data.len(), 2);
+        assert_eq!(response.total, 1); // Bloodthirster is AD category
+        assert_eq!(response.data.len(), 1);
 
         let names: Vec<String> = response.data.iter().map(|i| i.name.clone()).collect();
         assert!(names.contains(&"Bloodthirster".to_string()));
-        assert!(names.contains(&"Rabadon's Deathcap".to_string()));
     }
 
     #[tokio::test]

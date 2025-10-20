@@ -34,7 +34,7 @@ mod tests {
             .unwrap()
             .as_secs();
 
-        let state = AppState {
+        let _state = AppState {
             db,
             config,
             start_time,

@@ -1,4 +1,4 @@
-use std::sync::Arc;
+// use std::sync::Arc; // Temporarily unused
 use mongodb::Database;
 use backend::config::Config;
 

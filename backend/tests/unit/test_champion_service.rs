@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use backend::models::{ChampionQuery, ChampionSummary};
+    use backend::models::ChampionQuery;
     use backend::services::champions::ChampionService;
 
     #[tokio::test]

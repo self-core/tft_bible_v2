@@ -28,7 +28,7 @@ mod tests {
         assert_eq!(search_results.compositions.len(), 0);
         assert_eq!(search_results.champions.len(), 0);
         assert_eq!(search_results.items.len(), 0);
-        assert!(search_results.search_time_ms >= 0);
+        // assert!(search_results.search_time_ms >= 0); // Useless comparison since u64 is always >= 0
     }
 
     #[tokio::test]

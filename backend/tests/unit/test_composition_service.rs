@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use backend::models::{CompositionQuery, CompositionSummary};
+    use backend::models::CompositionQuery;
     use backend::services::compositions::CompositionService;
 
     #[tokio::test]
@@ -188,8 +188,8 @@ mod tests {
         assert!(result.is_ok());
 
         let response = result.unwrap();
-        assert_eq!(response.total, 0); // Mock doesn't implement patch filtering
-        assert_eq!(response.data.len(), 2);
+        assert_eq!(response.total, 0); // Patch "14.23" doesn't match mock data "15.23"
+        assert_eq!(response.data.len(), 0);
     }
 
     #[tokio::test]
