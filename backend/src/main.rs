@@ -1,5 +1,5 @@
 ﻿use axum::{
-    routing::{get, post, put, delete},
+    routing::{get, post},
     Router,
 };
 use mongodb::{Client, Database};
@@ -67,29 +67,26 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn create_router() -> Router<Arc<AppState>> {
+pub fn create_router() -> Router<Arc<AppState>> {
     Router::new()
         // Health check
         .route("/api/v1/health", get(health_check))
-        
+
         // Compositions endpoints
-        .route("/api/v1/compositions", get(get_compositions).post(create_composition))
-        .route("/api/v1/compositions/:id", get(get_composition_by_id).put(update_composition).delete(delete_composition))
-        .route("/api/v1/compositions/:id/vote", post(vote_composition))
-        
+        .route("/api/v1/compositions", get(handlers::compositions::get_compositions))
+        .route("/api/v1/compositions/:id/vote", post(handlers::compositions::vote_composition))
+
         // Champions endpoints
-        .route("/api/v1/champions", get(get_champions))
-        .route("/api/v1/champions/:id", get(get_champion_by_id))
-        .route("/api/v1/champions/trait/:trait", get(get_champions_by_trait))
-        
+        .route("/api/v1/champions", get(handlers::champions::get_champions))
+        .route("/api/v1/champions/trait/:trait", get(handlers::champions::get_champions_by_trait))
+
         // Items endpoints
-        .route("/api/v1/items", get(get_items))
-        .route("/api/v1/items/:id", get(get_item_by_id))
-        .route("/api/v1/items/recommendations/:champion_id", get(get_item_recommendations))
-        
+        .route("/api/v1/items", get(handlers::items::get_items))
+        .route("/api/v1/items/recommendations/:champion_id", get(handlers::items::get_item_recommendations))
+
         // Search endpoint
-        .route("/api/v1/search", get(search))
-        
+        .route("/api/v1/search", get(handlers::search::search))
+
         // CORS middleware
         .layer(CorsLayer::permissive())
 }

@@ -1,11 +1,16 @@
 #[cfg(test)]
 mod tests {
-    use crate::models::SearchQuery;
-    use crate::services::SearchService;
+    use backend::models::SearchQuery;
+    use backend::services::search::SearchService;
 
     #[tokio::test]
     async fn test_search_basic() {
-        let service = SearchService::new(&mongodb::Database::new());
+        // Create a mock database for testing
+        let client = mongodb::Client::with_uri_str("mongodb://localhost:27017")
+            .await
+            .expect("Failed to create test client");
+        let db = client.database("tft_bible_test");
+        let service = SearchService::new(&db);
 
         let params = SearchQuery {
             q: "test query".to_string(),
@@ -28,7 +33,12 @@ mod tests {
 
     #[tokio::test]
     async fn test_search_with_type_filter() {
-        let service = SearchService::new(&mongodb::Database::new());
+        // Create a mock database for testing
+        let client = mongodb::Client::with_uri_str("mongodb://localhost:27017")
+            .await
+            .expect("Failed to create test client");
+        let db = client.database("tft_bible_test");
+        let service = SearchService::new(&db);
 
         let params = SearchQuery {
             q: "champion search".to_string(),
@@ -47,7 +57,12 @@ mod tests {
 
     #[tokio::test]
     async fn test_search_empty_query() {
-        let service = SearchService::new(&mongodb::Database::new());
+        // Create a mock database for testing
+        let client = mongodb::Client::with_uri_str("mongodb://localhost:27017")
+            .await
+            .expect("Failed to create test client");
+        let db = client.database("tft_bible_test");
+        let service = SearchService::new(&db);
 
         let params = SearchQuery {
             q: "".to_string(),
@@ -66,7 +81,12 @@ mod tests {
 
     #[tokio::test]
     async fn test_search_with_limit() {
-        let service = SearchService::new(&mongodb::Database::new());
+        // Create a mock database for testing
+        let client = mongodb::Client::with_uri_str("mongodb://localhost:27017")
+            .await
+            .expect("Failed to create test client");
+        let db = client.database("tft_bible_test");
+        let service = SearchService::new(&db);
 
         let params = SearchQuery {
             q: "limited search".to_string(),
@@ -85,7 +105,12 @@ mod tests {
 
     #[tokio::test]
     async fn test_search_performance() {
-        let service = SearchService::new(&mongodb::Database::new());
+        // Create a mock database for testing
+        let client = mongodb::Client::with_uri_str("mongodb://localhost:27017")
+            .await
+            .expect("Failed to create test client");
+        let db = client.database("tft_bible_test");
+        let service = SearchService::new(&db);
 
         let params = SearchQuery {
             q: "performance test".to_string(),

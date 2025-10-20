@@ -1,11 +1,16 @@
 #[cfg(test)]
 mod tests {
-    use crate::models::{ItemQuery, ItemSummary};
-    use crate::services::ItemService;
+    use backend::models::{ItemQuery, ItemSummary};
+    use backend::services::items::ItemService;
 
     #[tokio::test]
     async fn test_get_items_no_filters() {
-        let service = ItemService::new(&mongodb::Database::new());
+        // Create a mock database for testing
+        let client = mongodb::Client::with_uri_str("mongodb://localhost:27017")
+            .await
+            .expect("Failed to create test client");
+        let db = client.database("tft_bible_test");
+        let service = ItemService::new(&db);
 
         let params = ItemQuery {
             set: None,
@@ -27,7 +32,12 @@ mod tests {
 
     #[tokio::test]
     async fn test_get_items_filter_by_category() {
-        let service = ItemService::new(&mongodb::Database::new());
+        // Create a mock database for testing
+        let client = mongodb::Client::with_uri_str("mongodb://localhost:27017")
+            .await
+            .expect("Failed to create test client");
+        let db = client.database("tft_bible_test");
+        let service = ItemService::new(&db);
 
         let params = ItemQuery {
             set: None,
@@ -51,7 +61,12 @@ mod tests {
 
     #[tokio::test]
     async fn test_get_items_filter_by_type() {
-        let service = ItemService::new(&mongodb::Database::new());
+        // Create a mock database for testing
+        let client = mongodb::Client::with_uri_str("mongodb://localhost:27017")
+            .await
+            .expect("Failed to create test client");
+        let db = client.database("tft_bible_test");
+        let service = ItemService::new(&db);
 
         let params = ItemQuery {
             set: None,
@@ -71,7 +86,12 @@ mod tests {
 
     #[tokio::test]
     async fn test_get_items_search_by_name() {
-        let service = ItemService::new(&mongodb::Database::new());
+        // Create a mock database for testing
+        let client = mongodb::Client::with_uri_str("mongodb://localhost:27017")
+            .await
+            .expect("Failed to create test client");
+        let db = client.database("tft_bible_test");
+        let service = ItemService::new(&db);
 
         let params = ItemQuery {
             set: None,
@@ -92,7 +112,12 @@ mod tests {
 
     #[tokio::test]
     async fn test_get_item_by_id() {
-        let service = ItemService::new(&mongodb::Database::new());
+        // Create a mock database for testing
+        let client = mongodb::Client::with_uri_str("mongodb://localhost:27017")
+            .await
+            .expect("Failed to create test client");
+        let db = client.database("tft_bible_test");
+        let service = ItemService::new(&db);
 
         // First get an item to get its ID
         let params = ItemQuery {
@@ -121,18 +146,28 @@ mod tests {
 
     #[tokio::test]
     async fn test_get_item_by_id_not_found() {
-        let service = ItemService::new(&mongodb::Database::new());
+        // Create a mock database for testing
+        let client = mongodb::Client::with_uri_str("mongodb://localhost:27017")
+            .await
+            .expect("Failed to create test client");
+        let db = client.database("tft_bible_test");
+        let service = ItemService::new(&db);
 
         let fake_id = bson::oid::ObjectId::new();
         let result = service.get_by_id(fake_id).await;
 
         assert!(result.is_err());
-        assert!(matches!(result.unwrap_err(), crate::errors::ApiError::NotFound(_)));
+        assert!(matches!(result.unwrap_err(), backend::errors::ApiError::NotFound(_)));
     }
 
     #[tokio::test]
     async fn test_get_recommendations_for_champion() {
-        let service = ItemService::new(&mongodb::Database::new());
+        // Create a mock database for testing
+        let client = mongodb::Client::with_uri_str("mongodb://localhost:27017")
+            .await
+            .expect("Failed to create test client");
+        let db = client.database("tft_bible_test");
+        let service = ItemService::new(&db);
 
         let fake_champion_id = bson::oid::ObjectId::new();
         let result = service.get_recommendations_for_champion(fake_champion_id).await;
@@ -145,7 +180,12 @@ mod tests {
 
     #[tokio::test]
     async fn test_pagination() {
-        let service = ItemService::new(&mongodb::Database::new());
+        // Create a mock database for testing
+        let client = mongodb::Client::with_uri_str("mongodb://localhost:27017")
+            .await
+            .expect("Failed to create test client");
+        let db = client.database("tft_bible_test");
+        let service = ItemService::new(&db);
 
         let params = ItemQuery {
             set: None,
@@ -168,7 +208,12 @@ mod tests {
 
     #[tokio::test]
     async fn test_sorting_by_priority() {
-        let service = ItemService::new(&mongodb::Database::new());
+        // Create a mock database for testing
+        let client = mongodb::Client::with_uri_str("mongodb://localhost:27017")
+            .await
+            .expect("Failed to create test client");
+        let db = client.database("tft_bible_test");
+        let service = ItemService::new(&db);
 
         let params = ItemQuery {
             set: None,

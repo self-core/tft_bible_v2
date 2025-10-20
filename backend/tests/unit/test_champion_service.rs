@@ -1,11 +1,16 @@
 #[cfg(test)]
 mod tests {
-    use crate::models::{ChampionQuery, ChampionSummary};
-    use crate::services::ChampionService;
+    use backend::models::{ChampionQuery, ChampionSummary};
+    use backend::services::champions::ChampionService;
 
     #[tokio::test]
     async fn test_get_champions_no_filters() {
-        let service = ChampionService::new(&mongodb::Database::new());
+        // Create a mock database for testing
+        let client = mongodb::Client::with_uri_str("mongodb://localhost:27017")
+            .await
+            .expect("Failed to create test client");
+        let db = client.database("tft_bible_test");
+        let service = ChampionService::new(&db);
 
         let params = ChampionQuery {
             set: None,
@@ -27,7 +32,12 @@ mod tests {
 
     #[tokio::test]
     async fn test_get_champions_filter_by_cost() {
-        let service = ChampionService::new(&mongodb::Database::new());
+        // Create a mock database for testing
+        let client = mongodb::Client::with_uri_str("mongodb://localhost:27017")
+            .await
+            .expect("Failed to create test client");
+        let db = client.database("tft_bible_test");
+        let service = ChampionService::new(&db);
 
         let params = ChampionQuery {
             set: None,
@@ -49,7 +59,12 @@ mod tests {
 
     #[tokio::test]
     async fn test_get_champions_filter_by_traits() {
-        let service = ChampionService::new(&mongodb::Database::new());
+        // Create a mock database for testing
+        let client = mongodb::Client::with_uri_str("mongodb://localhost:27017")
+            .await
+            .expect("Failed to create test client");
+        let db = client.database("tft_bible_test");
+        let service = ChampionService::new(&db);
 
         let params = ChampionQuery {
             set: None,
@@ -71,7 +86,12 @@ mod tests {
 
     #[tokio::test]
     async fn test_get_champions_search_by_name() {
-        let service = ChampionService::new(&mongodb::Database::new());
+        // Create a mock database for testing
+        let client = mongodb::Client::with_uri_str("mongodb://localhost:27017")
+            .await
+            .expect("Failed to create test client");
+        let db = client.database("tft_bible_test");
+        let service = ChampionService::new(&db);
 
         let params = ChampionQuery {
             set: None,
@@ -92,7 +112,12 @@ mod tests {
 
     #[tokio::test]
     async fn test_get_champion_by_id() {
-        let service = ChampionService::new(&mongodb::Database::new());
+        // Create a mock database for testing
+        let client = mongodb::Client::with_uri_str("mongodb://localhost:27017")
+            .await
+            .expect("Failed to create test client");
+        let db = client.database("tft_bible_test");
+        let service = ChampionService::new(&db);
 
         // First get a champion to get its ID
         let params = ChampionQuery {
@@ -121,18 +146,28 @@ mod tests {
 
     #[tokio::test]
     async fn test_get_champion_by_id_not_found() {
-        let service = ChampionService::new(&mongodb::Database::new());
+        // Create a mock database for testing
+        let client = mongodb::Client::with_uri_str("mongodb://localhost:27017")
+            .await
+            .expect("Failed to create test client");
+        let db = client.database("tft_bible_test");
+        let service = ChampionService::new(&db);
 
         let fake_id = bson::oid::ObjectId::new();
         let result = service.get_by_id(fake_id).await;
 
         assert!(result.is_err());
-        assert!(matches!(result.unwrap_err(), crate::errors::ApiError::NotFound(_)));
+        assert!(matches!(result.unwrap_err(), backend::errors::ApiError::NotFound(_)));
     }
 
     #[tokio::test]
     async fn test_get_champions_by_trait() {
-        let service = ChampionService::new(&mongodb::Database::new());
+        // Create a mock database for testing
+        let client = mongodb::Client::with_uri_str("mongodb://localhost:27017")
+            .await
+            .expect("Failed to create test client");
+        let db = client.database("tft_bible_test");
+        let service = ChampionService::new(&db);
 
         let result = service.get_by_trait("Sorcerer").await;
         assert!(result.is_ok());
@@ -145,7 +180,12 @@ mod tests {
 
     #[tokio::test]
     async fn test_get_champions_by_trait_no_matches() {
-        let service = ChampionService::new(&mongodb::Database::new());
+        // Create a mock database for testing
+        let client = mongodb::Client::with_uri_str("mongodb://localhost:27017")
+            .await
+            .expect("Failed to create test client");
+        let db = client.database("tft_bible_test");
+        let service = ChampionService::new(&db);
 
         let result = service.get_by_trait("NonExistentTrait").await;
         assert!(result.is_ok());
@@ -156,7 +196,12 @@ mod tests {
 
     #[tokio::test]
     async fn test_pagination() {
-        let service = ChampionService::new(&mongodb::Database::new());
+        // Create a mock database for testing
+        let client = mongodb::Client::with_uri_str("mongodb://localhost:27017")
+            .await
+            .expect("Failed to create test client");
+        let db = client.database("tft_bible_test");
+        let service = ChampionService::new(&db);
 
         let params = ChampionQuery {
             set: None,

@@ -1,5 +1,5 @@
 use bson::{oid::ObjectId, DateTime};
-use serde::{Deserialize, Serialize, Serializer, Deserializer};
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 // Custom serialization for ObjectId and DateTime to handle serde issues
@@ -12,6 +12,34 @@ pub mod serde_helpers {
         S: Serializer,
     {
         serializer.serialize_str(&oid.to_hex())
+    }
+
+    pub fn serialize_object_id_vec<S>(oids: &Vec<ObjectId>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let hex_strings: Vec<String> = oids.iter().map(|oid| oid.to_hex()).collect();
+        serializer.collect_seq(hex_strings)
+    }
+
+    pub fn deserialize_object_id<'de, D>(deserializer: D) -> Result<ObjectId, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        use serde::Deserialize;
+        let hex_string = String::deserialize(deserializer)?;
+        ObjectId::parse_str(&hex_string).map_err(serde::de::Error::custom)
+    }
+
+    pub fn deserialize_object_id_vec<'de, D>(deserializer: D) -> Result<Vec<ObjectId>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        use serde::Deserialize;
+        let hex_strings: Vec<String> = Vec::deserialize(deserializer)?;
+        hex_strings.into_iter()
+            .map(|hex| ObjectId::parse_str(&hex).map_err(serde::de::Error::custom))
+            .collect()
     }
 
     pub fn serialize_datetime<S>(dt: &DateTime, serializer: S) -> Result<S::Ok, S::Error>
@@ -260,14 +288,17 @@ pub struct Composition {
     pub updated_at: DateTime,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CompositionChampion {
+    #[serde(serialize_with = "serde_helpers::serialize_object_id", deserialize_with = "serde_helpers::deserialize_object_id")]
     pub champion_id: ObjectId,
     pub star_level: u32,
+    #[serde(serialize_with = "serde_helpers::serialize_object_id_vec", deserialize_with = "serde_helpers::deserialize_object_id_vec")]
     pub items: Vec<ObjectId>,
     pub position: Position,
     pub priority: u32,
     pub is_core: bool,
+    #[serde(serialize_with = "serde_helpers::serialize_object_id_vec", deserialize_with = "serde_helpers::deserialize_object_id_vec")]
     pub alternatives: Vec<ObjectId>,
 }
 
@@ -277,46 +308,52 @@ pub struct Position {
     pub y: u32, // 0-3
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CompositionAugments {
+    #[serde(serialize_with = "serde_helpers::serialize_object_id_vec", deserialize_with = "serde_helpers::deserialize_object_id_vec")]
     pub preferred: Vec<ObjectId>,
+    #[serde(serialize_with = "serde_helpers::serialize_object_id_vec", deserialize_with = "serde_helpers::deserialize_object_id_vec")]
     pub acceptable: Vec<ObjectId>,
+    #[serde(serialize_with = "serde_helpers::serialize_object_id_vec", deserialize_with = "serde_helpers::deserialize_object_id_vec")]
     pub avoid: Vec<ObjectId>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PositioningStrategy {
     pub strategy: String,
     pub description: String,
     pub variations: Vec<PositioningVariation>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PositioningVariation {
     pub name: String,
     pub description: String,
     pub modified_positions: Vec<ModifiedPosition>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ModifiedPosition {
+    #[serde(serialize_with = "serde_helpers::serialize_object_id", deserialize_with = "serde_helpers::deserialize_object_id")]
     pub champion_id: ObjectId,
     pub new_position: Position,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct GamePlan {
     pub early: GamePhase,
     pub mid: GamePhase,
     pub late: GamePhase,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct GamePhase {
     pub description: String,
     pub leveling_pattern: String,
+    #[serde(serialize_with = "serde_helpers::serialize_object_id_vec", deserialize_with = "serde_helpers::deserialize_object_id_vec")]
     pub key_items: Vec<ObjectId>,
     pub transition_triggers: Vec<String>,
+    #[serde(serialize_with = "serde_helpers::serialize_object_id_vec", deserialize_with = "serde_helpers::deserialize_object_id_vec")]
     pub pivot_options: Vec<ObjectId>,
     pub key_power_spikes: Vec<String>,
     pub win_condition: Option<String>,
