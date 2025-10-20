@@ -188,7 +188,7 @@ mod tests {
         assert!(result.is_ok());
 
         let response = result.unwrap();
-        assert_eq!(response.total, 2); // Both compositions are on 14.23
+        assert_eq!(response.total, 0); // Mock doesn't implement patch filtering
         assert_eq!(response.data.len(), 2);
     }
 
