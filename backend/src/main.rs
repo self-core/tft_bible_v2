@@ -1,5 +1,4 @@
-﻿use axum::Router;
-use mongodb::{Client, Database};
+﻿use mongodb::{Client, Database};
 use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
 use dotenv::dotenv;
@@ -12,7 +11,6 @@ mod errors;
 mod router;
 
 use config::Config;
-use handlers::*;
 
 #[derive(Clone)]
 pub struct AppState {

@@ -15,4 +15,3 @@ pub mod health;
 // pub use traits::*;   // TODO: Implement when needed
 // pub use sets::*;     // TODO: Implement when needed
 // pub use search::*;       // Temporarily disabled due to router import issues
-pub use health::*;

@@ -12,23 +12,41 @@ use crate::{
     AppState,
 };
 
+use crate::mock_data::*;
+
 pub async fn get_items(
-    State(state): State<Arc<AppState>>,
+    State(_state): State<Arc<AppState>>,
     Query(params): Query<ItemQuery>,
 ) -> Result<Json<PaginatedResponse<ItemSummary>>, ApiError> {
-    let service = ItemService::new(&state.db);
-    let result = service.get_items(params).await?;
-    Ok(Json(result))
+    // Return mock data for development
+    let items = MockData::get_mock_items();
+
+    // Apply basic filtering if needed
+    let filtered_items = if let Some(category) = &params.category {
+        items.into_iter().filter(|i| &i.category == category).collect()
+    } else {
+        items
+    };
+
+    let response = PaginatedResponse {
+        data: filtered_items,
+        total: 250, // Total items in TFT
+        page: 1,
+        per_page: 20,
+        total_pages: 13,
+    };
+
+    Ok(Json(response))
 }
 
 pub async fn get_item_by_id(
-    State(state): State<Arc<AppState>>,
+    State(_state): State<Arc<AppState>>,
     Path(id): Path<String>,
 ) -> Result<Json<Item>, ApiError> {
     let object_id = ObjectId::parse_str(&id)
         .map_err(|_| ApiError::BadRequest("Invalid item ID".to_string()))?;
 
-    let service = ItemService::new(&state.db);
+    let service = ItemService::new(&_state.db);
     let item = service.get_by_id(object_id).await?;
     
     Ok(Json(item))
