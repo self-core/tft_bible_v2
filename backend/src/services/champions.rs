@@ -151,34 +151,32 @@ impl ChampionService {
         let data = CHAMPIONS.read().unwrap().clone();
 
         // Filtering
-        let mut filtered = data.into_iter();
+        let mut filtered: Vec<Champion> = data.into_iter().collect();
 
         // cost
         if let Some(cost) = params.cost {
-            filtered = Box::new(filtered.filter(move |c| c.cost == cost));
-        } else {
-            filtered = Box::new(filtered);
+            filtered = filtered.into_iter().filter(|c| c.cost == cost).collect();
         }
 
         // traits (comma-separated)
         if let Some(ref traits) = params.traits {
             let wanted: Vec<String> = traits.split(',').map(|s| s.trim().to_lowercase()).collect();
-            filtered = Box::new(filtered.filter(move |c| {
+            filtered = filtered.into_iter().filter(|c| {
                 let set: std::collections::HashSet<String> = c.traits.iter().map(|t| t.to_lowercase()).collect();
                 wanted.iter().all(|t| set.contains(t))
-            }));
+            }).collect();
         }
 
         // search (name)
         if let Some(ref search) = params.search {
             let sl = search.to_lowercase();
-            filtered = Box::new(filtered.filter(move |c| {
+            filtered = filtered.into_iter().filter(|c| {
                 c.name.to_lowercase().contains(&sl) ||
                 c.display_name.as_ref().unwrap_or(&c.name).to_lowercase().contains(&sl)
-            }));
+            }).collect();
         }
 
-        let mut items: Vec<Champion> = filtered.collect();
+        let mut items: Vec<Champion> = filtered.into_iter().collect();
 
         // Sorting: by cost then name
         items.sort_by(|a, b| {

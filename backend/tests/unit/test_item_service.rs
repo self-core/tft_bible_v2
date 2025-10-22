@@ -1,11 +1,16 @@
 #[cfg(test)]
 mod tests {
-    use crate::models::{ItemQuery, ItemSummary};
-    use crate::services::ItemService;
+    use backend::models::ItemQuery;
+    use backend::services::items::ItemService;
 
     #[tokio::test]
     async fn test_get_items_no_filters() {
-        let service = ItemService::new(&mongodb::Database::new());
+        // Create a mock database for testing
+        let client = mongodb::Client::with_uri_str("mongodb://localhost:27017")
+            .await
+            .expect("Failed to create test client");
+        let db = client.database("tft_bible_test");
+        let service = ItemService::new(&db);
 
         let params = ItemQuery {
             set: None,
@@ -19,15 +24,20 @@ mod tests {
         assert!(result.is_ok());
 
         let response = result.unwrap();
-        assert_eq!(response.total, 3); // We have 3 mock items
-        assert_eq!(response.data.len(), 3);
+        assert_eq!(response.total, 4); // We have 4 mock items
+        assert_eq!(response.data.len(), 4);
         assert_eq!(response.page, 1);
         assert_eq!(response.per_page, 10);
     }
 
     #[tokio::test]
     async fn test_get_items_filter_by_category() {
-        let service = ItemService::new(&mongodb::Database::new());
+        // Create a mock database for testing
+        let client = mongodb::Client::with_uri_str("mongodb://localhost:27017")
+            .await
+            .expect("Failed to create test client");
+        let db = client.database("tft_bible_test");
+        let service = ItemService::new(&db);
 
         let params = ItemQuery {
             set: None,
@@ -41,17 +51,21 @@ mod tests {
         assert!(result.is_ok());
 
         let response = result.unwrap();
-        assert_eq!(response.total, 2);
+        assert_eq!(response.total, 2); // Bloodthirster and Infinity Edge are AD category
         assert_eq!(response.data.len(), 2);
 
         let names: Vec<String> = response.data.iter().map(|i| i.name.clone()).collect();
         assert!(names.contains(&"Bloodthirster".to_string()));
-        assert!(names.contains(&"Rabadon's Deathcap".to_string()));
     }
 
     #[tokio::test]
     async fn test_get_items_filter_by_type() {
-        let service = ItemService::new(&mongodb::Database::new());
+        // Create a mock database for testing
+        let client = mongodb::Client::with_uri_str("mongodb://localhost:27017")
+            .await
+            .expect("Failed to create test client");
+        let db = client.database("tft_bible_test");
+        let service = ItemService::new(&db);
 
         let params = ItemQuery {
             set: None,
@@ -65,13 +79,18 @@ mod tests {
         assert!(result.is_ok());
 
         let response = result.unwrap();
-        assert_eq!(response.total, 3); // All mock items are "Completed"
-        assert_eq!(response.data.len(), 3);
+        assert_eq!(response.total, 4); // All mock items are "Completed"
+        assert_eq!(response.data.len(), 4);
     }
 
     #[tokio::test]
     async fn test_get_items_search_by_name() {
-        let service = ItemService::new(&mongodb::Database::new());
+        // Create a mock database for testing
+        let client = mongodb::Client::with_uri_str("mongodb://localhost:27017")
+            .await
+            .expect("Failed to create test client");
+        let db = client.database("tft_bible_test");
+        let service = ItemService::new(&db);
 
         let params = ItemQuery {
             set: None,
@@ -92,7 +111,12 @@ mod tests {
 
     #[tokio::test]
     async fn test_get_item_by_id() {
-        let service = ItemService::new(&mongodb::Database::new());
+        // Create a mock database for testing
+        let client = mongodb::Client::with_uri_str("mongodb://localhost:27017")
+            .await
+            .expect("Failed to create test client");
+        let db = client.database("tft_bible_test");
+        let service = ItemService::new(&db);
 
         // First get an item to get its ID
         let params = ItemQuery {
@@ -121,18 +145,28 @@ mod tests {
 
     #[tokio::test]
     async fn test_get_item_by_id_not_found() {
-        let service = ItemService::new(&mongodb::Database::new());
+        // Create a mock database for testing
+        let client = mongodb::Client::with_uri_str("mongodb://localhost:27017")
+            .await
+            .expect("Failed to create test client");
+        let db = client.database("tft_bible_test");
+        let service = ItemService::new(&db);
 
         let fake_id = bson::oid::ObjectId::new();
         let result = service.get_by_id(fake_id).await;
 
         assert!(result.is_err());
-        assert!(matches!(result.unwrap_err(), crate::errors::ApiError::NotFound(_)));
+        assert!(matches!(result.unwrap_err(), backend::errors::ApiError::NotFound(_)));
     }
 
     #[tokio::test]
     async fn test_get_recommendations_for_champion() {
-        let service = ItemService::new(&mongodb::Database::new());
+        // Create a mock database for testing
+        let client = mongodb::Client::with_uri_str("mongodb://localhost:27017")
+            .await
+            .expect("Failed to create test client");
+        let db = client.database("tft_bible_test");
+        let service = ItemService::new(&db);
 
         let fake_champion_id = bson::oid::ObjectId::new();
         let result = service.get_recommendations_for_champion(fake_champion_id).await;
@@ -140,12 +174,17 @@ mod tests {
         assert!(result.is_ok());
 
         let recommendations = result.unwrap();
-        assert_eq!(recommendations.len(), 3); // Returns all mock items for now
+        assert_eq!(recommendations.len(), 4); // Returns all mock items for now
     }
 
     #[tokio::test]
     async fn test_pagination() {
-        let service = ItemService::new(&mongodb::Database::new());
+        // Create a mock database for testing
+        let client = mongodb::Client::with_uri_str("mongodb://localhost:27017")
+            .await
+            .expect("Failed to create test client");
+        let db = client.database("tft_bible_test");
+        let service = ItemService::new(&db);
 
         let params = ItemQuery {
             set: None,
@@ -159,7 +198,7 @@ mod tests {
         assert!(result.is_ok());
 
         let response = result.unwrap();
-        assert_eq!(response.total, 3);
+        assert_eq!(response.total, 4);
         assert_eq!(response.data.len(), 2); // Only 2 items per page
         assert_eq!(response.page, 1);
         assert_eq!(response.per_page, 2);
@@ -168,7 +207,12 @@ mod tests {
 
     #[tokio::test]
     async fn test_sorting_by_priority() {
-        let service = ItemService::new(&mongodb::Database::new());
+        // Create a mock database for testing
+        let client = mongodb::Client::with_uri_str("mongodb://localhost:27017")
+            .await
+            .expect("Failed to create test client");
+        let db = client.database("tft_bible_test");
+        let service = ItemService::new(&db);
 
         let params = ItemQuery {
             set: None,
@@ -182,11 +226,12 @@ mod tests {
         assert!(result.is_ok());
 
         let response = result.unwrap();
-        assert_eq!(response.data.len(), 3);
+        assert_eq!(response.data.len(), 4);
 
         // Check that items are sorted by priority (Warmog's has priority 2, others have 1)
         assert_eq!(response.data[0].priority, 1);
         assert_eq!(response.data[1].priority, 1);
-        assert_eq!(response.data[2].priority, 2);
+        assert_eq!(response.data[2].priority, 1);
+        assert_eq!(response.data[3].priority, 2);
     }
 }

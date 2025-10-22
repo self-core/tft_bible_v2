@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  tft-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - MONGODB_URL=mongodb://mongodb:27017
+      - DATABASE_NAME=tft_bible_dev
+      - PORT=8080
+      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
+      - CORS_ORIGIN=http://localhost:3000
+    depends_on:
+      - mongodb
+    networks:
+      - tft-network
+
+  tft-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - tft-backend
+    volumes:
+      # Mount source code for hot reloading during development
+      - ./frontend:/app
+      - /app/node_modules  # Don't mount node_modules to avoid conflicts
+    environment:
+      - VITE_API_URL=http://localhost:8080
+    networks:
+      - tft-network
+    # For development with hot reloading, use this instead:
+    # command: npm run dev -- --host 0.0.0.0
+    # ports:
+    #   - "3000:3000"
+
+  mongodb:
+    image: mongo:7.0
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+      - MONGO_INITDB_DATABASE=tft_bible_dev
+    volumes:
+      - mongodb_data:/data/db
+      - ./backend/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d:ro
+    networks:
+      - tft-network
+
+  # Optional: Redis for caching (uncomment if needed)
+  # redis:
+  #   image: redis:7-alpine
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis_data:/data
+  #   networks:
+  #     - tft-network
+
+volumes:
+  mongodb_data:
+  # redis_data:
+
+networks:
+  tft-network:
+    driver: bridge

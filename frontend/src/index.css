@@ -1,0 +1,235 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Inspired by Cimplic.com - Modern computing theme */
+:root {
+  --bg-primary: #0a0a0b;
+  --bg-secondary: #141518;
+  --bg-accent: #1e1f24;
+  --text-primary: #ffffff;
+  --text-secondary: #a0a3a8;
+  --accent1: #2DD6B6;
+  --accent2: #376FB4;
+  --accent3: #7F66F0;
+  --accent-glow: rgba(45, 214, 182, 0.2);
+  --grid-color: #2a2d35;
+  --max-width: 1200px;
+  --spacing: 24px;
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-gray-700;
+  }
+  body {
+    /* Cimplic.com exact dark background */
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    /* Enhanced Cimplic-inspired gradients */
+    background-image:
+      radial-gradient(circle at 30% 20%, rgba(45, 214, 182, 0.08) 0%, transparent 50%),
+      radial-gradient(circle at 70% 80%, rgba(55, 111, 180, 0.08) 0%, transparent 50%),
+      linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+    position: relative;
+  }
+
+  /* Subtle grid overlay like Cimplic - enhanced for true dark mode */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image:
+      linear-gradient(rgba(45, 214, 182, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(45, 214, 182, 0.06) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: -1;
+  }
+}
+
+/* TFT Theme Colors with Cimplic-inspired enhancements */
+@layer utilities {
+  .text-tft-gold {
+    color: #ffd700;
+  }
+  .bg-tft-gold {
+    background-color: #ffd700;
+  }
+  .text-tft-blue {
+    color: #3b82f6;
+  }
+  .bg-tft-blue {
+    background-color: #3b82f6;
+  }
+  .text-tft-green {
+    color: #10b981;
+  }
+  .bg-tft-green {
+    background-color: #10b981;
+  }
+  .text-tft-red {
+    color: #ef4444;
+  }
+  .bg-tft-red {
+    background-color: #ef4444;
+  }
+  .border-tft-gold {
+    border-color: #ffd700;
+  }
+  .ring-tft-gold {
+    --tw-ring-color: #ffd700;
+  }
+
+  /* Cimplic-inspired button styles */
+  .btn-cimplic {
+    display: inline-flex;
+    align-items: center;
+    padding: 14px 28px;
+    border-radius: 8px;
+    border: 2px solid var(--accent1);
+    background: transparent;
+    color: var(--accent1);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-cimplic::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(45, 214, 182, 0.2), transparent);
+    transition: left 0.5s ease;
+  }
+
+  .btn-cimplic:hover::before {
+    left: 100%;
+  }
+
+  .btn-cimplic.accent {
+    background: var(--accent1);
+    color: var(--bg-primary);
+    border: 2px solid var(--accent1);
+    box-shadow: 0 0 20px rgba(45, 214, 182, 0.3);
+  }
+
+  .btn-cimplic.accent:hover {
+    box-shadow: 0 0 30px rgba(45, 214, 182, 0.5);
+    transform: translateY(-2px);
+  }
+
+  .btn-cimplic:hover {
+    background: rgba(45, 214, 182, 0.1);
+    box-shadow: 0 0 20px rgba(45, 214, 182, 0.2);
+  }
+
+  /* Cimplic-inspired card styles */
+  .card-cimplic {
+    background: rgba(30, 31, 36, 0.8);
+    border: 1px solid var(--grid-color);
+    border-radius: 12px;
+    padding: 24px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card-cimplic::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent1), var(--accent2), var(--accent3));
+  }
+
+  .card-cimplic:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3);
+    border-color: var(--accent1);
+  }
+
+  /* Tech highlight like Cimplic */
+  .tech-highlight {
+    color: var(--accent1);
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+  }
+
+  /* Section title with computing theme */
+  .section-title-cimplic {
+    font-family: 'Inter', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--text-primary);
+    position: relative;
+  }
+
+  .section-title-cimplic::before {
+    content: '//';
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent1);
+    margin-right: 16px;
+  }
+}

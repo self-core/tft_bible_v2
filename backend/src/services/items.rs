@@ -52,6 +52,44 @@ static ITEMS: Lazy<RwLock<Vec<Item>>> = Lazy::new(|| {
         Item {
             id: Some(ObjectId::new()),
             set_id,
+            name: "Infinity Edge".to_string(),
+            description: "Critical Strikes deal double damage".to_string(),
+            item_type: "Completed".to_string(),
+            category: "AD".to_string(),
+            stats: ItemStats {
+                attack_damage: Some(70.0),
+                ability_power: None,
+                attack_speed: Some(25.0),
+                crit_chance: Some(20.0),
+                health: None,
+                armor: None,
+                magic_resist: None,
+                mana: None,
+            },
+            recipe: Some(ItemRecipe {
+                component1: ObjectId::new(),
+                component2: ObjectId::new(),
+            }),
+            builds_into: vec![],
+            effects: vec![
+                ItemEffect {
+                    effect_type: "Passive".to_string(),
+                    description: "Critical Strikes deal double damage".to_string(),
+                    value: None,
+                    duration: None,
+                    cooldown: None,
+                }
+            ],
+            priority: 1,
+            is_unique: false,
+            is_radiant: false,
+            image_url: Some("https://example.com/infinity_edge.png".to_string()),
+            created_at: now,
+            updated_at: now,
+        },
+        Item {
+            id: Some(ObjectId::new()),
+            set_id,
             name: "Rabadon's Deathcap".to_string(),
             description: "Massively increases Ability Power".to_string(),
             item_type: "Completed".to_string(),
@@ -135,29 +173,27 @@ impl ItemService {
         let data = ITEMS.read().unwrap().clone();
 
         // Filtering
-        let mut filtered = data.into_iter();
+        let mut filtered: Vec<Item> = data.into_iter().collect();
 
         // category
         if let Some(ref category) = params.category {
-            filtered = Box::new(filtered.filter(move |i| i.category.eq_ignore_ascii_case(category)));
-        } else {
-            filtered = Box::new(filtered);
+            filtered = filtered.into_iter().filter(|i| i.category.eq_ignore_ascii_case(category)).collect();
         }
 
         // type
         if let Some(ref item_type) = params.item_type {
-            filtered = Box::new(filtered.filter(move |i| i.item_type.eq_ignore_ascii_case(item_type)));
+            filtered = filtered.into_iter().filter(|i| i.item_type.eq_ignore_ascii_case(item_type)).collect();
         }
 
         // search (name/description)
         if let Some(ref search) = params.search {
             let sl = search.to_lowercase();
-            filtered = Box::new(filtered.filter(move |i| {
+            filtered = filtered.into_iter().filter(|i| {
                 i.name.to_lowercase().contains(&sl) || i.description.to_lowercase().contains(&sl)
-            }));
+            }).collect();
         }
 
-        let mut items: Vec<Item> = filtered.collect();
+        let mut items: Vec<Item> = filtered.into_iter().collect();
 
         // Sorting: by priority then name
         items.sort_by(|a, b| {

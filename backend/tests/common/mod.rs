@@ -1,6 +1,6 @@
-use std::sync::Arc;
+// use std::sync::Arc; // Temporarily unused
 use mongodb::Database;
-use crate::models::Config;
+use backend::config::Config;
 
 /// Test utilities and helpers
 pub struct TestApp {
@@ -19,6 +19,7 @@ impl TestApp {
             redis_url: None,
             jwt_secret: "test_secret".to_string(),
             cors_origin: "*".to_string(),
+            riot_api_key: Some("test_api_key".to_string()),
         };
 
         // For now, we'll create a mock database connection
@@ -33,9 +34,9 @@ impl TestApp {
 }
 
 /// Helper function to create test data
-pub fn create_test_champion() -> crate::models::Champion {
+pub fn create_test_champion() -> backend::models::Champion {
     use bson::{oid::ObjectId, DateTime};
-    use crate::models::*;
+    use backend::models::*;
 
     Champion {
         id: Some(ObjectId::new()),
@@ -85,9 +86,9 @@ pub fn create_test_champion() -> crate::models::Champion {
 }
 
 /// Helper function to create test item
-pub fn create_test_item() -> crate::models::Item {
+pub fn create_test_item() -> backend::models::Item {
     use bson::{oid::ObjectId, DateTime};
-    use crate::models::*;
+    use backend::models::*;
 
     Item {
         id: Some(ObjectId::new()),
@@ -119,9 +120,9 @@ pub fn create_test_item() -> crate::models::Item {
 }
 
 /// Helper function to create test composition
-pub fn create_test_composition() -> crate::models::Composition {
+pub fn create_test_composition() -> backend::models::Composition {
     use bson::{oid::ObjectId, DateTime};
-    use crate::models::*;
+    use backend::models::*;
 
     Composition {
         id: Some(ObjectId::new()),
