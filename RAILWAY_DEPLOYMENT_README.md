@@ -13,10 +13,12 @@ This guide provides step-by-step instructions for deploying the TFT Bible applic
 Railway Project
 ├── Backend Service (Rust/Axum)
 │   ├── Dockerfile.railway
-│   └── railway.toml
-└── Frontend Service (React/TypeScript)
+│   ├── railway.toml
+│   └── Non-root user for security
+└── Frontend Service (React/React Router)
     ├── Dockerfile.railway
-    └── nginx.railway.conf
+    ├── nginx.railway.conf
+    └── Static asset caching
 ```
 
 ## Deployment Steps
@@ -44,6 +46,8 @@ DATABASE_NAME=tft_bible_prod
 PORT=8080
 JWT_SECRET=your-super-secret-jwt-key-minimum-32-characters
 CORS_ORIGIN=https://your-frontend-service.railway.app
+REDIS_URL=redis://your-redis-service.railway.app:6379 (optional)
+RIOT_API_KEY=your-riot-api-key (optional)
 ```
 
 #### Frontend Service Variables:
@@ -102,7 +106,7 @@ VITE_API_URL=https://your-backend-service.railway.app
 
 ### Health Checks:
 - Frontend: Visit `/health` endpoint
-- Backend: Visit `/health` endpoint
+- Backend: Visit `/api/v1/health` endpoint
 - Database: Check Railway logs for connection errors
 
 ## Maintenance
@@ -113,9 +117,10 @@ VITE_API_URL=https://your-backend-service.railway.app
 3. Monitor deployment in Railway dashboard
 
 ### Environment Variables:
-- Never commit secrets to GitHub
+- Never commit secrets to GitHub (use .env.railway in .gitignore)
 - Use Railway dashboard for sensitive variables
 - Rotate JWT_SECRET periodically
+- Store secrets securely using Railway's environment variable system
 
 ### Database Backups:
 - MongoDB Atlas provides automatic backups on free tier
@@ -125,19 +130,28 @@ VITE_API_URL=https://your-backend-service.railway.app
 ## Security Considerations
 
 1. **Environment Variables:**
-   - Store secrets in Railway dashboard
-   - Use strong JWT secrets
-   - Rotate credentials regularly
+    - Store secrets in Railway dashboard (never in Git)
+    - Use strong JWT secrets (minimum 32 characters)
+    - Rotate credentials regularly
+    - Use Railway's environment variable templates
 
-2. **Database Security:**
-   - Restrict IP access after initial setup
-   - Use strong database passwords
-   - Enable MongoDB Atlas security features
+2. **Container Security:**
+    - Backend runs as non-root user (tftuser)
+    - Minimal base images (debian:bookworm-slim, nginx:alpine)
+    - No unnecessary packages installed
 
-3. **Application Security:**
-   - Keep dependencies updated
-   - Monitor for vulnerabilities
-   - Use HTTPS (Railway provides free SSL)
+3. **Database Security:**
+    - Restrict IP access after initial setup
+    - Use strong database passwords
+    - Enable MongoDB Atlas security features
+    - Use connection string with authentication
+
+4. **Application Security:**
+    - Keep dependencies updated
+    - Monitor for vulnerabilities
+    - Use HTTPS (Railway provides free SSL)
+    - CORS properly configured
+    - Security headers in nginx config
 
 ## Support
 

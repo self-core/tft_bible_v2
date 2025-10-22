@@ -27,11 +27,20 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
+# Create a non-root user
+RUN useradd -r -s /bin/false tftuser
+
 # Set the working directory
 WORKDIR /app
 
 # Copy the compiled binary from the builder stage
 COPY --from=builder /app/target/release/backend /app/backend
+
+# Change ownership to non-root user
+RUN chown tftuser:tftuser /app/backend
+
+# Switch to non-root user
+USER tftuser
 
 # Expose the port the app runs on
 EXPOSE 8080

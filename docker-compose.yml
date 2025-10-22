@@ -15,11 +15,6 @@ services:
       - CORS_ORIGIN=http://localhost:3000
     depends_on:
       - mongodb
-    volumes:
-      # Mount source code for hot reloading during development
-      - ./backend:/app/backend
-      - /app/backend/target  # Don't mount target directory to avoid conflicts
-    command: cargo watch -x run
     networks:
       - tft-network
 

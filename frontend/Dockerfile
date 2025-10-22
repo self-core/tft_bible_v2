@@ -10,6 +10,9 @@ COPY package*.json ./
 # Install dependencies
 RUN npm ci
 
+# Install TypeScript and Vite globally for build
+RUN npm install -g typescript vite
+
 # Copy source code
 COPY . .
 
