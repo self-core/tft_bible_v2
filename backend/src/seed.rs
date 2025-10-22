@@ -3,15 +3,16 @@ use mongodb::bson::Document;
 use mongodb::Collection;
 use serde::{Deserialize, Serialize};
 use bson::doc;
+use chrono::{DateTime, Utc};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Set {
     pub name: String,
     pub version: String,
-    pub release_date: bson::DateTime,
+    pub release_date: DateTime<Utc>,
     pub is_active: bool,
-    pub created_at: bson::DateTime,
-    pub updated_at: bson::DateTime,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -20,8 +21,8 @@ pub struct Trait {
     pub trait_type: String,
     pub description: String,
     pub image_url: String,
-    pub created_at: bson::DateTime,
-    pub updated_at: bson::DateTime,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -42,8 +43,8 @@ pub struct Champion {
     pub mana_start: i32,
     pub rarity: String,
     pub is_enabled: bool,
-    pub created_at: bson::DateTime,
-    pub updated_at: bson::DateTime,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -62,8 +63,8 @@ pub struct Item {
     pub crit_chance: Option<f64>,
     pub effects: Vec<ItemEffect>,
     pub is_radiant: bool,
-    pub created_at: bson::DateTime,
-    pub updated_at: bson::DateTime,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -76,8 +77,8 @@ pub struct Augment {
     pub stage: i32,
     pub is_hero_augment: bool,
     pub is_prismatic: bool,
-    pub created_at: bson::DateTime,
-    pub updated_at: bson::DateTime,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
 }
 
 pub struct DatabaseSeeder {
@@ -109,10 +110,10 @@ impl DatabaseSeeder {
         let set_doc = Set {
             name: "Set 11".to_string(),
             version: "13.19".to_string(),
-            release_date: bson::DateTime::now(),
+            release_date: Utc::now(),
             is_active: true,
-            created_at: bson::DateTime::now(),
-            updated_at: bson::DateTime::now(),
+            created_at: Utc::now(),
+            updated_at: Utc::now(),
         };
 
         sets_collection.insert_one(set_doc).await?;
@@ -129,8 +130,8 @@ impl DatabaseSeeder {
             trait_type: "Assassin".to_string(),
             description: "Assassins leap to the lowest health enemy at the start of combat".to_string(),
             image_url: "https://example.com/assassin-trait.jpg".to_string(),
-            created_at: bson::DateTime::now(),
-            updated_at: bson::DateTime::now(),
+            created_at: Utc::now(),
+            updated_at: Utc::now(),
         };
 
         let bruiser_trait = Trait {
@@ -138,8 +139,8 @@ impl DatabaseSeeder {
             trait_type: "Bruiser".to_string(),
             description: "Bruisers gain bonus health".to_string(),
             image_url: "https://example.com/bruiser-trait.jpg".to_string(),
-            created_at: bson::DateTime::now(),
-            updated_at: bson::DateTime::now(),
+            created_at: Utc::now(),
+            updated_at: Utc::now(),
         };
 
         traits_collection.insert_one(assassin_trait).await?;
@@ -169,8 +170,8 @@ impl DatabaseSeeder {
             mana_start: 0,
             rarity: "Common".to_string(),
             is_enabled: true,
-            created_at: bson::DateTime::now(),
-            updated_at: bson::DateTime::now(),
+            created_at: Utc::now(),
+            updated_at: Utc::now(),
         };
 
         let sett = Champion {
@@ -190,8 +191,8 @@ impl DatabaseSeeder {
             mana_start: 0,
             rarity: "Rare".to_string(),
             is_enabled: true,
-            created_at: bson::DateTime::now(),
-            updated_at: bson::DateTime::now(),
+            created_at: Utc::now(),
+            updated_at: Utc::now(),
         };
 
         champions_collection.insert_one(ahri).await?;
@@ -218,8 +219,8 @@ impl DatabaseSeeder {
                 }
             ],
             is_radiant: false,
-            created_at: bson::DateTime::now(),
-            updated_at: bson::DateTime::now(),
+            created_at: Utc::now(),
+            updated_at: Utc::now(),
         };
 
         let infinity_edge = Item {
@@ -236,8 +237,8 @@ impl DatabaseSeeder {
                 }
             ],
             is_radiant: false,
-            created_at: bson::DateTime::now(),
-            updated_at: bson::DateTime::now(),
+            created_at: Utc::now(),
+            updated_at: Utc::now(),
         };
 
         items_collection.insert_one(bloodthirster).await?;
@@ -259,8 +260,8 @@ impl DatabaseSeeder {
             stage: 1,
             is_hero_augment: false,
             is_prismatic: false,
-            created_at: bson::DateTime::now(),
-            updated_at: bson::DateTime::now(),
+            created_at: Utc::now(),
+            updated_at: Utc::now(),
         };
 
         let bruiser_heart = Augment {
@@ -272,8 +273,8 @@ impl DatabaseSeeder {
             stage: 1,
             is_hero_augment: false,
             is_prismatic: false,
-            created_at: bson::DateTime::now(),
-            updated_at: bson::DateTime::now(),
+            created_at: Utc::now(),
+            updated_at: Utc::now(),
         };
 
         augments_collection.insert_one(assassin_heart).await?;
