@@ -1,6 +1,7 @@
 use axum::{extract::State, response::Json};
 use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
+use chrono::Utc;
 
 use crate::{models::*, AppState};
 
@@ -13,7 +14,7 @@ pub async fn health_check(State(state): State<Arc<AppState>>) -> Json<HealthChec
 
     Json(HealthCheck {
         status: "healthy".to_string(),
-        timestamp: bson::DateTime::now(),
+        timestamp: Utc::now(),
         version: env!("CARGO_PKG_VERSION").to_string(),
         database: "connected".to_string(),
         uptime,

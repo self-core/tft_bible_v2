@@ -1,6 +1,7 @@
 use bson::{oid::ObjectId, DateTime};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use chrono;
 
 // Custom serialization for ObjectId and DateTime to handle serde issues
 pub mod serde_helpers {
@@ -48,6 +49,13 @@ pub mod serde_helpers {
     {
         serializer.serialize_str(&dt.to_chrono().to_rfc3339())
     }
+
+    pub fn serialize_chrono_datetime<S>(dt: &chrono::DateTime<chrono::Utc>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(&dt.to_rfc3339())
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -57,12 +65,12 @@ pub struct Set {
     pub short_name: String,
     pub version: String,
     pub is_active: bool,
-    pub release_date: DateTime,
-    pub end_date: Option<DateTime>,
+    pub release_date: chrono::DateTime<chrono::Utc>,
+    pub end_date: Option<chrono::DateTime<chrono::Utc>>,
     pub description: Option<String>,
     pub image_url: Option<String>,
-    pub created_at: DateTime,
-    pub updated_at: DateTime,
+    pub created_at: chrono::DateTime<chrono::Utc>,
+    pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 
 #[derive(Debug, Clone)]
@@ -74,8 +82,8 @@ pub struct Trait {
     pub trait_type: String, // "Origin", "Class", "Unique"
     pub image_url: Option<String>,
     pub breakpoints: Vec<TraitBreakpoint>,
-    pub created_at: DateTime,
-    pub updated_at: DateTime,
+    pub created_at: chrono::DateTime<chrono::Utc>,
+    pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -101,8 +109,8 @@ pub struct Champion {
     pub rarity: String,
     pub release_version: Option<String>,
     pub is_enabled: bool,
-    pub created_at: DateTime,
-    pub updated_at: DateTime,
+    pub created_at: chrono::DateTime<chrono::Utc>,
+    pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -179,8 +187,8 @@ pub struct Item {
     pub is_unique: bool,
     pub is_radiant: bool,
     pub image_url: Option<String>,
-    pub created_at: DateTime,
-    pub updated_at: DateTime,
+    pub created_at: chrono::DateTime<chrono::Utc>,
+    pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -231,8 +239,8 @@ pub struct Augment {
     pub pick_rate: Option<f64>,
     pub is_enabled: bool,
     pub image_url: Option<String>,
-    pub created_at: DateTime,
-    pub updated_at: DateTime,
+    pub created_at: chrono::DateTime<chrono::Utc>,
+    pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 
 #[derive(Debug, Clone)]
@@ -284,8 +292,8 @@ pub struct Composition {
     pub is_verified: bool,
     pub is_featured: bool,
 
-    pub created_at: DateTime,
-    pub updated_at: DateTime,
+    pub created_at: chrono::DateTime<chrono::Utc>,
+    pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -408,11 +416,11 @@ pub struct User {
     pub preferences: UserPreferences,
     pub roles: Vec<String>,
 
-    pub last_login: Option<DateTime>,
+    pub last_login: Option<chrono::DateTime<chrono::Utc>>,
     pub last_active_set: Option<ObjectId>,
 
-    pub created_at: DateTime,
-    pub updated_at: DateTime,
+    pub created_at: chrono::DateTime<chrono::Utc>,
+    pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 
 #[derive(Debug, Clone)]
@@ -454,9 +462,9 @@ pub struct Comment {
 
     pub is_deleted: bool,
     pub is_edited: bool,
-    pub edited_at: Option<DateTime>,
+    pub edited_at: Option<chrono::DateTime<chrono::Utc>>,
 
-    pub created_at: DateTime,
+    pub created_at: chrono::DateTime<chrono::Utc>,
 }
 
 // API Request/Response DTOs
@@ -535,7 +543,7 @@ pub struct ApiResponse<T> {
 pub struct HealthCheck {
     pub status: String,
     #[serde(serialize_with = "serde_helpers::serialize_datetime")]
-    pub timestamp: DateTime,
+    pub timestamp: chrono::DateTime<chrono::Utc>,
     pub version: String,
     pub database: String,
     pub uptime: u64,
@@ -556,7 +564,7 @@ pub struct CompositionSummary {
     pub champion_count: u32,
     pub main_champions: Vec<String>, // Top 3 champion names
     #[serde(serialize_with = "serde_helpers::serialize_datetime")]
-    pub created_at: DateTime,
+    pub created_at: chrono::DateTime<chrono::Utc>,
 }
 
 #[derive(Debug, Serialize)]
