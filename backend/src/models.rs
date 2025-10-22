@@ -5,7 +5,7 @@ use chrono;
 
 // Custom serialization for ObjectId and DateTime to handle serde issues
 pub mod serde_helpers {
-    use bson::{oid::ObjectId, DateTime};
+    use bson::oid::ObjectId;
     use serde::Serializer;
 
     pub fn serialize_object_id<S>(oid: &ObjectId, serializer: S) -> Result<S::Ok, S::Error>
@@ -43,11 +43,11 @@ pub mod serde_helpers {
             .collect()
     }
 
-    pub fn serialize_datetime<S>(dt: &DateTime, serializer: S) -> Result<S::Ok, S::Error>
+    pub fn serialize_datetime<S>(dt: &chrono::DateTime<chrono::Utc>, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
-        serializer.serialize_str(&dt.to_chrono().to_rfc3339())
+        serializer.serialize_str(&dt.to_rfc3339())
     }
 
     pub fn serialize_chrono_datetime<S>(dt: &chrono::DateTime<chrono::Utc>, serializer: S) -> Result<S::Ok, S::Error>
@@ -636,6 +636,112 @@ pub struct UpdateCompositionRequest {
 #[derive(Debug, Deserialize)]
 pub struct VoteRequest {
     pub vote_type: String, // "upvote" or "downvote"
+}
+
+// Riot API Data Models
+
+#[derive(Debug, Clone)]
+pub struct RiotSummoner {
+    pub id: Option<bson::oid::ObjectId>,
+    pub summoner_id: String,      // encrypted summoner ID from Riot
+    pub account_id: String,       // encrypted account ID from Riot
+    pub puuid: String,            // encrypted PUUID from Riot
+    pub name: String,             // summoner name
+    pub profile_icon_id: i32,
+    pub revision_date: chrono::DateTime<chrono::Utc>,
+    pub summoner_level: i64,
+    pub region: String,           // region where the data was fetched from
+    pub last_updated: chrono::DateTime<chrono::Utc>,
+    pub created_at: chrono::DateTime<chrono::Utc>,
+}
+
+#[derive(Debug, Clone)]
+pub struct RiotMatch {
+    pub id: Option<bson::oid::ObjectId>,
+    pub match_id: String,         // match ID from Riot (e.g., "EUW1_1234567890")
+    pub data_version: String,     // version of the metadata
+    pub game_datetime: chrono::DateTime<chrono::Utc>,
+    pub game_length: f64,         // length of the game in seconds
+    pub game_version: String,     // version of the game
+    pub queue_id: i32,            // queue type ID
+    pub tft_game_type: String,    // type of TFT game
+    pub tft_set_core_name: String, // name of the TFT set
+    pub tft_set_number: i32,      // number of the TFT set
+    pub participants: Vec<RiotMatchParticipant>,
+    pub region: String,           // region where the match was played
+    pub fetched_at: chrono::DateTime<chrono::Utc>,
+    pub created_at: chrono::DateTime<chrono::Utc>,
+}
+
+#[derive(Debug, Clone)]
+pub struct RiotMatchParticipant {
+    pub puuid: String,
+    pub companion: String,        // companion details as JSON string
+    pub gold_left: i32,
+    pub last_round: String,
+    pub level: i32,
+    pub placement: i32,
+    pub players_eliminated: i32,
+    pub time_eliminated: String,
+    pub total_damage_to_players: i32,
+    pub traits: Vec<RiotMatchTrait>,  // traits the player used
+    pub units: Vec<RiotMatchUnit>,    // units the player had at the end
+    pub summoner_id: Option<bson::oid::ObjectId>, // reference to our summoner collection
+}
+
+#[derive(Debug, Clone)]
+pub struct RiotMatchTrait {
+    pub name: String,
+    pub num_units: i32,
+    pub style: Option<i32>,       // style (bronze, silver, gold, chromatic)
+}
+
+#[derive(Debug, Clone)]
+pub struct RiotMatchUnit {
+    pub character_id: String,
+    pub item_names: Vec<String>,  // names of items equipped
+    pub name: String,
+    pub rarity: i32,              // star level (0-3)
+    pub tier: i32,                // unit tier (1-3)
+    pub is_alternative: bool,     // for handling alternative units
+}
+
+// DTOs for API responses
+#[derive(Debug, Serialize)]
+pub struct SummonerResponse {
+    #[serde(serialize_with = "serde_helpers::serialize_object_id")]
+    pub id: bson::oid::ObjectId,
+    pub summoner_id: String,
+    pub name: String,
+    pub summoner_level: i64,
+    #[serde(serialize_with = "serde_helpers::serialize_datetime")]
+    pub last_updated: chrono::DateTime<chrono::Utc>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct MatchResponse {
+    #[serde(serialize_with = "serde_helpers::serialize_object_id")]
+    pub id: bson::oid::ObjectId,
+    pub match_id: String,
+    #[serde(serialize_with = "serde_helpers::serialize_datetime")]
+    pub game_datetime: chrono::DateTime<chrono::Utc>,
+    pub game_length: f64,
+    pub game_version: String,
+    pub tft_set_core_name: String,
+    pub tft_set_number: i32,
+    pub participants: Vec<MatchParticipantResponse>,
+    #[serde(serialize_with = "serde_helpers::serialize_datetime")]
+    pub fetched_at: chrono::DateTime<chrono::Utc>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct MatchParticipantResponse {
+    pub placement: i32,
+    pub summoner_name: String,
+    pub level: i32,
+    pub total_damage_to_players: i32,
+    pub units: Vec<String>,       // simplified unit names for display
+    pub traits: Vec<String>,      // simplified trait names for display
 }
 
 #[derive(Debug)]

@@ -8,6 +8,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     pkg-config \
     libssl-dev \
+    librdkafka-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy the Cargo.toml and Cargo.lock files

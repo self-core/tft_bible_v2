@@ -7,6 +7,8 @@ import CompositionDetail from './pages/CompositionDetail'
 import Champions from './pages/Champions'
 import Items from './pages/Items'
 import NotFound from './pages/NotFound'
+import RiotProfile from './pages/RiotProfile'
+import SummonerSearch from './pages/SummonerSearch'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -27,6 +29,8 @@ function App() {
           <Route path="/compositions/:id" element={<CompositionDetail />} />
           <Route path="/champions" element={<Champions />} />
           <Route path="/items" element={<Items />} />
+          <Route path="/summoner-search" element={<SummonerSearch />} />
+          <Route path="/riot-profile/:puuid" element={<RiotProfile />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Layout>
