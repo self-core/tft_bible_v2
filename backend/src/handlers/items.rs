@@ -9,9 +9,9 @@ use crate::{
     models::*,
     services::items::ItemService,
     errors::ApiError,
-    AppState,
 };
 
+use crate::AppState;
 
 pub async fn get_items(
     State(_state): State<Arc<AppState>>,

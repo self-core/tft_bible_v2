@@ -31,11 +31,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let config = Config::from_env().expect("Failed to load configuration");
     
     // Connect to MongoDB
+    log::info!("Attempting to connect to MongoDB at: {}", config.mongodb_url);
     let client = Client::with_uri_str(&config.mongodb_url).await.unwrap();
     let db = client.database(&config.database_name);
-    
+
     // Test database connection
+    log::info!("Testing database connection to: {}", config.database_name);
     db.run_command(mongodb::bson::doc! { "ping": 1 }).await.unwrap();
+    log::info!("Successfully connected to MongoDB database: {}", config.database_name);
     println!("✅ Connected to MongoDB: {}", config.database_name);
     
     // Create app state

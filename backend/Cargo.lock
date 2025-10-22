@@ -284,6 +284,7 @@ dependencies = [
  "dotenv",
  "env_logger",
  "jsonwebtoken",
+ "log",
  "mongodb",
  "once_cell",
  "reqwest",

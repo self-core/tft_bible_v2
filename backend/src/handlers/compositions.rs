@@ -10,9 +10,9 @@ use crate::{
     models::*,
     services::compositions::CompositionService,
     errors::ApiError,
-    AppState,
 };
 
+use crate::AppState;
 
 pub async fn get_compositions(
     State(_state): State<Arc<AppState>>,

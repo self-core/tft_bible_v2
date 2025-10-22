@@ -9,9 +9,9 @@ use crate::{
     models::*,
     services::champions::ChampionService,
     errors::ApiError,
-    AppState,
 };
 
+use crate::AppState;
 
 pub async fn get_champions(
     State(_state): State<Arc<AppState>>,
