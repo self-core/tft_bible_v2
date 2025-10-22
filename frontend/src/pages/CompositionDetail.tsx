@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useParams, Link } from 'react-router-dom'
-import { ArrowLeft, Star, Eye, ThumbsUp, Clock, Users, Target } from 'lucide-react'
-import { compositionsApi, Composition } from '../lib/api'
+import { ArrowLeft, Star, ThumbsUp, Clock, Users, Target } from 'lucide-react'
+import { compositionsApi } from '../lib/api'
 
 const CompositionDetail = () => {
   const { id } = useParams<{ id: string }>()
@@ -185,7 +185,7 @@ const CompositionDetail = () => {
         <div className="bg-white rounded-lg shadow-sm border p-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Tags</h2>
           <div className="flex flex-wrap gap-2">
-            {composition.tags.map((tag, index) => (
+            {composition.tags.map((tag: string, index: number) => (
               <span
                 key={index}
                 className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"

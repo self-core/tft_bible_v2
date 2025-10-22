@@ -12,18 +12,17 @@ use crate::{
     AppState,
 };
 
-use crate::mock_data::*;
 
 pub async fn get_champions(
     State(_state): State<Arc<AppState>>,
     Query(params): Query<ChampionQuery>,
 ) -> Result<Json<PaginatedResponse<ChampionSummary>>, ApiError> {
-    // Return mock data for development
-    let champions = MockData::get_mock_champions();
+    // TODO: Implement proper data fetching from database
+    let champions: Vec<ChampionSummary> = vec![];
 
     // Apply basic filtering if needed
     let filtered_champions = if let Some(cost) = params.cost {
-        champions.into_iter().filter(|c| c.cost == cost).collect()
+        champions.into_iter().filter(|c: &ChampionSummary| c.cost == cost).collect()
     } else {
         champions
     };

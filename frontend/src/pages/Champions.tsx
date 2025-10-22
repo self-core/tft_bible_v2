@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Filter, Star, Sword, Shield, Zap } from 'lucide-react'
+import { Filter, Sword, Shield, Zap } from 'lucide-react'
 import { championsApi, ChampionSummary, ChampionQuery } from '../lib/api'
 
 const Champions = () => {

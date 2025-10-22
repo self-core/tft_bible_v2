@@ -1,0 +1,17 @@
+[build]
+builder = "dockerfile"
+
+[deploy]
+startCommand = "docker run --rm -p 8080:8080 tft-backend"
+healthcheckPath = "/health"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+
+[environments]
+[environments.production]
+MONGODB_URL = "${{ MONGODB_URL }}"
+DATABASE_NAME = "tft_bible_prod"
+PORT = "8080"
+JWT_SECRET = "${{ JWT_SECRET }}"
+CORS_ORIGIN = "${{ CORS_ORIGIN }}"

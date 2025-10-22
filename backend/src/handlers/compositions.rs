@@ -13,18 +13,17 @@ use crate::{
     AppState,
 };
 
-use crate::mock_data::*;
 
 pub async fn get_compositions(
-    State(state): State<Arc<AppState>>,
+    State(_state): State<Arc<AppState>>,
     Query(params): Query<CompositionQuery>,
 ) -> Result<Json<PaginatedResponse<CompositionSummary>>, ApiError> {
-    // Return mock data for development
-    let compositions = MockData::get_mock_compositions();
+    // TODO: Implement proper data fetching from database
+    let compositions: Vec<CompositionSummary> = vec![];
 
     // Apply basic filtering if needed
     let filtered_compositions = if let Some(tier) = &params.tier {
-        compositions.into_iter().filter(|c| &c.tier == tier).collect()
+        compositions.into_iter().filter(|c: &CompositionSummary| &c.tier == tier).collect()
     } else {
         compositions
     };
@@ -51,7 +50,7 @@ pub async fn get_composition_by_id(
     let composition = service.get_by_id(object_id).await?;
     
     // Increment view count
-    service.increment_views(object_id).await;
+    let _ = service.increment_views(object_id).await;
     
     Ok(Json(composition))
 }
@@ -81,13 +80,13 @@ pub async fn create_composition(
 }
 
 pub async fn update_composition(
-    State(_state): State<Arc<AppState>>,
+    State(state): State<Arc<AppState>>,
     Path(id): Path<String>,
     Json(request): Json<UpdateCompositionRequest>,
 ) -> Result<Json<ApiResponse<Composition>>, ApiError> {
     let object_id = ObjectId::parse_str(&id)
         .map_err(|_| ApiError::BadRequest("Invalid composition ID".to_string()))?;
-    
+
     let service = CompositionService::new(&state.db);
     let composition = service.update(object_id, request, None).await?; // TODO: Add user_id from auth
     

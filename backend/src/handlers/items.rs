@@ -12,18 +12,17 @@ use crate::{
     AppState,
 };
 
-use crate::mock_data::*;
 
 pub async fn get_items(
     State(_state): State<Arc<AppState>>,
     Query(params): Query<ItemQuery>,
 ) -> Result<Json<PaginatedResponse<ItemSummary>>, ApiError> {
-    // Return mock data for development
-    let items = MockData::get_mock_items();
+    // TODO: Implement proper data fetching from database
+    let items: Vec<ItemSummary> = vec![];
 
     // Apply basic filtering if needed
     let filtered_items = if let Some(category) = &params.category {
-        items.into_iter().filter(|i| &i.category == category).collect()
+        items.into_iter().filter(|i: &ItemSummary| &i.category == category).collect()
     } else {
         items
     };
