@@ -1,5 +1,6 @@
 use crate::models::*;
-use bson::{oid::ObjectId, DateTime};
+use bson::oid::ObjectId;
+use chrono::Utc;
 
 // Mock data for development and testing
 pub struct MockData;
@@ -329,7 +330,7 @@ impl MockData {
                 author: Some("TFTMaster".to_string()),
                 champion_count: 8,
                 main_champions: vec!["Akali".to_string(), "Zed".to_string(), "Katarina".to_string()],
-                created_at: DateTime::now(),
+                created_at: Utc::now(),
             },
             CompositionSummary {
                 id: ObjectId::new(),
@@ -343,7 +344,7 @@ impl MockData {
                 author: Some("IceQueen".to_string()),
                 champion_count: 7,
                 main_champions: vec!["Ashe".to_string(), "Caitlyn".to_string(), "Jinx".to_string()],
-                created_at: DateTime::now(),
+                created_at: Utc::now(),
             },
             CompositionSummary {
                 id: ObjectId::new(),
@@ -357,7 +358,7 @@ impl MockData {
                 author: Some("MagicMike".to_string()),
                 champion_count: 9,
                 main_champions: vec!["Ahri".to_string(), "Lux".to_string(), "Annie".to_string()],
-                created_at: DateTime::now(),
+                created_at: Utc::now(),
             },
             CompositionSummary {
                 id: ObjectId::new(),
@@ -371,7 +372,7 @@ impl MockData {
                 author: Some("TankMaster".to_string()),
                 champion_count: 6,
                 main_champions: vec!["Sett".to_string(), "Darius".to_string(), "Vi".to_string()],
-                created_at: DateTime::now(),
+                created_at: Utc::now(),
             },
             CompositionSummary {
                 id: ObjectId::new(),
@@ -385,7 +386,7 @@ impl MockData {
                 author: Some("PirateKing".to_string()),
                 champion_count: 7,
                 main_champions: vec!["Miss Fortune".to_string(), "Jinx".to_string(), "Ziggs".to_string()],
-                created_at: DateTime::now(),
+                created_at: Utc::now(),
             },
             CompositionSummary {
                 id: ObjectId::new(),
@@ -399,7 +400,7 @@ impl MockData {
                 author: Some("CatLover".to_string()),
                 champion_count: 8,
                 main_champions: vec!["Yuumi".to_string(), "Ahri".to_string(), "Lux".to_string()],
-                created_at: DateTime::now(),
+                created_at: Utc::now(),
             },
         ]
     }

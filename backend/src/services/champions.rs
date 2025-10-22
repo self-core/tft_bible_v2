@@ -1,13 +1,14 @@
-use bson::{oid::ObjectId, DateTime};
+use bson::oid::ObjectId;
 use once_cell::sync::Lazy;
 use std::sync::RwLock;
+use chrono::Utc;
 
 use crate::models::*;
 use crate::errors::ApiError;
 
 // Simple in-memory mock storage guarded by RwLock
 static CHAMPIONS: Lazy<RwLock<Vec<Champion>>> = Lazy::new(|| {
-    let now = DateTime::now();
+    let now = Utc::now();
     let set_id = ObjectId::new();
 
     let sample = vec![
