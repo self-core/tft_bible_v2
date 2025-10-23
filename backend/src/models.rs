@@ -6,6 +6,7 @@ use chrono;
 // Custom serialization for ObjectId and DateTime to handle serde issues
 pub mod serde_helpers {
     use bson::{oid::ObjectId, DateTime};
+    use chrono::{DateTime as ChronoDateTime, Utc};
     use serde::Serializer;
 
     pub fn serialize_object_id<S>(oid: &ObjectId, serializer: S) -> Result<S::Ok, S::Error>
@@ -50,11 +51,21 @@ pub mod serde_helpers {
         serializer.serialize_str(&dt.to_chrono().to_rfc3339())
     }
 
-    pub fn serialize_chrono_datetime<S>(dt: &chrono::DateTime<chrono::Utc>, serializer: S) -> Result<S::Ok, S::Error>
+    pub fn serialize_chrono_datetime<S>(dt: &ChronoDateTime<Utc>, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
         serializer.serialize_str(&dt.to_rfc3339())
+    }
+    
+    pub fn serialize_chrono_datetime_opt<S>(dt: &Option<ChronoDateTime<Utc>>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match dt {
+            Some(date_time) => serializer.serialize_str(&date_time.to_rfc3339()),
+            None => serializer.serialize_none(),
+        }
     }
 }
 
@@ -542,7 +553,7 @@ pub struct ApiResponse<T> {
 #[derive(Debug, Serialize)]
 pub struct HealthCheck {
     pub status: String,
-    #[serde(serialize_with = "serde_helpers::serialize_datetime")]
+    #[serde(serialize_with = "serde_helpers::serialize_chrono_datetime")]
     pub timestamp: chrono::DateTime<chrono::Utc>,
     pub version: String,
     pub database: String,
@@ -563,7 +574,7 @@ pub struct CompositionSummary {
     pub author: Option<String>,
     pub champion_count: u32,
     pub main_champions: Vec<String>, // Top 3 champion names
-    #[serde(serialize_with = "serde_helpers::serialize_datetime")]
+    #[serde(serialize_with = "serde_helpers::serialize_chrono_datetime")]
     pub created_at: chrono::DateTime<chrono::Utc>,
 }
 
