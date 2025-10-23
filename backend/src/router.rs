@@ -26,6 +26,15 @@ pub fn create_router() -> Router<Arc<AppState>> {
         // Search endpoint
         .route("/api/v1/search", get(handlers::search::search))
 
+        // Riot TFT API endpoints (background fetch)
+        .route("/api/v1/riot/queue/summoner/:identifier", post(handlers::riot_data::queue_summoner_fetch))
+        .route("/api/v1/riot/queue/match-history/:puuid", post(handlers::riot_data::queue_match_history_fetch))
+
+        // Riot TFT API endpoints (direct fetch for user requests)
+        .route("/api/v1/riot/summoner/:identifier", get(handlers::riot_data::get_summoner))
+        .route("/api/v1/riot/match-history/:puuid", get(handlers::riot_data::get_match_history))
+        .route("/api/v1/riot/match/:match_id", get(handlers::riot_data::get_match_details))
+
         // CORS middleware
         .layer(tower_http::cors::CorsLayer::permissive())
 }

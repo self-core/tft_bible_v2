@@ -1,4 +1,5 @@
 ﻿use mongodb::{Client, Database};
+use rdkafka::config::ClientConfig;
 use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
 use dotenv::dotenv;
@@ -9,12 +10,17 @@ mod services;
 mod config;
 mod errors;
 mod router;
+mod queue;
+mod riot_api;
+#[cfg(test)]
+mod tests;
 
 use config::Config;
 
 #[derive(Clone)]
 pub struct AppState {
     pub db: Database,
+    pub kafka_config: ClientConfig,
     pub config: Config,
     pub start_time: u64,
 }
@@ -41,6 +47,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     log::info!("Successfully connected to MongoDB database: {}", config.database_name);
     println!("✅ Connected to MongoDB: {}", config.database_name);
     
+    // Configure Kafka
+    let kafka_url = config.kafka_url.as_ref().unwrap_or(&"localhost:9092".to_string());
+    log::info!("Configuring Kafka connection to: {}", kafka_url);
+    let mut kafka_config = ClientConfig::new();
+    kafka_config.set("bootstrap.servers", kafka_url);
+    kafka_config.set("message.timeout.ms", "5000");
+    log::info!("Kafka configured: {}", kafka_url);
+    println!("✅ Kafka configured: {}", kafka_url);
+    
     // Create app state
     let start_time = SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -49,6 +64,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     
     let state = AppState {
         db,
+        kafka_config,
         config: config.clone(),
         start_time,
     };

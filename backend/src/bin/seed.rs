@@ -1,9 +1,8 @@
-use mongodb::{Client, Database};
-use std::env;
+use mongodb::Client;
 use dotenv::dotenv;
 
-use tft_bible_backend::config::Config;
-use tft_bible_backend::seed::DatabaseSeeder;
+use backend::config::Config;
+use backend::seed::DatabaseSeeder;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

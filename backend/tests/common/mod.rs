@@ -35,7 +35,8 @@ impl TestApp {
 
 /// Helper function to create test data
 pub fn create_test_champion() -> backend::models::Champion {
-    use bson::{oid::ObjectId, DateTime};
+    use bson::oid::ObjectId;
+    use chrono::Utc;
     use backend::models::*;
 
     Champion {
@@ -80,14 +81,15 @@ pub fn create_test_champion() -> backend::models::Champion {
         rarity: "Common".to_string(),
         release_version: Some("14.23".to_string()),
         is_enabled: true,
-        created_at: DateTime::now(),
-        updated_at: DateTime::now(),
+        created_at: Utc::now(),
+        updated_at: Utc::now(),
     }
 }
 
 /// Helper function to create test item
 pub fn create_test_item() -> backend::models::Item {
-    use bson::{oid::ObjectId, DateTime};
+    use bson::oid::ObjectId;
+    use chrono::Utc;
     use backend::models::*;
 
     Item {
@@ -114,14 +116,15 @@ pub fn create_test_item() -> backend::models::Item {
         is_unique: false,
         is_radiant: false,
         image_url: Some("https://example.com/test-item.png".to_string()),
-        created_at: DateTime::now(),
-        updated_at: DateTime::now(),
+        created_at: Utc::now(),
+        updated_at: Utc::now(),
     }
 }
 
 /// Helper function to create test composition
 pub fn create_test_composition() -> backend::models::Composition {
-    use bson::{oid::ObjectId, DateTime};
+    use bson::oid::ObjectId;
+    use chrono::Utc;
     use backend::models::*;
 
     Composition {
@@ -159,7 +162,7 @@ pub fn create_test_composition() -> backend::models::Composition {
         is_public: true,
         is_verified: false,
         is_featured: false,
-        created_at: DateTime::now(),
-        updated_at: DateTime::now(),
+        created_at: Utc::now(),
+        updated_at: Utc::now(),
     }
 }

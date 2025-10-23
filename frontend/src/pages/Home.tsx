@@ -27,13 +27,21 @@ const Home = () => {
       color: 'text-tft-green',
       techBadge: 'Optimized',
     },
+    {
+      icon: Search,
+      title: 'Riot Data Integration',
+      description: 'Access live TFT match data directly from Riot Games API with real player statistics.',
+      link: '/summoner-search',
+      color: 'text-tft-purple',
+      techBadge: 'Live Data',
+    },
   ]
 
   const stats = [
     { label: 'Compositions', value: '2,500+', icon: Swords, accent: 'text-tft-gold' },
     { label: 'Champions', value: '65', icon: Users, accent: 'text-tft-blue' },
     { label: 'Items', value: '250+', icon: Package, accent: 'text-tft-green' },
-    { label: 'Active Users', value: '10K+', icon: TrendingUp, accent: 'text-tft-red' },
+    { label: 'Riot Matches', value: '100K+', icon: Search, accent: 'text-tft-purple' },
   ]
 
   return (

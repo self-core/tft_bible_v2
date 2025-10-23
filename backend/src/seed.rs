@@ -1,5 +1,4 @@
 use mongodb::Database;
-use mongodb::bson::Document;
 use mongodb::Collection;
 use serde::{Deserialize, Serialize};
 use bson::doc;

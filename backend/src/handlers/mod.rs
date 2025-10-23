@@ -6,6 +6,7 @@ pub mod items;
 // pub mod sets;     // TODO: Implement when needed
 pub mod search;
 pub mod health;
+pub mod riot_data;
 
 // Re-export all handler functions
 // pub use compositions::*; // Temporarily disabled due to router import issues
@@ -15,3 +16,4 @@ pub mod health;
 // pub use traits::*;   // TODO: Implement when needed
 // pub use sets::*;     // TODO: Implement when needed
 // pub use search::*;       // Temporarily disabled due to router import issues
+// pub use riot_data::*;

@@ -194,6 +194,96 @@ export const searchApi = {
     api.get('/api/v1/search', { params }),
 };
 
+// Riot API Types
+export interface RiotSummoner {
+  id: string;
+  account_id: string;
+  puuid: string;
+  name: string;
+  profile_icon_id: number;
+  revision_date: number;
+  summoner_level: number;
+}
+
+export interface RiotMatch {
+  metadata: {
+    data_version: string;
+    match_id: string;
+    participants: string[]; // PUUIDs
+  };
+  info: {
+    game_datetime: number;
+    game_length: number;
+    game_version: string;
+    queue_id: number;
+    tft_game_type: string;
+    tft_set_core_name: string;
+    tft_set_number: number;
+    participants: RiotMatchParticipant[];
+  };
+}
+
+export interface RiotMatchParticipant {
+  companion: {
+    content_ID: string;
+    skin_ID: number;
+    species_ID: string;
+  };
+  gold_left: number;
+  last_round: string;
+  level: number;
+  placement: number;
+  players_eliminated: number;
+  puuid: string;
+  time_eliminated: string;
+  total_damage_to_players: number;
+  traits: RiotMatchTrait[];
+  units: RiotMatchUnit[];
+}
+
+export interface RiotMatchTrait {
+  name: string;
+  num_units: number;
+  style?: number;
+}
+
+export interface RiotMatchUnit {
+  character_id: string;
+  item_names: string[];
+  name: string;
+  rarity: number;
+  tier: number;
+}
+
+export interface RiotMatchList {
+  match_ids: string[];
+  total: number;
+  start: number;
+}
+
+// Riot API Functions
+export const riotApi = {
+  getSummonerByPuuid: (puuid: string) =>
+    api.get(`/api/v1/riot/summoner/${puuid}?type=puuid`),
+
+  getSummonerByName: (name: string) =>
+    api.get(`/api/v1/riot/summoner/${name}?type=name`),
+
+  getMatchHistory: (puuid: string, start?: number, count?: number) =>
+    api.get<RiotMatchList>(`/api/v1/riot/match-history/${puuid}`, {
+      params: { start, count }
+    }),
+
+  getMatchDetails: (matchId: string) =>
+    api.get(`/api/v1/riot/match/${matchId}`),
+
+  queueSummonerFetch: (identifier: string) =>
+    api.post(`/api/v1/riot/queue/summoner/${identifier}`),
+
+  queueMatchHistoryFetch: (puuid: string) =>
+    api.post(`/api/v1/riot/queue/match-history/${puuid}`),
+};
+
 export const healthApi = {
   check: () => api.get('/api/v1/health'),
 };
