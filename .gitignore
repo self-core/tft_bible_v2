@@ -17,3 +17,11 @@ Thumbs.db
 # Logs
 *.log
 *test_fixing_log.md
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Docker
+.dockerignore

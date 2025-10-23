@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   tft-backend:
     build:
@@ -7,19 +5,10 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
-    environment:
-      - MONGODB_URL=mongodb://mongodb:27017
-      - DATABASE_NAME=tft_bible_dev
-      - PORT=8080
-      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
-      - CORS_ORIGIN=http://localhost:3000
+    env_file:
+      - .env
     depends_on:
       - mongodb
-    volumes:
-      # Mount source code for hot reloading during development
-      - ./backend:/app/backend
-      - /app/backend/target  # Don't mount target directory to avoid conflicts
-    command: cargo watch -x run
     networks:
       - tft-network
 
@@ -35,8 +24,8 @@ services:
       # Mount source code for hot reloading during development
       - ./frontend:/app
       - /app/node_modules  # Don't mount node_modules to avoid conflicts
-    environment:
-      - VITE_API_URL=http://localhost:8080
+    env_file:
+      - .env
     networks:
       - tft-network
     # For development with hot reloading, use this instead:
@@ -48,10 +37,8 @@ services:
     image: mongo:7.0
     ports:
       - "27017:27017"
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=admin
-      - MONGO_INITDB_ROOT_PASSWORD=password
-      - MONGO_INITDB_DATABASE=tft_bible_dev
+    env_file:
+      - .env
     volumes:
       - mongodb_data:/data/db
       - ./backend/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d:ro

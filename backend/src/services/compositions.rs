@@ -1,4 +1,4 @@
-use bson::{oid::ObjectId, DateTime};
+use bson::{doc, oid::ObjectId, DateTime};
 use once_cell::sync::Lazy;
 use std::sync::RwLock;
 
@@ -94,6 +94,65 @@ impl CompositionService {
         &self,
         params: CompositionQuery,
     ) -> Result<PaginatedResponse<CompositionSummary>, ApiError> {
+        // Build MongoDB filter
+        let mut filter = doc! { "is_active": true };
+
+        // tier
+        if let Some(ref tier) = params.tier {
+            filter.insert("meta.tier", doc! { "$regex": format!("^{}$", tier), "$options": "i" });
+        }
+
+        // category
+        if let Some(ref category) = params.category {
+            filter.insert("category", doc! { "$regex": format!("^{}$", category), "$options": "i" });
+        }
+
+        // tags (comma-separated)
+        if let Some(ref tags) = params.tags {
+            let wanted: Vec<String> = tags.split(',').map(|s| s.trim().to_string()).collect();
+            filter.insert("tags", doc! { "$in": wanted });
+        }
+
+        // text search on name/description
+        if let Some(ref q) = params.champion {
+            filter.insert("$or", vec![
+                doc! { "name": doc! { "$regex": q, "$options": "i" } },
+                doc! { "description": doc! { "$regex": q, "$options": "i" } }
+            ]);
+        }
+
+        // patch
+        if let Some(ref patch) = params.patch {
+            filter.insert("meta.patch", patch);
+        }
+
+        // difficulty
+        if let Some(diff) = params.difficulty {
+            filter.insert("meta.difficulty", diff);
+        }
+
+        // Sorting: by tier then difficulty
+        fn tier_rank(t: &str) -> u8 {
+            match t {
+                "S" => 0,
+                "A" => 1,
+                "B" => 2,
+                "C" => 3,
+                "D" => 4,
+                _ => 5,
+            }
+        }
+
+        let sort_doc = doc! {
+            "meta.tier": 1,
+            "meta.difficulty": 1,
+            "meta.winrate": -1
+        };
+
+        // Pagination
+        let per_page = params.limit.unwrap_or(8).clamp(1, 100) as u64;
+        let skip = params.offset.unwrap_or(0) as u64;
+
         let data = COMPOSITIONS.read().unwrap().clone();
 
         // Filtering
@@ -141,16 +200,6 @@ impl CompositionService {
         let mut items: Vec<Composition> = filtered;
 
         // Sorting: by tier then difficulty
-        fn tier_rank(t: &str) -> u8 {
-            match t {
-                "S" => 0,
-                "A" => 1,
-                "B" => 2,
-                "C" => 3,
-                "D" => 4,
-                _ => 5,
-            }
-        }
         items.sort_by(|a, b| {
             tier_rank(&a.meta.tier)
                 .cmp(&tier_rank(&b.meta.tier))
@@ -159,20 +208,23 @@ impl CompositionService {
 
         // Pagination
         let per_page = params.limit.unwrap_or(8).clamp(1, 100) as usize;
-        let page = (params.offset.unwrap_or(0) / per_page as u64) as usize + 1;
+        let skip = params.offset.unwrap_or(0) as usize;
         let total = items.len() as u32;
         let total_pages = ((total as usize + per_page - 1) / per_page) as u32;
-        let start = ((page - 1) * per_page).min(items.len());
+        let current_page = (skip / per_page) as u32 + 1;
+        let start = skip.min(items.len());
         let end = (start + per_page).min(items.len());
         let page_items = &items[start..end];
 
-        let summaries = page_items
-            .iter()
+        let compositions = page_items.to_vec();
+
+        let summaries = compositions
+            .into_iter()
             .map(|c| CompositionSummary {
                 id: c.id.unwrap_or_else(ObjectId::new),
-                name: c.name.clone(),
-                category: c.category.clone(),
-                tier: c.meta.tier.clone(),
+                name: c.name,
+                category: c.category,
+                tier: c.meta.tier,
                 difficulty: c.meta.difficulty,
                 winrate: c.meta.winrate,
                 views: c.views,
@@ -187,7 +239,7 @@ impl CompositionService {
         Ok(PaginatedResponse {
             data: summaries,
             total,
-            page: page as u32,
+            page: current_page,
             per_page: per_page as u32,
             total_pages,
         })
@@ -221,8 +273,15 @@ impl CompositionService {
         Err(ApiError::Forbidden("Write operations are disabled in mock mode".to_string()))
     }
 
-    pub async fn increment_views(&self, _id: ObjectId) -> Result<(), ApiError> {
-        Ok(())
+    pub async fn increment_views(&self, id: ObjectId) -> Result<(), ApiError> {
+        let mut data = COMPOSITIONS.write().unwrap();
+        if let Some(comp) = data.iter_mut().find(|c| c.id == Some(id)) {
+            comp.views += 1;
+            comp.updated_at = DateTime::now();
+            Ok(())
+        } else {
+            Err(ApiError::NotFound("Composition not found".to_string()))
+        }
     }
 
     pub async fn vote(

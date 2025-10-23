@@ -1,0 +1,107 @@
+{
+  "scraped_at": "2025-10-23T17:21:49.339254",
+  "sources": [
+    "tftacademy.com",
+    "metatft.com",
+    "tactics.tools"
+  ],
+  "total_compositions": 2,
+  "data": [
+    {
+      "name": "Bastion Bruisers",
+      "description": "Frontline focused comp with Bastion synergies",
+      "category": "Frontline",
+      "tags": [
+        "beginner",
+        "frontline"
+      ],
+      "tier": "A",
+      "difficulty": 2,
+      "winrate": 0.53,
+      "avg_placement": 3.9,
+      "playrate": 0.12,
+      "patch": "15.23",
+      "playstyle": "Defensive",
+      "champions": [
+        {
+          "name": "Bastion",
+          "items": [
+            "Bloodthirster",
+            "Dragon's Claw"
+          ]
+        },
+        {
+          "name": "Garen",
+          "items": [
+            "Edge of Night",
+            "Warmog's Armor"
+          ]
+        },
+        {
+          "name": "Poppy",
+          "items": [
+            "Sterak's Gage",
+            "Dragon's Claw"
+          ]
+        }
+      ],
+      "augments": [
+        "Bastion Heart",
+        "Frontline Fighters"
+      ],
+      "traits": [
+        "Bastion",
+        "Warrior",
+        "Knight"
+      ]
+    },
+    {
+      "name": "Luchador Reroll",
+      "description": "Aggressive reroll around Luchador core",
+      "category": "Reroll",
+      "tags": [
+        "aggressive",
+        "reroll"
+      ],
+      "tier": "S",
+      "difficulty": 3,
+      "winrate": 0.58,
+      "avg_placement": 3.4,
+      "playrate": 0.16,
+      "patch": "15.23",
+      "playstyle": "Aggressive",
+      "champions": [
+        {
+          "name": "Luchador",
+          "items": [
+            "Infinity Edge",
+            "Guinsoo's Rageblade"
+          ]
+        },
+        {
+          "name": "Jinx",
+          "items": [
+            "Giant Slayer",
+            "Runaan's Hurricane"
+          ]
+        },
+        {
+          "name": "Miss Fortune",
+          "items": [
+            "Bloodthirster",
+            "Giant Slayer"
+          ]
+        }
+      ],
+      "augments": [
+        "Luchador Soul",
+        "Reroll Economy"
+      ],
+      "traits": [
+        "Luchador",
+        "Sharpshooter",
+        "Multistriker"
+      ]
+    }
+  ]
+}
