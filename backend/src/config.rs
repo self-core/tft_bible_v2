@@ -8,7 +8,7 @@ pub struct Config {
     pub jwt_secret: String,
     pub port: u16,
     pub cors_origin: String,
-    pub redis_url: Option<String>,
+    pub kafka_url: Option<String>,
     pub riot_api_key: Option<String>,
 }
 
@@ -26,7 +26,7 @@ impl Config {
                 .parse()?,
             cors_origin: env::var("CORS_ORIGIN")
                 .unwrap_or_else(|_| "*".to_string()),
-            redis_url: env::var("REDIS_URL").ok(),
+            kafka_url: env::var("KAFKA_URL").ok(),
             riot_api_key: env::var("RIOT_API_KEY").ok(),
         })
     }
