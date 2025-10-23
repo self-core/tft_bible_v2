@@ -27,3 +27,6 @@ cimplic.html
 
 # Railway specific
 .railway/
+
+# Node.js
+node_modules/
