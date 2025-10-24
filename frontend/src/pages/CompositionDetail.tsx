@@ -146,9 +146,82 @@ const CompositionDetail = () => {
         </div>
       </div>
 
-      {/* Content Placeholder */}
+      {/* Champions */}
       <div className="bg-white rounded-lg shadow-sm border p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Composition Details</h2>
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Champions</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {composition.champions.map((champion: any, index: number) => (
+            <div key={index} className="border border-gray-200 rounded-lg p-4">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
+                  <span className="text-sm font-medium text-gray-600">{champion.star_level}★</span>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900">{champion.name || 'Unknown Champion'}</h3>
+                  <p className="text-sm text-gray-600">Priority: {champion.priority}</p>
+                </div>
+              </div>
+
+              {champion.items && champion.items.length > 0 && (
+                <div className="mb-3">
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">Items</h4>
+                  <div className="flex flex-wrap gap-1">
+                    {champion.items.map((item: any, itemIndex: number) => (
+                      <span
+                        key={itemIndex}
+                        className="px-2 py-1 bg-tft-gold/10 text-tft-gold rounded text-xs"
+                      >
+                        {typeof item === 'string' ? item : item.name || 'Unknown Item'}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="text-xs text-gray-500">
+                Position: ({champion.position.x}, {champion.position.y})
+                {champion.is_core && <span className="ml-2 text-tft-gold">★ Core</span>}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Augments */}
+      {composition.augments && composition.augments.preferred && composition.augments.preferred.length > 0 && (
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Recommended Augments</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <h3 className="font-semibold text-gray-900 mb-2">Preferred</h3>
+              <ul className="space-y-1">
+                {composition.augments.preferred.map((augment: any, index: number) => (
+                  <li key={index} className="text-sm text-gray-700">
+                    • {typeof augment === 'string' ? augment : augment.name || 'Unknown Augment'}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {composition.augments.acceptable && composition.augments.acceptable.length > 0 && (
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-2">Acceptable</h3>
+                <ul className="space-y-1">
+                  {composition.augments.acceptable.map((augment: any, index: number) => (
+                    <li key={index} className="text-sm text-gray-700">
+                      • {typeof augment === 'string' ? augment : augment.name || 'Unknown Augment'}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Strategy Details */}
+      <div className="bg-white rounded-lg shadow-sm border p-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Strategy Details</h2>
         <div className="text-gray-600">
           <p className="mb-4">
             This composition features a {composition.category.toLowerCase()} strategy with {composition.champions.length} champions.
