@@ -1,86 +1,21 @@
 use bson::{doc, oid::ObjectId, DateTime};
 use once_cell::sync::Lazy;
 use std::sync::RwLock;
+use serde_json;
 
 use crate::models::*;
 use crate::errors::ApiError;
 
-// Simple in-memory mock storage guarded by RwLock
+// Load compositions from scraped data at startup
 static COMPOSITIONS: Lazy<RwLock<Vec<Composition>>> = Lazy::new(|| {
-    let now = DateTime::now();
-    let set_id = ObjectId::new();
-
-    let sample = vec![
-        Composition {
-            id: Some(ObjectId::new()),
-            set_id,
-            author_id: None,
-            name: "Bastion Bruisers".to_string(),
-            description: "Frontline focused comp with Bastion synergies".to_string(),
-            category: "Frontline".to_string(),
-            tags: vec!["beginner".to_string(), "frontline".to_string()],
-            champions: vec![],
-            augments: CompositionAugments { preferred: vec![], acceptable: vec![], avoid: vec![] },
-            positioning: None,
-            gameplan: None,
-            meta: CompositionMeta {
-                tier: "A".to_string(),
-                difficulty: 2,
-                cost: "Flexible".to_string(),
-                patch: "15.23".to_string(),
-                playstyle: "Defensive".to_string(),
-                winrate: 0.53,
-                avg_placement: 3.9,
-                playrate: 0.12,
-                contest_rate: 0.18,
-            },
-            matchups: None,
-            votes: Votes { upvotes: 0, downvotes: 0 },
-            views: 0,
-            favorites: 0,
-            comments: vec![],
-            is_public: true,
-            is_verified: false,
-            is_featured: false,
-            created_at: now,
-            updated_at: now,
-        },
-        Composition {
-            id: Some(ObjectId::new()),
-            set_id,
-            author_id: None,
-            name: "Luchador Reroll".to_string(),
-            description: "Aggressive reroll around Luchador core".to_string(),
-            category: "Reroll".to_string(),
-            tags: vec!["aggressive".to_string(), "reroll".to_string()],
-            champions: vec![],
-            augments: CompositionAugments { preferred: vec![], acceptable: vec![], avoid: vec![] },
-            positioning: None,
-            gameplan: None,
-            meta: CompositionMeta {
-                tier: "S".to_string(),
-                difficulty: 3,
-                cost: "Budget".to_string(),
-                patch: "15.23".to_string(),
-                playstyle: "Aggressive".to_string(),
-                winrate: 0.58,
-                avg_placement: 3.4,
-                playrate: 0.16,
-                contest_rate: 0.25,
-            },
-            matchups: None,
-            votes: Votes { upvotes: 0, downvotes: 0 },
-            views: 0,
-            favorites: 0,
-            comments: vec![],
-            is_public: true,
-            is_verified: false,
-            is_featured: false,
-            created_at: now,
-            updated_at: now,
-        },
-    ];
-    RwLock::new(sample)
+    match CompositionService::load_scraped_compositions() {
+        Ok(compositions) => RwLock::new(compositions),
+        Err(e) => {
+            eprintln!("Failed to load scraped compositions: {}", e);
+            // Fallback to empty vec if loading fails
+            RwLock::new(vec![])
+        }
+    }
 });
 
 pub struct CompositionService;
@@ -88,6 +23,135 @@ pub struct CompositionService;
 impl CompositionService {
     pub fn new(_db: &mongodb::Database) -> Self {
         Self
+    }
+
+    // Load compositions from scraped data file
+    fn load_scraped_compositions() -> Result<Vec<Composition>, ApiError> {
+        let data = include_str!("../../../scraped_compositions.json");
+        let scraped: serde_json::Value = serde_json::from_str(data)
+            .map_err(|e| ApiError::InternalServerError(format!("Failed to parse scraped data: {}", e)))?;
+
+        let compositions = scraped["data"].as_array()
+            .ok_or_else(|| ApiError::InternalServerError("Invalid scraped data format".to_string()))?;
+
+        let mut result = Vec::new();
+        let now = DateTime::now();
+        let set_id = ObjectId::new();
+
+        for comp in compositions {
+            let name = comp["name"].as_str()
+                .ok_or_else(|| ApiError::InternalServerError("Missing composition name".to_string()))?;
+            let description = comp["description"].as_str()
+                .unwrap_or("");
+            let category = comp["category"].as_str()
+                .unwrap_or("General");
+            let tier = comp["tier"].as_str()
+                .unwrap_or("C");
+            let difficulty = comp["difficulty"].as_u64()
+                .unwrap_or(3) as u32;
+            let winrate = comp["winrate"].as_f64()
+                .unwrap_or(0.5);
+            let avg_placement = comp["avg_placement"].as_f64()
+                .unwrap_or(4.0);
+            let playrate = comp["playrate"].as_f64()
+                .unwrap_or(0.1);
+            let patch = comp["patch"].as_str()
+                .unwrap_or("15.21");
+            let playstyle = comp["playstyle"].as_str()
+                .unwrap_or("Balanced");
+
+            // Parse tags
+            let tags: Vec<String> = comp["tags"].as_array()
+                .unwrap_or(&vec![])
+                .iter()
+                .filter_map(|t| t.as_str())
+                .map(|s| s.to_string())
+                .collect();
+
+            // Parse champions
+            let champions: Vec<CompositionChampion> = comp["champions"].as_array()
+                .unwrap_or(&vec![])
+                .iter()
+                .filter_map(|champ| {
+                    let name = champ["name"].as_str()?;
+                    let items: Vec<ObjectId> = champ["items"].as_array()
+                        .unwrap_or(&vec![])
+                        .iter()
+                        .filter_map(|item| item.as_str())
+                        .map(|_| ObjectId::new()) // Will be resolved later
+                        .collect();
+
+                    Some(CompositionChampion {
+                        champion_id: ObjectId::new(), // Will be resolved later
+                        star_level: 1, // Default star level
+                        items,
+                        position: Position { x: 0, y: 0 }, // Default position
+                        priority: 1, // Default priority
+                        is_core: true, // Assume all champions in scraped data are core
+                        alternatives: vec![],
+                    })
+                })
+                .collect();
+
+            // Parse augments
+            let augments: Vec<ObjectId> = comp["augments"].as_array()
+                .unwrap_or(&vec![])
+                .iter()
+                .filter_map(|a| a.as_str())
+                .map(|_| ObjectId::new()) // Will be resolved later
+                .collect();
+
+            // Parse traits
+            let traits: Vec<String> = comp["traits"].as_array()
+                .unwrap_or(&vec![])
+                .iter()
+                .filter_map(|t| t.as_str())
+                .map(|s| s.to_string())
+                .collect();
+
+            let composition = Composition {
+                id: Some(ObjectId::new()),
+                set_id,
+                author_id: None,
+                name: name.to_string(),
+                description: description.to_string(),
+                category: category.to_string(),
+                tags,
+                champions,
+                augments: CompositionAugments {
+                    preferred: augments,
+                    acceptable: vec![],
+                    avoid: vec![],
+                },
+                positioning: None,
+                gameplan: None,
+                meta: CompositionMeta {
+                    tier: tier.to_string(),
+                    difficulty,
+                    cost: "Flexible".to_string(),
+                    patch: patch.to_string(),
+                    playstyle: playstyle.to_string(),
+                    winrate,
+                    avg_placement,
+                    playrate,
+                    contest_rate: 0.15, // Default value
+                },
+                matchups: None,
+                votes: Votes { upvotes: 0, downvotes: 0 },
+                views: 0,
+                favorites: 0,
+                comments: vec![],
+                is_public: true,
+                is_verified: false,
+                is_featured: false,
+                created_at: now,
+                updated_at: now,
+            };
+
+            result.push(composition);
+        }
+
+        Ok(result)
     }
 
     pub async fn get_compositions(
