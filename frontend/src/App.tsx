@@ -7,6 +7,8 @@ import Compositions from './pages/Compositions'
 import CompositionDetail from './pages/CompositionDetail'
 import Champions from './pages/Champions'
 import Items from './pages/Items'
+import ThemeTestPage from './pages/ThemeTestPage'
+import BoardTestPage from './pages/BoardTestPage'
 import NotFound from './pages/NotFound'
 
 const queryClient = new QueryClient({
@@ -29,6 +31,8 @@ function App() {
             <Route path="/compositions/:id" element={<CompositionDetail />} />
             <Route path="/champions" element={<Champions />} />
             <Route path="/items" element={<Items />} />
+            <Route path="/theme-test" element={<ThemeTestPage />} />
+            <Route path="/board-test" element={<BoardTestPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Layout>
