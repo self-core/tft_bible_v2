@@ -13,9 +13,6 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Install vite globally
-RUN npm install -g vite
-
 # Build the application
 RUN npm run build
 

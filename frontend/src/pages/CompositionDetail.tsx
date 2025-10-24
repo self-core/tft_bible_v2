@@ -362,7 +362,7 @@ const CompositionDetail = () => {
 
               {/* Traits */}
               <div className="flex flex-wrap gap-1 mb-3">
-                {champion.traits.map((trait, traitIndex) => (
+                {champion.traits.map((trait: string, traitIndex: number) => (
                   <span 
                     key={traitIndex} 
                     className={`px-2 py-1 rounded-full text-xs font-medium ${getTraitColor(trait)}`}
@@ -388,6 +388,7 @@ const CompositionDetail = () => {
                 </div>
               </div>
 
+              {/* Items */}
               {champion.items && champion.items.length > 0 && (
                 <div className="mb-3">
                   <h4 className="text-sm font-medium text-gray-700 mb-2">Items</h4>
@@ -397,7 +398,7 @@ const CompositionDetail = () => {
                         key={itemIndex}
                         className="px-2 py-1 bg-tft-gold/10 text-tft-gold rounded text-xs"
                       >
-                        {typeof item === 'string' ? item : item || 'Unknown Item'}
+                        {typeof item === 'string' ? item : item.name || 'Unknown Item'}
                       </span>
                     ))}
                   </div>
@@ -422,7 +423,7 @@ const CompositionDetail = () => {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
+              <h3 className="font-semibold text-gray-100 mb-3 flex items-center">
                 <Star className="h-4 w-4 mr-2 text-tft-gold" />
                 Preferred
               </h3>
@@ -444,7 +445,7 @@ const CompositionDetail = () => {
 
             {composition.augments.acceptable && composition.augments.acceptable.length > 0 && (
               <div>
-                <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
+                <h3 className="font-semibold text-gray-100 mb-3 flex items-center">
                   <Shield className="h-4 w-4 mr-2 text-tft-blue" />
                   Acceptable
                 </h3>
@@ -490,19 +491,19 @@ const CompositionDetail = () => {
               <ul className="space-y-2 text-sm">
                 <li className="flex justify-between">
                   <span className="text-gray-600">Win Rate:</span>
-                  <span className="font-medium">{composition.meta.winrate.toFixed(1)}%</span>
+                  <span className="text-gray-900 font-medium">{composition.meta.winrate.toFixed(1)}%</span>
                 </li>
                 <li className="flex justify-between">
                   <span className="text-gray-600">Average Placement:</span>
-                  <span className="font-medium">{composition.meta.avg_placement.toFixed(1)}</span>
+                  <span className="text-gray-900 font-medium">{composition.meta.avg_placement.toFixed(1)}</span>
                 </li>
                 <li className="flex justify-between">
                   <span className="text-gray-600">Play Rate:</span>
-                  <span className="font-medium">{(composition.meta.playrate * 100).toFixed(1)}%</span>
+                  <span className="text-gray-900 font-medium">{(composition.meta.playrate * 100).toFixed(1)}%</span>
                 </li>
                 <li className="flex justify-between">
                   <span className="text-gray-600">Contest Rate:</span>
-                  <span className="font-medium">{(composition.meta.contest_rate * 100).toFixed(1)}%</span>
+                  <span className="text-gray-900 font-medium">{(composition.meta.contest_rate * 100).toFixed(1)}%</span>
                 </li>
               </ul>
             </div>
@@ -515,19 +516,19 @@ const CompositionDetail = () => {
               <ul className="space-y-2 text-sm">
                 <li className="flex justify-between">
                   <span className="text-gray-600">Cost:</span>
-                  <span className="font-medium">{composition.meta.cost}</span>
+                  <span className="text-gray-900 font-medium">{composition.meta.cost}</span>
                 </li>
                 <li className="flex justify-between">
                   <span className="text-gray-600">Playstyle:</span>
-                  <span className="font-medium">{composition.meta.playstyle}</span>
+                  <span className="text-gray-900 font-medium">{composition.meta.playstyle}</span>
                 </li>
                 <li className="flex justify-between">
                   <span className="text-gray-600">Patch:</span>
-                  <span className="font-medium">{composition.meta.patch}</span>
+                  <span className="text-gray-900 font-medium">{composition.meta.patch}</span>
                 </li>
                 <li className="flex justify-between">
                   <span className="text-gray-600">Category:</span>
-                  <span className="font-medium">{composition.category}</span>
+                  <span className="text-gray-900 font-medium">{composition.category}</span>
                 </li>
               </ul>
             </div>

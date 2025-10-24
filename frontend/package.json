@@ -9,7 +9,9 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "test": "vitest",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "mock-api": "node mock-server.js",
+    "dev:full": "concurrently \"npm run mock-api\" \"npm run dev\""
   },
   "dependencies": {
     "@tanstack/react-query": "^5.28.9",
@@ -30,6 +32,7 @@
     "@vitejs/plugin-react": "^4.2.1",
     "@vitest/ui": "^3.2.4",
     "autoprefixer": "^10.4.17",
+    "concurrently": "^9.2.1",
     "eslint": "^8.56.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
