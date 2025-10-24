@@ -251,7 +251,7 @@ pub struct AugmentEffect {
     pub is_percentage: bool,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Composition {
     pub id: Option<ObjectId>,
     pub set_id: ObjectId,

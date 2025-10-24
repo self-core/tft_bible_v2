@@ -1,32 +1,25 @@
 use bson::{doc, oid::ObjectId, DateTime};
-use once_cell::sync::Lazy;
-use std::sync::RwLock;
+use futures::stream::TryStreamExt;
+use mongodb::options::FindOptions;
+use mongodb::{Collection, Database};
 use serde_json;
 
 use crate::models::*;
 use crate::errors::ApiError;
 
-// Load compositions from scraped data at startup
-static COMPOSITIONS: Lazy<RwLock<Vec<Composition>>> = Lazy::new(|| {
-    match CompositionService::load_scraped_compositions() {
-        Ok(compositions) => RwLock::new(compositions),
-        Err(e) => {
-            eprintln!("Failed to load scraped compositions: {}", e);
-            // Fallback to empty vec if loading fails
-            RwLock::new(vec![])
-        }
-    }
-});
-
-pub struct CompositionService;
+pub struct CompositionService {
+    pub collection: Collection<Composition>,
+}
 
 impl CompositionService {
-    pub fn new(_db: &mongodb::Database) -> Self {
-        Self
+    pub fn new(db: &Database) -> Self {
+        Self {
+            collection: db.collection("compositions"),
+        }
     }
 
-    // Load compositions from scraped data file
-    fn load_scraped_compositions() -> Result<Vec<Composition>, ApiError> {
+    // Method to populate MongoDB with scraped compositions (for initial setup)
+    pub async fn populate_from_scraped_data(&self) -> Result<(), ApiError> {
         let data = include_str!("../../scraped_compositions.json");
         let scraped: serde_json::Value = serde_json::from_str(data)
             .map_err(|e| ApiError::InternalServerError(format!("Failed to parse scraped data: {}", e)))?;
@@ -34,7 +27,6 @@ impl CompositionService {
         let compositions = scraped["data"].as_array()
             .ok_or_else(|| ApiError::InternalServerError("Invalid scraped data format".to_string()))?;
 
-        let mut result = Vec::new();
         let now = DateTime::now();
         let set_id = ObjectId::new();
 
@@ -101,14 +93,6 @@ impl CompositionService {
                 .map(|_| ObjectId::new()) // Will be resolved later
                 .collect();
 
-            // Parse traits
-            let traits: Vec<String> = comp["traits"].as_array()
-                .unwrap_or(&vec![])
-                .iter()
-                .filter_map(|t| t.as_str())
-                .map(|s| s.to_string())
-                .collect();
-
             let composition = Composition {
                 id: Some(ObjectId::new()),
                 set_id,
@@ -148,10 +132,12 @@ impl CompositionService {
                 updated_at: now,
             };
 
-            result.push(composition);
+            // Insert into MongoDB
+            self.collection.insert_one(&composition).await
+                .map_err(|e| ApiError::InternalServerError(format!("Failed to insert composition: {}", e)))?;
         }
 
-        Ok(result)
+        Ok(())
     }
 
     pub async fn get_compositions(
@@ -159,7 +145,7 @@ impl CompositionService {
         params: CompositionQuery,
     ) -> Result<PaginatedResponse<CompositionSummary>, ApiError> {
         // Build MongoDB filter
-        let mut filter = doc! { "is_active": true };
+        let mut filter = doc! { "is_public": true };
 
         // tier
         if let Some(ref tier) = params.tier {
@@ -196,8 +182,8 @@ impl CompositionService {
         }
 
         // Sorting: by tier then difficulty
-        fn tier_rank(t: &str) -> u8 {
-            match t {
+        fn tier_rank(t: &str) -> i32 {
+            match t.to_uppercase().as_str() {
                 "S" => 0,
                 "A" => 1,
                 "B" => 2,
@@ -214,73 +200,28 @@ impl CompositionService {
         };
 
         // Pagination
-        let per_page = params.limit.unwrap_or(8).clamp(1, 100) as u64;
+        let per_page = params.limit.unwrap_or(12).clamp(1, 100) as i64;
         let skip = params.offset.unwrap_or(0) as u64;
 
-        let data = COMPOSITIONS.read().unwrap().clone();
+        // Get total count
+        let total = self.collection.count_documents(filter.clone()).await
+            .map_err(|e| ApiError::InternalServerError(format!("Failed to count compositions: {}", e)))?;
 
-        // Filtering
-        let mut filtered: Vec<Composition> = data.into_iter().filter(|c| c.is_public).collect();
+        // Get paginated results
+        let options = FindOptions::builder()
+            .sort(Some(sort_doc))
+            .skip(Some(skip))
+            .limit(Some(per_page))
+            .build();
 
-        // tier
-        if let Some(ref tier) = params.tier {
-            filtered = filtered.into_iter().filter(|c| c.meta.tier.eq_ignore_ascii_case(tier)).collect();
-        }
+        let cursor = self.collection.find(filter).await
+            .map_err(|e| ApiError::InternalServerError(format!("Failed to find compositions: {}", e)))?;
 
-        // category
-        if let Some(ref category) = params.category {
-            filtered = filtered.into_iter().filter(|c| c.category.eq_ignore_ascii_case(category)).collect();
-        }
+        let compositions: Vec<Composition> = cursor.try_collect().await
+            .map_err(|e| ApiError::InternalServerError(format!("Failed to collect compositions: {}", e)))?;
 
-        // tags (comma-separated)
-        if let Some(ref tags) = params.tags {
-            let wanted: Vec<String> = tags.split(',').map(|s| s.trim().to_lowercase()).collect();
-            filtered = filtered.into_iter().filter(|c| {
-                let set: std::collections::HashSet<String> = c.tags.iter().map(|t| t.to_lowercase()).collect();
-                wanted.iter().all(|t| set.contains(t))
-            }).collect();
-        }
-
-        // text search on name/description
-        if let Some(ref q) = params.champion { // reuse 'champion' param as generic search? we also have SearchQuery elsewhere
-            let ql = q.to_lowercase();
-            filtered = filtered.into_iter().filter(|c| {
-                c.name.to_lowercase().contains(&ql) || c.description.to_lowercase().contains(&ql)
-            }).collect();
-        }
-
-        // patch
-        if let Some(ref patch) = params.patch {
-            filtered = filtered.into_iter().filter(|c| c.meta.patch == *patch).collect();
-        }
-
-        // difficulty
-        if let Some(diff) = params.difficulty {
-            filtered = filtered.into_iter().filter(|c| c.meta.difficulty == diff).collect();
-        }
-
-        // TODO: traits and augments filters will be parsed once added to DTOs
-
-        let mut items: Vec<Composition> = filtered;
-
-        // Sorting: by tier then difficulty
-        items.sort_by(|a, b| {
-            tier_rank(&a.meta.tier)
-                .cmp(&tier_rank(&b.meta.tier))
-                .then(a.meta.difficulty.cmp(&b.meta.difficulty))
-        });
-
-        // Pagination
-        let per_page = params.limit.unwrap_or(8).clamp(1, 100) as usize;
-        let skip = params.offset.unwrap_or(0) as usize;
-        let total = items.len() as u32;
-        let total_pages = ((total as usize + per_page - 1) / per_page) as u32;
-        let current_page = (skip / per_page) as u32 + 1;
-        let start = skip.min(items.len());
-        let end = (start + per_page).min(items.len());
-        let page_items = &items[start..end];
-
-        let compositions = page_items.to_vec();
+        let total_pages = ((total as f64 / per_page as f64).ceil()) as u32;
+        let current_page = (skip as f64 / per_page as f64).floor() as u32 + 1;
 
         let summaries = compositions
             .into_iter()
@@ -302,7 +243,7 @@ impl CompositionService {
 
         Ok(PaginatedResponse {
             data: summaries,
-            total,
+            total: total as u32,
             page: current_page,
             per_page: per_page as u32,
             total_pages,
@@ -310,9 +251,11 @@ impl CompositionService {
     }
 
     pub async fn get_by_id(&self, id: ObjectId) -> Result<Composition, ApiError> {
-        let data = COMPOSITIONS.read().unwrap();
-        let comp = data.iter().find(|c| c.id == Some(id)).cloned();
-        comp.ok_or_else(|| ApiError::NotFound("Composition not found".to_string()))
+        let filter = doc! { "_id": id, "is_public": true };
+        let composition = self.collection.find_one(filter).await
+            .map_err(|e| ApiError::InternalServerError(format!("Failed to find composition: {}", e)))?
+            .ok_or_else(|| ApiError::NotFound("Composition not found".to_string()))?;
+        Ok(composition)
     }
 
     // Stubs for future CRUD
@@ -338,14 +281,20 @@ impl CompositionService {
     }
 
     pub async fn increment_views(&self, id: ObjectId) -> Result<(), ApiError> {
-        let mut data = COMPOSITIONS.write().unwrap();
-        if let Some(comp) = data.iter_mut().find(|c| c.id == Some(id)) {
-            comp.views += 1;
-            comp.updated_at = DateTime::now();
-            Ok(())
-        } else {
-            Err(ApiError::NotFound("Composition not found".to_string()))
+        let filter = doc! { "_id": id, "is_public": true };
+        let update = doc! {
+            "$inc": { "views": 1 },
+            "$set": { "updated_at": DateTime::now() }
+        };
+
+        let result = self.collection.update_one(filter, update).await
+            .map_err(|e| ApiError::InternalServerError(format!("Failed to increment views: {}", e)))?;
+
+        if result.modified_count == 0 {
+            return Err(ApiError::NotFound("Composition not found".to_string()));
         }
+
+        Ok(())
     }
 
     pub async fn vote(

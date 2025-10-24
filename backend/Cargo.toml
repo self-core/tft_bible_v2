@@ -17,7 +17,8 @@ windows-targets = "0.53.5"
 mongodb = "3.3.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-bson = { version = "3.0.0", features = ["chrono-0_4"] }
+bson = { version = "2.15.0", features = ["chrono-0_4"] }
+futures = "0.3"
 
 # Date/Time
 chrono = { version = "0.4", features = ["serde"] }
