@@ -27,7 +27,7 @@ impl CompositionService {
 
     // Load compositions from scraped data file
     fn load_scraped_compositions() -> Result<Vec<Composition>, ApiError> {
-        let data = include_str!("../../../scraped_compositions.json");
+        let data = include_str!("../../scraped_compositions.json");
         let scraped: serde_json::Value = serde_json::from_str(data)
             .map_err(|e| ApiError::InternalServerError(format!("Failed to parse scraped data: {}", e)))?;
 

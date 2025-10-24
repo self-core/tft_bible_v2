@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom'
 import { Swords, Users, Package, Home, Search, Menu, X } from 'lucide-react'
 import { useState } from 'react'
+import ThemeSwitcher from './ThemeSwitcher'
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation()
@@ -47,7 +48,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
               ))}
             </nav>
 
-            {/* Search and Mobile Menu Toggle */}
+            {/* Search and Theme Controls */}
             <div className="flex items-center space-x-4">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -57,6 +58,9 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
                   className="pl-10 pr-4 py-2 border border-gray-600 rounded-lg bg-gray-800 text-gray-100 focus:ring-2 focus:ring-tft-gold focus:border-transparent transition-all duration-300"
                 />
               </div>
+
+              {/* Theme Switcher */}
+              <ThemeSwitcher />
 
               {/* Mobile Menu Toggle - Cimplic-inspired hamburger */}
               <button

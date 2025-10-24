@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { Filter, Star, Eye, ThumbsUp } from 'lucide-react'
+import { Filter, Star, Eye, ThumbsUp, ExternalLink } from 'lucide-react'
 import { compositionsApi, CompositionSummary, CompositionQuery } from '../lib/api'
 
 const Compositions = () => {
@@ -149,9 +149,17 @@ const Compositions = () => {
                     <span>{comp.upvotes}</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Star className="h-4 w-4 text-tft-gold" />
-                  <span>{comp.winrate.toFixed(1)}%</span>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
+                    <Star className="h-4 w-4 text-tft-gold" />
+                    <span>{comp.winrate.toFixed(1)}%</span>
+                  </div>
+                  {comp.builder_code && (
+                    <div className="flex items-center gap-1 text-tft-blue">
+                      <ExternalLink className="h-3 w-3" />
+                      <span className="text-xs">Builder</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

@@ -16,6 +16,9 @@ COPY Cargo.toml Cargo.lock ./
 # Copy the source code
 COPY src ./src
 
+# Copy data files
+COPY scraped_compositions.json ./scraped_compositions.json
+
 # Build the application in release mode
 RUN cargo build --release
 
