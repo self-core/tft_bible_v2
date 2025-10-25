@@ -38,3 +38,4 @@ frontend/dist/
 
 # Mock Server
 mock-server/node_modules/
+frontend/node_modules/.vite/deps/_metadata.json
