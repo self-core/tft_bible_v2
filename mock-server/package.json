@@ -4,7 +4,7 @@
   "description": "Mock API server for TFT Bible frontend development",
   "main": "mock-server.js",
   "scripts": {
-    "start": "npx json-server db.json --port 8080 --routes routes.json"
+    "start": "node server.js"
   },
   "dependencies": {
     "express": "^5.1.0",
