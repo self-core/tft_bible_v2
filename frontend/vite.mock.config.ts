@@ -11,11 +11,14 @@ export default defineConfig({
     hmr: {
       port: 3000,
     },
+    host: 'localhost',
     proxy: {
       // Mock API endpoints
       '/api': {
         target: 'http://localhost:8080', // This will be where your mock API runs
         changeOrigin: true,
+        secure: false,
+        ws: true,
       },
     },
   },
