@@ -8,14 +8,20 @@ export default defineConfig({
   server: {
     port: 3000,
     open: true,
+    hmr: {
+      port: 3000,
+    },
     proxy: {
       // Mock API endpoints
       '/api': {
         target: 'http://localhost:8080', // This will be where your mock API runs
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/v1/, ''),
+         rewrite: (path) => path.replace(/^\/api\/v1/, ''),
       },
     },
+  },
+  define: {
+    'import.meta.env.VITE_API_URL': JSON.stringify(''),
   },
   build: {
     outDir: 'dist',
