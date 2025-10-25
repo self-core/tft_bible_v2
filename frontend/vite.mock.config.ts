@@ -16,7 +16,6 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:8080', // This will be where your mock API runs
         changeOrigin: true,
-         rewrite: (path) => path.replace(/^\/api\/v1/, ''),
       },
     },
   },
