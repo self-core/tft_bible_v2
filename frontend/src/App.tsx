@@ -12,6 +12,8 @@ import TeamBuilder from './pages/TeamBuilder'
 import ThemeTestPage from './pages/ThemeTestPage'
 import BoardTestPage from './pages/BoardTestPage'
 import NotFound from './pages/NotFound'
+import { DetailedChampions } from './pages/DetailedChampions'
+import { DetailedItems } from './pages/DetailedItems'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -31,9 +33,11 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/compositions" element={<Compositions />} />
             <Route path="/compositions/:id" element={<CompositionDetail />} />
-            <Route path="/team-builder" element={<TeamBuilder />} />
             <Route path="/champions" element={<Champions />} />
             <Route path="/items" element={<Items />} />
+            <Route path="/detailed-champions" element={<DetailedChampions />} />
+            <Route path="/detailed-items" element={<DetailedItems />} />
+            <Route path="/team-builder" element={<TeamBuilder />} />
             <Route path="/patch-notes" element={<PatchNotes />} />
             <Route path="/theme-test" element={<ThemeTestPage />} />
             <Route path="/board-test" element={<BoardTestPage />} />

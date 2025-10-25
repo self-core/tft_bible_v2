@@ -33,7 +33,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
             </div>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex space-x-8">
+            <nav className="hidden md:flex space-x-1">
               {navItems.map(({ path, label, icon: Icon }) => (
                 <Link
                   key={path}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTheme } from '../contexts/ThemeContext';
@@ -158,7 +158,7 @@ const Home = () => {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {trendingCompositions.slice(0, 4).map((comp) => (
+          {trendingCompositions.slice(0, 4).map((comp: any) => (
             <Link 
               key={comp.id} 
               to={`/compositions/${comp.id}`}
@@ -269,7 +269,7 @@ const Home = () => {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {trendingChampions.map((champ) => (
+          {trendingChampions.map((champ: any) => (
             <div 
               key={champ.id} 
               className="rounded-lg shadow-sm border group"
