@@ -7,6 +7,8 @@ import Compositions from './pages/Compositions'
 import CompositionDetail from './pages/CompositionDetail'
 import Champions from './pages/Champions'
 import Items from './pages/Items'
+import PatchNotes from './pages/PatchNotes'
+import TeamBuilder from './pages/TeamBuilder'
 import ThemeTestPage from './pages/ThemeTestPage'
 import BoardTestPage from './pages/BoardTestPage'
 import NotFound from './pages/NotFound'
@@ -29,8 +31,10 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/compositions" element={<Compositions />} />
             <Route path="/compositions/:id" element={<CompositionDetail />} />
+            <Route path="/team-builder" element={<TeamBuilder />} />
             <Route path="/champions" element={<Champions />} />
             <Route path="/items" element={<Items />} />
+            <Route path="/patch-notes" element={<PatchNotes />} />
             <Route path="/theme-test" element={<ThemeTestPage />} />
             <Route path="/board-test" element={<BoardTestPage />} />
             <Route path="*" element={<NotFound />} />

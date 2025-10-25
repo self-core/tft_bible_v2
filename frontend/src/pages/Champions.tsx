@@ -113,6 +113,29 @@ const Champions = () => {
                   {champion.cost} Cost
                 </span>
               </div>
+              
+              {/* Champion icon display */}
+              {champion.icon_url ? (
+                <div className="w-16 h-16 mx-auto mb-3 rounded object-cover">
+                  <img 
+                    src={champion.icon_url} 
+                    alt={champion.name}
+                    className="w-full h-full rounded object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.onerror = null; // Prevent infinite loop
+                      target.style.display = 'none';
+                      // Show fallback
+                      const fallback = target.parentElement?.querySelector('.fallback-champ-icon');
+                      if (fallback) fallback.style.display = 'flex';
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="w-16 h-16 mx-auto mb-3 rounded flex items-center justify-center bg-gray-200 fallback-champ-icon">
+                  <span className="text-lg font-bold">{champion.name.charAt(0)}</span>
+                </div>
+              )}
 
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-sm text-gray-600">

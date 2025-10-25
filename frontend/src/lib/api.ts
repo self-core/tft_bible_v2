@@ -48,9 +48,38 @@ export interface CompositionSummary {
   views: number;
   upvotes: number;
   author?: string;
-  champion_count: number;
-  main_champions: string[];
+  champion_count?: number;
+  main_champions?: string[];
   created_at: string;
+  builder_code?: string;
+  champions?: Array<{
+    id: string;
+    name: string;
+    cost: number;
+    traits: string[];
+    icon_url?: string;
+  }>;
+}
+
+export interface ChampionInComposition {
+  id: string;
+  name: string;
+  star_level: number;
+  position: { x: number; y: number };
+  items: string[];
+  is_core: boolean;
+  priority: string;
+  cost: number;
+  traits: string[];
+  health: number;
+  attack_damage: number;
+  ability_name: string;
+  icon_url?: string;
+}
+
+export interface CompositionAugments {
+  preferred: (string | { name: string; description: string })[];
+  acceptable?: (string | { name: string; description: string })[];
 }
 
 export interface Composition {
@@ -61,8 +90,8 @@ export interface Composition {
   description: string;
   category: string;
   tags: string[];
-  champions: any[]; // Simplified for now
-  augments: any; // Simplified for now
+  champions: ChampionInComposition[];
+  augments: CompositionAugments;
   meta: {
     tier: string;
     difficulty: number;
@@ -86,6 +115,7 @@ export interface Composition {
   is_featured: boolean;
   created_at: string;
   updated_at: string;
+  builder_code?: string;
 }
 
 export interface ChampionSummary {
@@ -97,6 +127,7 @@ export interface ChampionSummary {
   attack_damage: number;
   ability_name: string;
   image_url?: string;
+  icon_url?: string;
 }
 
 export interface ItemSummary {
@@ -108,6 +139,7 @@ export interface ItemSummary {
   is_unique: boolean;
   priority: number;
   image_url?: string;
+  icon_url?: string;
 }
 
 export interface CompositionQuery {

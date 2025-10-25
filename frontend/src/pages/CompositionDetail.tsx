@@ -2,64 +2,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useParams, Link } from 'react-router-dom'
 import { ArrowLeft, Star, ThumbsUp, Clock, Users, Target, Zap, Shield, Sword, Heart } from 'lucide-react'
-import { compositionsApi } from '../lib/api'
-
-// Define types for our composition data
-interface Champion {
-  id: string;
-  name: string;
-  star_level: number;
-  position: { x: number; y: number };
-  items: string[];
-  is_core: boolean;
-  priority: string;
-  cost: number;
-  traits: string[];
-  health: number;
-  attack_damage: number;
-  ability_name: string;
-}
-
-interface Augment {
-  name: string;
-  description: string;
-}
-
-interface CompositionAugments {
-  preferred: (string | Augment)[];
-  acceptable?: (string | Augment)[];
-}
-
-interface Composition {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  tags: string[];
-  champions: Champion[];
-  augments: CompositionAugments;
-  meta: {
-    tier: string;
-    difficulty: number;
-    cost: string;
-    patch: string;
-    playstyle: string;
-    winrate: number;
-    avg_placement: number;
-    playrate: number;
-    contest_rate: number;
-  };
-  votes: {
-    upvotes: number;
-    downvotes: number;
-  };
-  views: number;
-  is_public: boolean;
-  is_verified: boolean;
-  is_featured: boolean;
-  created_at: string;
-  updated_at: string;
-}
+import { compositionsApi, Composition } from '../lib/api'
 
 const CompositionDetail = () => {
   const { id } = useParams<{ id: string }>()
@@ -151,10 +94,26 @@ const CompositionDetail = () => {
                 >
                   {champion ? (
                     <div className="relative w-full h-full flex items-center justify-center">
-                      {/* Champion avatar placeholder */}
-                      <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${getCostColor(champion.cost)} bg-gray-700/50 border border-gray-600`}>
-                        <span className="text-xs font-bold">{champion.name.charAt(0)}</span>
-                      </div>
+                      {/* Champion avatar with icon */}
+                      {champion.icon_url ? (
+                        <img 
+                          src={champion.icon_url} 
+                          alt={champion.name}
+                          className="w-12 h-12 rounded-lg object-cover border border-gray-600"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.onerror = null; // Prevent infinite loop
+                            target.style.display = 'none';
+                            // Show fallback
+                            const fallback = target.parentElement?.querySelector('.fallback');
+                            if (fallback) fallback.style.display = 'flex';
+                          }}
+                        />
+                      ) : (
+                        <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${getCostColor(champion.cost)} bg-gray-700/50 border border-gray-600 fallback`}>
+                          <span className="text-xs font-bold">{champion.name.charAt(0)}</span>
+                        </div>
+                      )}
                       
                       {/* Star level */}
                       <div className="absolute -top-1 -right-1 flex">
@@ -344,9 +303,25 @@ const CompositionDetail = () => {
           {composition.champions.map((champion: Champion, index: number) => (
             <div key={index} className="border border-gray-200 rounded-lg p-4 bg-white">
               <div className="flex items-center gap-3 mb-3">
-                <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${getCostColor(champion.cost)} bg-gray-100 border border-gray-200`}>
-                  <span className="text-sm font-medium">{champion.star_level}★</span>
-                </div>
+                {champion.icon_url ? (
+                  <img 
+                    src={champion.icon_url} 
+                    alt={champion.name}
+                    className="w-12 h-12 rounded-lg object-cover border border-gray-200"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.onerror = null; // Prevent infinite loop
+                      target.style.display = 'none';
+                      // Show fallback
+                      const fallback = target.parentElement?.querySelector('.fallback-champion');
+                      if (fallback) fallback.style.display = 'flex';
+                    }}
+                  />
+                ) : (
+                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${getCostColor(champion.cost)} bg-gray-100 border border-gray-200 fallback-champion`}>
+                    <span className="text-sm font-medium">{champion.star_level}★</span>
+                  </div>
+                )}
                 <div>
                   <h3 className="font-semibold text-gray-900">{champion.name || 'Unknown Champion'}</h3>
                   <p className="text-sm text-gray-600">Priority: {champion.priority}</p>

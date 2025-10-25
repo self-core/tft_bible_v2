@@ -25,10 +25,14 @@ const ThemeSwitcher = () => {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="p-2 rounded-lg border border-gray-600 hover:bg-gray-800 transition-colors"
+        className="p-2 rounded-lg transition-colors"
         aria-label="Toggle theme switcher"
+        style={{
+          border: '1px solid var(--bg-accent)',
+          backgroundColor: 'var(--bg-accent)'
+        }}
       >
-        <Palette className="h-5 w-5 text-gray-300" />
+        <Palette className="h-5 w-5" style={{ color: 'var(--text-secondary)' }} />
       </button>
 
       {isOpen && (
@@ -36,19 +40,23 @@ const ThemeSwitcher = () => {
           <div 
             className="fixed inset-0 z-40" 
             onClick={() => setIsOpen(false)}
+            style={{ background: 'rgba(0, 0, 0, 0.5)' }}
           />
-          <div className="absolute right-0 mt-2 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-50">
+          <div className="absolute right-0 mt-2 w-48 rounded-lg shadow-lg z-50" style={{
+            background: 'var(--bg-accent)',
+            border: '1px solid var(--bg-primary)'
+          }}>
             <div className="p-2">
-              <div className="text-xs font-semibold text-gray-400 px-2 py-1">THEMES</div>
+              <div className="text-xs font-semibold px-2 py-1" style={{ color: 'var(--text-secondary)' }}>THEMES</div>
               {themes.map(({ id, name, color }) => (
                 <button
                   key={id}
                   onClick={() => handleThemeChange(id)}
-                  className={`flex items-center justify-between w-full px-3 py-2 text-sm rounded-md ${
-                    theme === id 
-                      ? 'bg-tft-gold/10 text-tft-gold' 
-                      : 'text-gray-300 hover:bg-gray-700 hover:text-tft-gold'
-                  }`}
+                  className="flex items-center justify-between w-full px-3 py-2 text-sm rounded-md"
+                  style={{
+                    color: theme === id ? 'var(--accent1)' : 'var(--text-secondary)',
+                    backgroundColor: theme === id ? 'var(--bg-primary)' : 'transparent'
+                  }}
                 >
                   <span className="flex items-center">
                     <span 
@@ -57,7 +65,7 @@ const ThemeSwitcher = () => {
                     />
                     {name}
                   </span>
-                  {theme === id && <Check className="h-4 w-4" />}
+                  {theme === id && <Check className="h-4 w-4" style={{ color: 'var(--accent1)' }} />}
                 </button>
               ))}
             </div>
