@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { Swords, Users, Package, Home, Search, Menu, X, Book, Target } from 'lucide-react'
+import { Swords, Users, Package, Home, Search, Menu, X, Book, Target, Zap, Eye } from 'lucide-react'
 import { useState } from 'react'
 import ThemeSwitcher from './ThemeSwitcher'
 
@@ -13,7 +13,9 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     { path: '/team-builder', label: 'Team Builder', icon: Target },
     { path: '/champions', label: 'Champions', icon: Users },
     { path: '/items', label: 'Items', icon: Package },
+    { path: '/augments', label: 'Augments', icon: Zap },
     { path: '/patch-notes', label: 'Patch Notes', icon: Book },
+    { path: '/asset-test', label: 'Asset Test', icon: Eye },
   ]
 
   return (

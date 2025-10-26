@@ -306,7 +306,8 @@
       "ability_damage": "300/450/900",
       "ability_description": "Launches a rocket at the enemy with the most HP, dealing damage to all enemies in a line",
       "recommended_items": ["Guinsoo's Rageblade", "Infinity Edge", "Runaan's Hurricane"],
-      "tier": "S"
+      "tier": "S",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/222.png"
     },
     {
       "id": "sion",
@@ -320,7 +321,8 @@
       "ability_damage": "700/1050/2100",
       "ability_description": "Enemies struck by Sion's reanimated corpse are stunned and take damage. Sion steals their health",
       "recommended_items": ["Warmog's Armor", "Thornmail", "Dragon's Claw"],
-      "tier": "A"
+      "tier": "A",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/14.png"
     },
     {
       "id": "yasuo",
@@ -334,7 +336,8 @@
       "ability_damage": "300/450/900",
       "ability_description": "Yasuo thrusts forward, dealing damage and knocking up enemies briefly",
       "recommended_items": ["Guinsoo's Rageblade", "Bloodthirster", "Zephyr"],
-      "tier": "B"
+      "tier": "B",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/157.png"
     },
     {
       "id": "azir",
@@ -348,7 +351,8 @@
       "ability_damage": "600/900/1800",
       "ability_description": "Azir creates a wall of soldiers that lasts 4 seconds, dealing damage to enemies who touch it",
       "recommended_items": ["Rabadon's Deathcap", "Jeweled Gauntlet", "Archangel Staff"],
-      "tier": "A"
+      "tier": "A",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/136.png"
     },
     {
       "id": "caitlyn",
@@ -362,7 +366,8 @@
       "ability_damage": "200/300/600",
       "ability_description": "Shoots through all enemies in a line, dealing damage",
       "recommended_items": ["Guinsoo's Rageblade"],
-      "tier": "C"
+      "tier": "C",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/51.png"
     },
     {
       "id": "ezreal",
@@ -376,7 +381,8 @@
       "ability_damage": "200/300/600",
       "ability_description": "Ezreal quickly fires a shot at his target, dealing damage and applying on-hit effects",
       "recommended_items": [],
-      "tier": "C"
+      "tier": "C",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/81.png"
     },
     {
       "id": "kaisa",
@@ -390,7 +396,8 @@
       "ability_damage": "250/375/750",
       "ability_description": "Kai'Sa fires a projectile that passes through enemies, dealing damage",
       "recommended_items": ["Guinsoo's Rageblade", "Infinity Edge"],
-      "tier": "B"
+      "tier": "B",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/145.png"
     },
     {
       "id": "ashe",
@@ -404,7 +411,8 @@
       "ability_damage": "300/450/900",
       "ability_description": "Ashe fires a giant arrow in a line that stops on the first enemy hit, stunning and dealing damage",
       "recommended_items": ["Guinsoo's Rageblade"],
-      "tier": "B"
+      "tier": "B",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/22.png"
     },
     {
       "id": "sivir",
@@ -418,7 +426,8 @@
       "ability_damage": "250/375/750",
       "ability_description": "Sivir throws her crossblade, dealing damage to all enemies in its path",
       "recommended_items": ["Guinsoo's Rageblade"],
-      "tier": "C"
+      "tier": "C",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/15.png"
     },
     {
       "id": "tristana",
@@ -432,7 +441,8 @@
       "ability_damage": "200/300/600",
       "ability_description": "Tristana's cannonball explodes, dealing damage to all enemies in a small area",
       "recommended_items": ["Guinsoo's Rageblade", "Statikk Shiv"],
-      "tier": "B"
+      "tier": "B",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/18.png"
     },
     {
       "id": "twitch",
@@ -446,7 +456,8 @@
       "ability_damage": "250/375/750",
       "ability_description": "Twitch throws a trap that explodes after 2 seconds, dealing damage to all nearby enemies",
       "recommended_items": ["Guinsoo's Rageblade", "Infinity Edge"],
-      "tier": "B"
+      "tier": "B",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/29.png"
     },
     {
       "id": "garen",
@@ -460,7 +471,8 @@
       "ability_damage": "200/300/600",
       "ability_description": "Garen spins his sword, dealing damage to all nearby enemies",
       "recommended_items": ["Warmog's Armor", "Thornmail"],
-      "tier": "D"
+      "tier": "D",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/86.png"
     },
     {
       "id": "darius",
@@ -474,7 +486,8 @@
       "ability_damage": "250/375/750",
       "ability_description": "Darius swings his axe, dealing damage and applying a wound that increases damage taken",
       "recommended_items": ["Warmog's Armor"],
-      "tier": "D"
+      "tier": "D",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/122.png"
     },
     {
       "id": "leona",
@@ -488,7 +501,8 @@
       "ability_damage": "200/300/600",
       "ability_description": "Leona creates a shield and stuns nearby enemies",
       "recommended_items": ["Redemption", "Locket of the Iron Solari"],
-      "tier": "C"
+      "tier": "C",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/89.png"
     },
     {
       "id": "malphite",
@@ -502,7 +516,8 @@
       "ability_damage": "250/375/750",
       "ability_description": "Malphite throws a chunk of rock at the enemy, stunning them briefly",
       "recommended_items": ["Redemption", "Warmog's Armor"],
-      "tier": "C"
+      "tier": "C",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/54.png"
     },
     {
       "id": "kled",
@@ -516,7 +531,8 @@
       "ability_damage": "250/375/750",
       "ability_description": "Kled charges forward, dealing damage to all enemies in his path",
       "recommended_items": ["Warmog's Armor", "Thornmail"],
-      "tier": "B"
+      "tier": "B",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/240.png"
     },
     {
       "id": "sett",
@@ -530,7 +546,8 @@
       "ability_damage": "400/600/1200",
       "ability_description": "Sett smacks an enemy with his fist, dealing damage and stunning them",
       "recommended_items": ["Warmog's Armor", "Thornmail", "Dragon's Claw"],
-      "tier": "A"
+      "tier": "A",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/875.png"
     },
     {
       "id": "kayle",
@@ -544,7 +561,8 @@
       "ability_damage": "300/450/900",
       "ability_description": "Kayle grants an ally invincibility and increased attack speed",
       "recommended_items": ["Guinsoo's Rageblade", "Infinity Edge"],
-      "tier": "A"
+      "tier": "A",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/10.png"
     },
     {
       "id": "kha'zix",
@@ -558,7 +576,8 @@
       "ability_damage": "250/375/750",
       "ability_description": "Kha'Zix leaps to the lowest HP enemy and deals damage",
       "recommended_items": ["Guinsoo's Rageblade", "Youmuu's Ghostblade"],
-      "tier": "B"
+      "tier": "B",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/121.png"
     },
     {
       "id": "katarina",
@@ -572,7 +591,8 @@
       "ability_damage": "300/450/900",
       "ability_description": "Katarina spins, dealing damage to all nearby enemies",
       "recommended_items": ["Guinsoo's Rageblade", "Rabadon's Deathcap"],
-      "tier": "B"
+      "tier": "B",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/55.png"
     },
     {
       "id": "akali",
@@ -586,7 +606,8 @@
       "ability_damage": "400/600/1200",
       "ability_description": "Akali dashes through her target, dealing damage and gaining attack speed",
       "recommended_items": ["Guinsoo's Rageblade", "Youmuu's Ghostblade", "Infinity Edge"],
-      "tier": "A"
+      "tier": "A",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/84.png"
     },
     {
       "id": "zed",
@@ -600,7 +621,8 @@
       "ability_damage": "250/375/750",
       "ability_description": "Zed throws shurikens at his target, dealing damage",
       "recommended_items": ["Guinsoo's Rageblade", "Infinity Edge"],
-      "tier": "B"
+      "tier": "B",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/238.png"
     },
     {
       "id": "irelia",
@@ -614,7 +636,8 @@
       "ability_damage": "300/450/900",
       "ability_description": "Irelia attacks rapidly, dealing damage to her target",
       "recommended_items": ["Guinsoo's Rageblade", "Bloodthirster"],
-      "tier": "A"
+      "tier": "A",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/39.png"
     },
     {
       "id": "master yi",
@@ -628,7 +651,8 @@
       "ability_damage": "250/375/750",
       "ability_description": "Master Yi channels healing and damage reduction for 4 seconds",
       "recommended_items": ["Guinsoo's Rageblade", "Statikk Shiv"],
-      "tier": "B"
+      "tier": "B",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/11.png"
     },
     {
       "id": "kassadin",
@@ -642,7 +666,8 @@
       "ability_damage": "200/300/600",
       "ability_description": "Kassadin fires a sphere of void energy at his target",
       "recommended_items": ["Rabadon's Deathcap", "Luden's Echo"],
-      "tier": "C"
+      "tier": "C",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/80.png"
     },
     {
       "id": "sylas",
@@ -656,7 +681,8 @@
       "ability_damage": "250/375/750",
       "ability_description": "Sylas swings his chain twice, dealing damage to enemies",
       "recommended_items": ["Rabadon's Deathcap", "Jeweled Gauntlet"],
-      "tier": "B"
+      "tier": "B",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/385.png"
     },
     {
       "id": "vel'koz",
@@ -670,7 +696,8 @@
       "ability_damage": "400/600/1200",
       "ability_description": "Vel'Koz channels a beam that travels across the battlefield, damaging enemies in its path",
       "recommended_items": ["Rabadon's Deathcap", "Jeweled Gauntlet", "Archangel Staff"],
-      "tier": "A"
+      "tier": "A",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/161.png"
     },
     {
       "id": "xerath",
@@ -684,7 +711,8 @@
       "ability_damage": "500/750/1500",
       "ability_description": "Xerath charges up a powerful blast that deals damage to all enemies in a line",
       "recommended_items": ["Rabadon's Deathcap", "Jeweled Gauntlet", "Archangel Staff"],
-      "tier": "A"
+      "tier": "A",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/101.png"
     },
     {
       "id": "aurelion sol",
@@ -698,7 +726,8 @@
       "ability_damage": "600/900/1800",
       "ability_description": "Aurelion Sol breathes stars in a cone, dealing damage to enemies",
       "recommended_items": ["Rabadon's Deathcap", "Jeweled Gauntlet", "Infinity Edge"],
-      "tier": "S"
+      "tier": "S",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/136.png"
     }
   ],
   "items": [
@@ -708,7 +737,8 @@
       "category": "Basic",
       "stats": "15% Attack Damage",
       "image": "⚔️",
-      "description": "Basic component item"
+      "description": "Basic component item",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/item-icons/1037.png"
     },
     {
       "id": "rod",
@@ -716,7 +746,8 @@
       "category": "Basic",
       "stats": "15% Spell Damage",
       "image": "🔮",
-      "description": "Basic component item"
+      "description": "Basic component item",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/item-icons/1026.png"
     },
     {
       "id": "chain_vest",
@@ -724,7 +755,8 @@
       "category": "Basic",
       "stats": "25 Armor",
       "image": "🛡️",
-      "description": "Basic component item"
+      "description": "Basic component item",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/item-icons/1029.png"
     },
     {
       "id": "negatron_cloak",
@@ -732,7 +764,8 @@
       "category": "Basic",
       "stats": "25 Magic Resist",
       "image": "🛡️",
-      "description": "Basic component item"
+      "description": "Basic component item",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/item-icons/1033.png"
     },
     {
       "id": "recurve_bow",
@@ -740,7 +773,8 @@
       "category": "Basic",
       "stats": "15% Attack Speed",
       "image": "🏹",
-      "description": "Basic component item"
+      "description": "Basic component item",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/item-icons/1043.png"
     },
     {
       "id": "tear",
@@ -748,7 +782,8 @@
       "category": "Basic",
       "stats": "15 Starting Mana",
       "image": "💧",
-      "description": "Basic component item"
+      "description": "Basic component item",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/item-icons/1027.png"
     },
     {
       "id": "spatula",
@@ -756,7 +791,8 @@
       "category": "Basic",
       "stats": "Special Component",
       "image": "🍳",
-      "description": "Basic component item"
+      "description": "Basic component item",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/item-icons/1042.png"
     },
     {
       "id": "giant_belt",
@@ -764,7 +800,8 @@
       "category": "Basic",
       "stats": "150 Health",
       "image": "查看全文",
-      "description": "Basic component item"
+      "description": "Basic component item",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/item-icons/1011.png"
     },
     {
       "id": "infinity_edge",
@@ -773,7 +810,8 @@
       "stats": "75% Critical Strike Damage, 20% Critical Strike Chance",
       "image": "⚔️",
       "from": ["bf_sword", "bf_sword"],
-      "description": "Increases critical strike damage to 250%"
+      "description": "Increases critical strike damage to 250%",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/item-icons/3031.png"
     },
     {
       "id": "rabadon_deathcap",
@@ -782,7 +820,8 @@
       "stats": "100% Spell Damage",
       "image": "查看全文",
       "from": ["rod", "rod"],
-      "description": "Massively increases spell damage"
+      "description": "Massively increases spell damage",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/item-icons/3089.png"
     },
     {
       "id": "thornmail",
@@ -791,7 +830,8 @@
       "stats": "100 Armor",
       "image": "🛡️",
       "from": ["chain_vest", "chain_vest"],
-      "description": "Returns magic damage to attackers"
+      "description": "Returns magic damage to attackers",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/item-icons/3075.png"
     },
     {
       "id": "warmogs_armor",
@@ -800,7 +840,8 @@
       "stats": "1000 Health",
       "image": "查看全文",
       "from": ["giant_belt", "giant_belt"],
-      "description": "Restores health each turn"
+      "description": "Restores health each turn",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/item-icons/3083.png"
     },
     {
       "id": "guinsoos_rageblade",
@@ -809,7 +850,8 @@
       "stats": "40% Attack Speed",
       "image": "查看全文",
       "from": ["recurve_bow", "tear"],
-      "description": "Attacks grant permanent attack speed"
+      "description": "Attacks grant permanent attack speed",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/item-icons/3115.png"
     },
     {
       "id": "bloodthirster",
@@ -818,7 +860,8 @@
       "stats": "40% Attack Damage, 40% Lifesteal",
       "image": "查看全文",
       "from": ["bf_sword", "negatron_cloak"],
-      "description": "Wearer heals for a percentage of damage dealt"
+      "description": "Wearer heals for a percentage of damage dealt",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/item-icons/3072.png"
     },
     {
       "id": "statikk_shiv",
@@ -827,7 +870,8 @@
       "stats": "20% Attack Speed, 20% Critical Strike Chance",
       "image": "查看全文",
       "from": ["recurve_bow", "tear"],
-      "description": "Every 3rd attack chains lightning to enemies"
+      "description": "Every 3rd attack chains lightning to enemies",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/item-icons/3087.png"
     },
     {
       "id": "jeweled_gauntlet",
@@ -836,7 +880,8 @@
       "stats": "50% Spell Damage, 20% Critical Strike Chance",
       "image": "查看全文",
       "from": ["rod", "spatula"],
-      "description": "Grants bonus damage on critical strikes"
+      "description": "Grants bonus damage on critical strikes",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/item-icons/3090.png"
     },
     {
       "id": "dragons_claw",
@@ -845,7 +890,8 @@
       "stats": "200 Magic Resist",
       "image": "🐉",
       "from": ["negatron_cloak", "negatron_cloak"],
-      "description": "Grants immunity to crowd control for 2 seconds every 15 seconds"
+      "description": "Grants immunity to crowd control for 2 seconds every 15 seconds",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/item-icons/3022.png"
     },
     {
       "id": "redemption",
@@ -854,7 +900,210 @@
       "stats": "200 Health, 15 Starting Mana",
       "image": "查看全文",
       "from": ["giant_belt", "tear"],
-      "description": "Heals all nearby allies each turn"
+      "description": "Heals all nearby allies each turn",
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/item-icons/3107.png"
+    }
+  ],
+  "augments": [
+    {
+      "id": "big_shot_heart",
+      "name": "Big Shot Heart",
+      "category": "Trait",
+      "description": "Your team gains 15% Attack Damage. Gain a Jinx.",
+      "tier": "S",
+      "priority": 95,
+      "is_unique": true,
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1001.png"
+    },
+    {
+      "id": "giant_slayer",
+      "name": "Giant Slayer",
+      "category": "Offensive",
+      "description": "Your units deal 20% more damage to enemies with more than 1800 maximum HP.",
+      "tier": "A",
+      "priority": 85,
+      "is_unique": false,
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1002.png"
+    },
+    {
+      "id": "tactical_resupply",
+      "name": "Tactical Resupply",
+      "category": "Utility",
+      "description": "Gain 2 random completed items.",
+      "tier": "B",
+      "priority": 75,
+      "is_unique": false,
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1003.png"
+    },
+    {
+      "id": "deadeye_support",
+      "name": "Deadeye Support",
+      "category": "Trait",
+      "description": "Your Deadeye champions gain 20% Attack Speed.",
+      "tier": "B",
+      "priority": 70,
+      "is_unique": false,
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1004.png"
+    },
+    {
+      "id": "cybernetic_implants",
+      "name": "Cybernetic Implants",
+      "category": "Defensive",
+      "description": "Your champions with items gain 100 Health and 10% Attack Damage.",
+      "tier": "C",
+      "priority": 65,
+      "is_unique": false,
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1005.png"
+    },
+    {
+      "id": "thrill_of_the_hunt",
+      "name": "Thrill of the Hunt",
+      "category": "Utility",
+      "description": "Your team gains 20 Mana after scoring a takedown.",
+      "tier": "C",
+      "priority": 60,
+      "is_unique": false,
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1006.png"
+    },
+    {
+      "id": "dominator_soul",
+      "name": "Dominator Soul",
+      "category": "Trait",
+      "description": "Gain a Dominator Emblem and 200 Health.",
+      "tier": "A",
+      "priority": 80,
+      "is_unique": true,
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1007.png"
+    },
+    {
+      "id": "tank_tower",
+      "name": "Tank Tower",
+      "category": "Defensive",
+      "description": "Your tanks gain 30 Armor and Magic Resist.",
+      "tier": "B",
+      "priority": 75,
+      "is_unique": false,
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1008.png"
+    },
+    {
+      "id": "stand_united",
+      "name": "Stand United",
+      "category": "Defensive",
+      "description": "Your team gains 100 Health and 10% Attack Damage per trait active.",
+      "tier": "S",
+      "priority": 90,
+      "is_unique": false,
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1009.png"
+    },
+    {
+      "id": "bruiser_heart",
+      "name": "Bruiser Heart",
+      "category": "Trait",
+      "description": "Gain a Bruiser Emblem and 15% Attack Damage.",
+      "tier": "B",
+      "priority": 75,
+      "is_unique": true,
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1010.png"
+    },
+    {
+      "id": "skirmisher_embrace",
+      "name": "Skirmisher Embrace",
+      "category": "Trait",
+      "description": "Your Skirmishers gain 20% Attack Speed and 15% Critical Strike Chance.",
+      "tier": "A",
+      "priority": 80,
+      "is_unique": false,
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1011.png"
+    },
+    {
+      "id": "last_stand",
+      "name": "Last Stand",
+      "category": "Defensive",
+      "description": "When an ally dies, nearby allies gain 20% Attack Damage and 10% Attack Speed.",
+      "tier": "B",
+      "priority": 70,
+      "is_unique": false,
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1012.png"
+    },
+    {
+      "id": "blade_master_unity",
+      "name": "Blade Master Unity",
+      "category": "Trait",
+      "description": "Your Blade Masters gain 25% Attack Damage and 15% Critical Strike Chance.",
+      "tier": "B",
+      "priority": 75,
+      "is_unique": false,
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1013.png"
+    },
+    {
+      "id": "featherweights",
+      "name": "Featherweights",
+      "category": "Utility",
+      "description": "Your 1-cost and 2-cost champions gain 20% Attack Speed and Move Speed.",
+      "tier": "C",
+      "priority": 65,
+      "is_unique": false,
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1014.png"
+    },
+    {
+      "id": "ascension",
+      "name": "Ascension",
+      "category": "Utility",
+      "description": "After 15 seconds of combat, your units deal 30% more damage.",
+      "tier": "A",
+      "priority": 85,
+      "is_unique": false,
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1015.png"
+    },
+    {
+      "id": "emperor_soul",
+      "name": "Emperor Soul",
+      "category": "Trait",
+      "description": "Gain an Emperor Emblem and 20% Spell Damage.",
+      "tier": "A",
+      "priority": 80,
+      "is_unique": true,
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1016.png"
+    },
+    {
+      "id": "giant_slayer_plus",
+      "name": "Giant Slayer+",
+      "category": "Offensive",
+      "description": "Your units deal 30% more damage to enemies with more than 1800 maximum HP.",
+      "tier": "S",
+      "priority": 90,
+      "is_unique": false,
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1017.png"
+    },
+    {
+      "id": "spell_battery",
+      "name": "Spell Battery",
+      "category": "Utility",
+      "description": "After casting their Ability, your units gain 10 Mana.",
+      "tier": "B",
+      "priority": 75,
+      "is_unique": false,
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1018.png"
+    },
+    {
+      "id": "mage_unity",
+      "name": "Mage Unity",
+      "category": "Trait",
+      "description": "Your Mages gain 25% Spell Damage and 15% Cast Speed.",
+      "tier": "A",
+      "priority": 80,
+      "is_unique": false,
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1019.png"
+    },
+    {
+      "id": "steady_presence",
+      "name": "Steady Presence",
+      "category": "Defensive",
+      "description": "Your units gain 20 Armor and Magic Resist for each different trait active.",
+      "tier": "B",
+      "priority": 70,
+      "is_unique": false,
+      "icon_url": "https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1020.png"
     }
   ]
 }

@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState, useEffect } from 'react';
 import { Search, Filter, ChevronDown, ChevronUp } from 'lucide-react';
 import { itemsApi } from '../lib/api';
+import { useItemsStore } from '../stores';
 
 interface Item {
   id: string;
@@ -205,16 +205,14 @@ export const DetailedItems: React.FC = () => {
     'Radiant': true
   });
 
-  const {
-    data: items,
-    isLoading,
-    error
-  } = useQuery({
-    queryKey: ['detailed-items'],
-    queryFn: () => itemsApi.getItems({}).then(res => res.data.data)
-  });
+  const { items, loading, error, fetchItems } = useItemsStore();
 
-  if (isLoading) {
+  // Fetch items on mount
+  useEffect(() => {
+    fetchItems({});
+  }, [fetchItems]);
+
+  if (loading) {
     return (
       <div className="min-h-screen bg-gray-900 text-white p-4">
         <div className="max-w-7xl mx-auto">
@@ -238,6 +236,12 @@ export const DetailedItems: React.FC = () => {
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-4">Error loading items data</h2>
           <p className="text-gray-400">Please try again later</p>
+          <button
+            onClick={() => fetchItems({})}
+            className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+          >
+            Retry
+          </button>
         </div>
       </div>
     );
@@ -245,17 +249,17 @@ export const DetailedItems: React.FC = () => {
 
   // Filter and sort items
   let filteredItems = items || [];
-  
+
   if (searchQuery) {
     const query = searchQuery.toLowerCase();
-    filteredItems = filteredItems.filter(item => 
+    filteredItems = filteredItems.filter((item: any) =>
       item.name.toLowerCase().includes(query) ||
-      item.type.toLowerCase().includes(query)
+      (item.type && item.type.toLowerCase().includes(query))
     );
   }
-  
+
   // Apply type filters
-  filteredItems = filteredItems.filter(item => 
+  filteredItems = filteredItems.filter((item: any) =>
     typeFilters[item.type] || false
   );
 

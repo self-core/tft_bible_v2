@@ -30,8 +30,350 @@ let db = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
 // Read the icon mappings
 const championIconsPath = path.join(__dirname, 'champion-icons.json');
 const itemIconsPath = path.join(__dirname, 'item-icons.json');
+const augmentIconsPath = path.join(__dirname, 'augment-icons.json');
 const championIcons = JSON.parse(fs.readFileSync(championIconsPath, 'utf8'));
 const itemIcons = JSON.parse(fs.readFileSync(itemIconsPath, 'utf8'));
+const augmentIcons = JSON.parse(fs.readFileSync(augmentIconsPath, 'utf8'));
+
+// Utility function to get champion icon URL
+const getChampionIconUrl = (championId) => {
+  return championIcons[championId] || `https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/${championId}.png`;
+};
+
+// Utility function to get item icon URL
+const getItemIconUrl = (itemId) => {
+  return itemIcons[itemId] || `https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/item-icons/${itemId}.png`;
+};
+
+// Utility function to get augment icon URL
+const getAugmentIconUrl = (augmentId) => {
+  return augmentIcons[augmentId] || `https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/${augmentId}.png`;
+};
+
+// Mock augments data
+const mockAugments = [
+  {
+    id: 'big_shot_heart',
+    name: 'Big Shot Heart',
+    category: 'Trait',
+    description: 'Your team gains 15% Attack Damage. Gain a Jinx.',
+    tier: 'S',
+    priority: 95,
+    is_unique: true,
+    icon_url: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1001.png'
+  },
+  {
+    id: 'giant_slayer',
+    name: 'Giant Slayer',
+    category: 'Offensive',
+    description: 'Your units deal 20% more damage to enemies with more than 1800 maximum HP',
+    tier: 'A',
+    priority: 85,
+    is_unique: false,
+    icon_url: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1002.png'
+  },
+  {
+    id: 'tactical_resupply',
+    name: 'Tactical Resupply',
+    category: 'Utility',
+    description: 'Gain 2 random completed items',
+    tier: 'B',
+    priority: 75,
+    is_unique: false,
+    icon_url: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1003.png'
+  },
+  {
+    id: 'deadeye_support',
+    name: 'Deadeye Support',
+    category: 'Trait',
+    description: 'Your Deadeye champions gain 20% Attack Speed',
+    tier: 'B',
+    priority: 70,
+    is_unique: false,
+    icon_url: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1004.png'
+  },
+  {
+    id: 'cybernetic_implants',
+    name: 'Cybernetic Implants',
+    category: 'Defensive',
+    description: 'Your champions with items gain 100 Health and 10% Attack Damage',
+    tier: 'C',
+    priority: 65,
+    is_unique: false,
+    icon_url: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1005.png'
+  },
+  {
+    id: 'thrill_of_the_hunt',
+    name: 'Thrill of the Hunt',
+    category: 'Utility',
+    description: 'Your team gains 20 Mana after scoring a takedown',
+    tier: 'C',
+    priority: 60,
+    is_unique: false,
+    icon_url: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1006.png'
+  },
+  {
+    id: 'dominator_soul',
+    name: 'Dominator Soul',
+    category: 'Trait',
+    description: 'Gain a Dominator Emblem and 200 Health',
+    tier: 'A',
+    priority: 80,
+    is_unique: true,
+    icon_url: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1007.png'
+  },
+  {
+    id: 'tank_tower',
+    name: 'Tank Tower',
+    category: 'Defensive',
+    description: 'Your tanks gain 30 Armor and Magic Resist',
+    tier: 'B',
+    priority: 75,
+    is_unique: false,
+    icon_url: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1008.png'
+  },
+  {
+    id: 'stand_united',
+    name: 'Stand United',
+    category: 'Defensive',
+    description: 'Your team gains 100 Health and 10% Attack Damage per trait active',
+    tier: 'S',
+    priority: 90,
+    is_unique: false,
+    icon_url: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1009.png'
+  },
+  {
+    id: 'bruiser_heart',
+    name: 'Bruiser Heart',
+    category: 'Trait',
+    description: 'Gain a Bruiser Emblem and 15% Attack Damage',
+    tier: 'B',
+    priority: 75,
+    is_unique: true,
+    icon_url: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1010.png'
+  },
+  {
+    id: 'skirmisher_embrace',
+    name: 'Skirmisher Embrace',
+    category: 'Trait',
+    description: 'Your Skirmishers gain 20% Attack Speed and 15% Critical Strike Chance',
+    tier: 'A',
+    priority: 80,
+    is_unique: false,
+    icon_url: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1011.png'
+  },
+  {
+    id: 'last_stand',
+    name: 'Last Stand',
+    category: 'Defensive',
+    description: 'When an ally dies, nearby allies gain 20% Attack Damage and 10% Attack Speed',
+    tier: 'B',
+    priority: 70,
+    is_unique: false,
+    icon_url: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1012.png'
+  },
+  {
+    id: 'blade_master_unity',
+    name: 'Blade Master Unity',
+    category: 'Trait',
+    description: 'Your Blade Masters gain 25% Attack Damage and 15% Critical Strike Chance',
+    tier: 'B',
+    priority: 75,
+    is_unique: false,
+    icon_url: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1013.png'
+  },
+  {
+    id: 'featherweights',
+    name: 'Featherweights',
+    category: 'Utility',
+    description: 'Your 1-cost and 2-cost champions gain 20% Attack Speed and Move Speed',
+    tier: 'C',
+    priority: 65,
+    is_unique: false,
+    icon_url: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1014.png'
+  },
+  {
+    id: 'ascension',
+    name: 'Ascension',
+    category: 'Utility',
+    description: 'After 15 seconds of combat, your units deal 30% more damage',
+    tier: 'A',
+    priority: 85,
+    is_unique: false,
+    icon_url: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1015.png'
+  },
+  {
+    id: 'emperor_soul',
+    name: 'Emperor Soul',
+    category: 'Trait',
+    description: 'Gain an Emperor Emblem and 20% Spell Damage',
+    tier: 'A',
+    priority: 80,
+    is_unique: true,
+    icon_url: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1016.png'
+  },
+  {
+    id: 'giant_slayer_plus',
+    name: 'Giant Slayer+',
+    category: 'Offensive',
+    description: 'Your units deal 30% more damage to enemies with more than 1800 maximum HP',
+    tier: 'S',
+    priority: 90,
+    is_unique: false,
+    icon_url: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1017.png'
+  },
+  {
+    id: 'spell_battery',
+    name: 'Spell Battery',
+    category: 'Utility',
+    description: 'After casting their Ability, your units gain 10 Mana',
+    tier: 'B',
+    priority: 75,
+    is_unique: false,
+    icon_url: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1018.png'
+  },
+  {
+    id: 'mage_unity',
+    name: 'Mage Unity',
+    category: 'Trait',
+    description: 'Your Mages gain 25% Spell Damage and 15% Cast Speed',
+    tier: 'A',
+    priority: 80,
+    is_unique: false,
+    icon_url: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1019.png'
+  },
+  {
+    id: 'steady_presence',
+    name: 'Steady Presence',
+    category: 'Defensive',
+    description: 'Your units gain 20 Armor and Magic Resist for each different trait active',
+    tier: 'B',
+    priority: 70,
+    is_unique: false,
+    icon_url: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1020.png'
+  },
+  //   icon_url: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1012.png'
+  // },
+  // const mockTraits = [
+  {
+    id: 'blade_master_unity',
+    name: 'Blade Master Unity',
+    category: 'Trait',
+    description: 'Your Blade Masters gain 25% Attack Damage and 15% Critical Strike Chance',
+    tier: 'B',
+    priority: 75,
+    is_unique: false,
+    icon_url: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1013.png'
+  },
+  {
+    id: 'featherweights',
+    name: 'Featherweights',
+    category: 'Utility',
+    description: 'Your 1-cost and 2-cost champions gain 20% Attack Speed and Move Speed',
+    tier: 'C',
+    priority: 65,
+    is_unique: false,
+    icon_url: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1014.png'
+  },
+  {
+    id: 'ascension',
+    name: 'Ascension',
+    category: 'Utility',
+    description: 'After 15 seconds of combat, your units deal 30% more damage',
+    tier: 'A',
+    priority: 85,
+    is_unique: false,
+    icon_url: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1015.png'
+  },
+  {
+    id: 'emperor_soul',
+    name: 'Emperor Soul',
+    category: 'Trait',
+    description: 'Gain an Emperor Emblem and 20% Spell Damage',
+    tier: 'A',
+    priority: 80,
+    is_unique: true,
+    icon_url: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1016.png'
+  },
+  {
+    id: 'giant_slayer_plus',
+    name: 'Giant Slayer+',
+    category: 'Offensive',
+    description: 'Your units deal 30% more damage to enemies with more than 1800 maximum HP',
+    tier: 'S',
+    priority: 90,
+    is_unique: false,
+    icon_url: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1017.png'
+  },
+  {
+    id: 'spell_battery',
+    name: 'Spell Battery',
+    category: 'Utility',
+    description: 'After casting their Ability, your units gain 10 Mana',
+    tier: 'B',
+    priority: 75,
+    is_unique: false,
+    icon_url: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1018.png'
+  },
+  {
+    id: 'mage_unity',
+    name: 'Mage Unity',
+    category: 'Trait',
+    description: 'Your Mages gain 25% Spell Damage and 15% Cast Speed',
+    tier: 'A',
+    priority: 80,
+    is_unique: false,
+    icon_url: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1019.png'
+  },
+  {
+    id: 'steady_presence',
+    name: 'Steady Presence',
+    category: 'Defensive',
+    description: 'Your units gain 20 Armor and Magic Resist for each different trait active',
+    tier: 'B',
+    priority: 70,
+    is_unique: false,
+    icon_url: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/augment-icons/1020.png'
+  }
+];
+
+// Extend the db object with augments
+db.augments = mockAugments;
+//db.traits = mockTraits;
+
+// API endpoints for augments
+app.get('/api/v1/augments', (req, res) => {
+  // Enhance augments with icon urls
+  const enhancedAugments = db.augments.map(augment => ({
+    ...augment,
+    icon_url: getAugmentIconUrl(augment.id) || null
+  }));
+  const result = getPaginatedResults(enhancedAugments, req.query);
+  res.json(result);
+});
+
+app.get('/api/v1/augments/:id', (req, res) => {
+  const augment = db.augments.find(a => a.id === req.params.id);
+  if (augment) {
+    const enhancedAugment = {
+      ...augment,
+      icon_url: getAugmentIconUrl(augment.id) || null
+    };
+    res.json(enhancedAugment);
+  } else {
+    res.status(404).json({ error: 'Augment not found' });
+  }
+});
+
+// Utility function to get champion icon URL
+// const getChampionIconUrl = (championId) => {
+//   return championIcons[championId] || `https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/${championId}.png`;
+// };
+
+// Utility function to get item icon URL
+// const getItemIconUrl = (itemId) => {
+//   return itemIcons[itemId] || `https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/item-icons/${itemId}.png`;
+// };
 
 // Helper function to get paginated results
 function getPaginatedResults(data, query) {
@@ -107,7 +449,7 @@ app.get('/api/v1/compositions', (req, res) => {
       name: c.name,
       cost: c.cost,
       traits: c.traits,
-      icon_url: championIcons[c.id] || null
+      icon_url: getChampionIconUrl(c.id) || null
     })) : []
   }));
   
@@ -119,7 +461,7 @@ app.get('/api/v1/champions', (req, res) => {
   // Enhance champions with icon urls
   const enhancedChampions = db.champions.map(champ => ({
     ...champ,
-    icon_url: championIcons[champ.id] || null
+    icon_url: getChampionIconUrl(champ.id) || null
   }));
   const result = getPaginatedResults(enhancedChampions, req.query);
   res.json(result);
@@ -129,13 +471,12 @@ app.get('/api/v1/items', (req, res) => {
   // Enhance items with icon urls
   const enhancedItems = db.items.map(item => ({
     ...item,
-    icon_url: itemIcons[item.id] || null
+    icon_url: getItemIconUrl(item.id) || null
   }));
   const result = getPaginatedResults(enhancedItems, req.query);
   res.json(result);
 });
 
-// Individual item endpoints
 app.get('/api/v1/compositions/:id', (req, res) => {
   const composition = db.compositions.find(c => c.id === req.params.id);
   if (composition) {
@@ -144,7 +485,7 @@ app.get('/api/v1/compositions/:id', (req, res) => {
       ...composition,
       champions: composition.champions ? composition.champions.map(champion => ({
         ...champion,
-        icon_url: championIcons[champion.id] || null
+        icon_url: getChampionIconUrl(champion.id) || null
       })) : []
     };
     res.json(enhancedComposition);
@@ -158,7 +499,7 @@ app.get('/api/v1/champions/:id', (req, res) => {
   if (champion) {
     const enhancedChampion = {
       ...champion,
-      icon_url: championIcons[champion.id] || null
+      icon_url: getChampionIconUrl(champion.id) || null
     };
     res.json(enhancedChampion);
   } else {
@@ -171,7 +512,7 @@ app.get('/api/v1/items/:id', (req, res) => {
   if (item) {
     const enhancedItem = {
       ...item,
-      icon_url: itemIcons[item.id] || null
+      icon_url: getItemIconUrl(item.id) || null
     };
     res.json(enhancedItem);
   } else {
@@ -258,6 +599,86 @@ app.get('/api/v1/search', (req, res) => {
   }
   
   res.json(results);
+});
+
+// Asset endpoints for champions, items, and augments
+app.get('/api/v1/assets/champions/:id', (req, res) => {
+  const champion = db.champions.find(c => c.id === req.params.id);
+  if (champion) {
+    const assetInfo = {
+      id: champion.id,
+      name: champion.name,
+      icon_url: getChampionIconUrl(champion.id) || null,
+      image_url: champion.image || null,
+    };
+    res.json(assetInfo);
+  } else {
+    res.status(404).json({ error: 'Champion asset not found' });
+  }
+});
+
+app.get('/api/v1/assets/items/:id', (req, res) => {
+  const item = db.items.find(i => i.id === req.params.id);
+  if (item) {
+    const assetInfo = {
+      id: item.id,
+      name: item.name,
+      icon_url: getItemIconUrl(item.id) || null,
+      image_url: item.image || null,
+    };
+    res.json(assetInfo);
+  } else {
+    res.status(404).json({ error: 'Item asset not found' });
+  }
+});
+
+app.get('/api/v1/assets/augments/:id', (req, res) => {
+  const augment = db.augments.find(a => a.id === req.params.id);
+  if (augment) {
+    const assetInfo = {
+      id: augment.id,
+      name: augment.name,
+      icon_url: getAugmentIconUrl(augment.id) || null,
+      image_url: augment.image || null,
+    };
+    res.json(assetInfo);
+  } else {
+    res.status(404).json({ error: 'Augment asset not found' });
+  }
+});
+
+// Bulk asset endpoints
+app.get('/api/v1/assets/champions', (req, res) => {
+  const championAssets = db.champions.map(champion => ({
+    id: champion.id,
+    name: champion.name,
+    icon_url: getChampionIconUrl(champion.id) || null,
+    image_url: champion.image || null,
+  }));
+  const result = getPaginatedResults(championAssets, req.query);
+  res.json(result);
+});
+
+app.get('/api/v1/assets/items', (req, res) => {
+  const itemAssets = db.items.map(item => ({
+    id: item.id,
+    name: item.name,
+    icon_url: getItemIconUrl(item.id) || null,
+    image_url: item.image || null,
+  }));
+  const result = getPaginatedResults(itemAssets, req.query);
+  res.json(result);
+});
+
+app.get('/api/v1/assets/augments', (req, res) => {
+  const augmentAssets = db.augments.map(augment => ({
+    id: augment.id,
+    name: augment.name,
+    icon_url: getAugmentIconUrl(augment.id) || null,
+    image_url: augment.image || null,
+  }));
+  const result = getPaginatedResults(augmentAssets, req.query);
+  res.json(result);
 });
 
 app.listen(PORT, () => {

@@ -1,17 +1,19 @@
-import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useState, useEffect } from 'react'
+import { useItemsStore } from '../stores'
 import { Filter, Star, Shield, Sword, Zap } from 'lucide-react'
-import { itemsApi, ItemSummary, ItemQuery } from '../lib/api'
+import { ItemSummary, ItemQuery } from '../lib/api'
 
 const Items = () => {
   const [filters, setFilters] = useState<ItemQuery>({
     limit: 20,
   })
+  
+  const { items, loading, error, fetchItems, clearError } = useItemsStore()
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['items', filters],
-    queryFn: () => itemsApi.getItems(filters).then(res => res.data),
-  })
+  // Fetch items when filters change
+  useEffect(() => {
+    fetchItems(filters)
+  }, [filters, fetchItems])
 
   const handleFilterChange = (key: keyof ItemQuery, value: string | number) => {
     setFilters(prev => ({
@@ -39,7 +41,7 @@ const Items = () => {
     }
   }
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-tft-gold"></div>
@@ -51,6 +53,12 @@ const Items = () => {
     return (
       <div className="text-center py-12">
         <p className="text-red-600">Failed to load items. Please try again.</p>
+        <button 
+          onClick={() => fetchItems(filters)}
+          className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+        >
+          Retry
+        </button>
       </div>
     )
   }
@@ -127,7 +135,7 @@ const Items = () => {
 
       {/* Results */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {data?.data.map((item: ItemSummary) => (
+        {items.map((item: ItemSummary) => (
           <div
             key={item.id}
             className="rounded-lg shadow-sm border hover:shadow-md transition-shadow group"
@@ -138,8 +146,31 @@ const Items = () => {
             }}
           >
             <div className="p-6">
+              {/* Item image */}
+              <div className="flex justify-center mb-4">
+                {item.icon_url ? (
+                  <img 
+                    src={item.icon_url} 
+                    alt={item.name}
+                    className="w-16 h-16 rounded-lg object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.onerror = null; // Prevent infinite loop
+                      target.style.display = 'none';
+                      // Show fallback
+                      const fallback = target.parentElement?.querySelector('.fallback-item-icon');
+                      if (fallback) fallback.style.display = 'flex';
+                    }}
+                  />
+                ) : (
+                  <div className="w-16 h-16 rounded-lg bg-gray-700 flex items-center justify-center fallback-item-icon">
+                    <span className="text-lg font-bold">{item.name.charAt(0)}</span>
+                  </div>
+                )}
+              </div>
+
               <div className="flex items-start justify-between mb-3">
-                <h3 className="text-lg font-semibold group-hover:text-tft-gold transition-colors" style={{ color: 'var(--text-primary)' }}>
+                <h3 className="text-lg font-semibold group-hover:text-tft-gold transition-colors text-center w-full" style={{ color: 'var(--text-primary)' }}>
                   {item.name}
                 </h3>
                 <div className="flex items-center gap-2">
@@ -159,7 +190,7 @@ const Items = () => {
                 </div>
               </div>
 
-              <p className="text-sm mb-4 line-clamp-3" style={{ color: 'var(--text-secondary)' }}>
+              <p className="text-sm mb-4 line-clamp-3 text-center" style={{ color: 'var(--text-secondary)' }}>
                 {item.description}
               </p>
 
@@ -189,7 +220,7 @@ const Items = () => {
       </div>
 
       {/* Pagination */}
-      {data && data.total_pages > 1 && (
+      {items.length > 0 && (
         <div className="flex justify-center">
           <div className="flex gap-2">
             <button
@@ -206,12 +237,12 @@ const Items = () => {
             </button>
 
             <span className="px-4 py-2" style={{ color: 'var(--text-primary)' }}>
-              Page {data.page} of {data.total_pages}
+              Page {Math.floor((filters.offset || 0) / (filters.limit || 20)) + 1} of {Math.ceil(items.length / (filters.limit || 20))}
             </span>
 
             <button
               onClick={() => setFilters(prev => ({ ...prev, offset: (prev.offset || 0) + (prev.limit || 20) }))}
-              disabled={data.page >= data.total_pages}
+              disabled={items.length < (filters.limit || 20)}
               className="px-4 py-2 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
                 border: '1px solid var(--bg-accent)',
@@ -225,7 +256,7 @@ const Items = () => {
         </div>
       )}
 
-      {data?.data.length === 0 && (
+      {items.length === 0 && (
         <div className="text-center py-12">
           <p style={{ color: 'var(--text-secondary)' }}>No items found matching your criteria.</p>
         </div>

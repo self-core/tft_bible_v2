@@ -8,6 +8,7 @@ interface Champion {
   name: string;
   cost: number;
   image: string;
+  icon_url?: string;
 }
 
 interface BoardSquare {
@@ -36,7 +37,27 @@ const DraggableChampion: React.FC<{ champion: Champion }> = ({ champion }) => {
         isDragging ? 'opacity-50 scale-95' : 'opacity-100 hover:scale-105'
       } border-gray-600 bg-gradient-to-br from-gray-800 to-gray-900 hover:from-gray-700 hover:to-gray-800 shadow-md`}
     >
-      <div className="text-2xl">{champion.image}</div>
+      {champion.icon_url ? (
+        <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-gray-700">
+          <img 
+            src={champion.icon_url} 
+            alt={champion.name}
+            className="w-10 h-10 rounded object-cover"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.onerror = null; // Prevent infinite loop
+              target.style.display = 'none';
+              // Show fallback
+              const fallback = target.parentElement?.querySelector('.fallback-board-champ');
+              if (fallback) fallback.style.display = 'flex';
+            }}
+          />
+        </div>
+      ) : (
+        <div className="w-12 h-12 rounded-lg bg-gray-700 flex items-center justify-center fallback-board-champ">
+          <span className="text-xl font-bold">{champion.name.charAt(0)}</span>
+        </div>
+      )}
       <div className="text-xs text-white mt-1 text-center font-medium">{champion.name}</div>
     </div>
   );
@@ -63,8 +84,28 @@ const DraggableSquare: React.FC<{
       className={`${isOver ? 'bg-blue-500/30' : square.champion ? 'bg-gray-700' : 'bg-gray-800'}`}
     >
       {square.champion && (
-        <div className="w-full h-full flex items-center justify-center text-2xl">
-          {square.champion.image}
+        <div className="w-full h-full flex items-center justify-center">
+          {square.champion.icon_url ? (
+            <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-gray-700">
+              <img 
+                src={square.champion.icon_url} 
+                alt={square.champion.name}
+                className="w-10 h-10 rounded object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.onerror = null; // Prevent infinite loop
+                  target.style.display = 'none';
+                  // Show fallback
+                  const fallback = target.parentElement?.querySelector('.fallback-board-square');
+                  if (fallback) fallback.style.display = 'flex';
+                }}
+              />
+            </div>
+          ) : (
+            <div className="w-12 h-12 rounded-lg bg-gray-700 flex items-center justify-center fallback-board-square">
+              <span className="text-lg font-bold">{square.champion.name.charAt(0)}</span>
+            </div>
+          )}
         </div>
       )}
     </Square>
@@ -87,12 +128,12 @@ const BoardWithoutProvider: React.FC = () => {
     setBoard(newBoard);
   };
 
-  // Sample champions for testing
+// Sample champions for testing with proper icon URLs
   const sampleChampions: Champion[] = [
-    { id: '1', name: 'Garen', cost: 1, image: '⚔️' },
-    { id: '2', name: 'Darius', cost: 1, image: '🗡️' },
-    { id: '3', name: 'Kha\'Zix', cost: 2, image: '🦂' },
-    { id: '4', name: 'Azir', cost: 3, image: '👑' },
+    { id: '1', name: 'Garen', cost: 1, image: '⚔️', icon_url: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/86.png' },
+    { id: '2', name: 'Darius', cost: 1, image: '🗡️', icon_url: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/122.png' },
+    { id: '3', name: 'Kha\'Zix', cost: 2, image: '🦂', icon_url: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/121.png' },
+    { id: '4', name: 'Azir', cost: 3, image: '👑', icon_url: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/136.png' },
   ];
 
   return (

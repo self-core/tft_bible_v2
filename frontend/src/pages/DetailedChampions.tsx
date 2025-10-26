@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { Search, Filter, ChevronDown, ChevronUp } from 'lucide-react';
 import { championsApi } from '../lib/api';
+import { useChampionsStore } from '../stores';
 
 interface Champion {
   id: string;
@@ -219,18 +219,16 @@ export const DetailedChampions: React.FC = () => {
   const [costFilter, setCostFilter] = useState<number | null>(null);
   const [traitFilter, setTraitFilter] = useState('');
 
-  const {
-    data: champions,
-    isLoading,
-    error
-  } = useQuery({
-    queryKey: ['detailed-champions'],
-    queryFn: () => championsApi.getChampions({}).then(res => res.data.data)
-  });
+  const { champions, loading, error, fetchChampions } = useChampionsStore();
+
+  // Fetch champions on mount
+  useEffect(() => {
+    fetchChampions({});
+  }, [fetchChampions]);
 
   // Mock data to use if API fails
   useEffect(() => {
-    if (!champions && !isLoading && !error) {
+    if (!champions && !loading && !error) {
       // In a real app, this would come from the API
       const mockChampions = [
         {
@@ -259,9 +257,9 @@ export const DetailedChampions: React.FC = () => {
         }
       ];
     }
-  }, [champions, isLoading, error]);
+  }, [champions, loading, error]);
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-gray-900 text-white p-4">
         <div className="max-w-7xl mx-auto">
@@ -285,6 +283,12 @@ export const DetailedChampions: React.FC = () => {
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-4">Error loading champions data</h2>
           <p className="text-gray-400">Please try again later</p>
+          <button
+            onClick={() => fetchChampions({})}
+            className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+          >
+            Retry
+          </button>
         </div>
       </div>
     );
@@ -292,35 +296,35 @@ export const DetailedChampions: React.FC = () => {
 
   // Filter and sort champions
   let filteredChampions = champions || [];
-  
+
   if (searchQuery) {
     const query = searchQuery.toLowerCase();
-    filteredChampions = filteredChampions.filter(champion => 
+    filteredChampions = filteredChampions.filter((champion: any) =>
       champion.name.toLowerCase().includes(query) ||
-      champion.traits.some(trait => trait.toLowerCase().includes(query))
+      champion.traits.some((trait: string) => trait.toLowerCase().includes(query))
     );
   }
-  
+
   if (costFilter !== null) {
-    filteredChampions = filteredChampions.filter(champion => champion.cost === costFilter);
+    filteredChampions = filteredChampions.filter((champion: any) => champion.cost === costFilter);
   }
-  
+
   if (traitFilter) {
     const trait = traitFilter.toLowerCase();
-    filteredChampions = filteredChampions.filter(champion => 
-      champion.traits.some(traitName => traitName.toLowerCase().includes(trait))
+    filteredChampions = filteredChampions.filter((champion: any) =>
+      champion.traits.some((traitName: string) => traitName.toLowerCase().includes(trait))
     );
   }
 
   // Sort champions
-  filteredChampions.sort((a, b) => {
+  filteredChampions.sort((a: any, b: any) => {
     switch (sortBy) {
       case 'cost':
         return a.cost - b.cost;
       case 'play_rate':
-        return b.play_rate - a.play_rate;
+        return (b.play_rate || 0) - (a.play_rate || 0);
       case 'avg_placement':
-        return a.avg_placement - b.avg_placement;
+        return (a.avg_placement || 0) - (b.avg_placement || 0);
       default: // name
         return a.name.localeCompare(b.name);
     }

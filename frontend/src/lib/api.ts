@@ -142,6 +142,24 @@ export interface ItemSummary {
   icon_url?: string;
 }
 
+export interface AssetInfo {
+  id: string;
+  name: string;
+  icon_url?: string;
+  image_url?: string;
+}
+
+export interface AugmentSummary {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  tier: string;
+  priority: number;
+  is_unique: boolean;
+  icon_url?: string;
+}
+
 export interface CompositionQuery {
   set?: string;
   tier?: string;
@@ -171,11 +189,25 @@ export interface ItemQuery {
   search?: string;
 }
 
+export interface AugmentQuery {
+  set?: string;
+  category?: string;
+  tier?: string;
+  limit?: number;
+  search?: string;
+}
+
 export interface SearchQuery {
   q: string;
   type?: string;
   limit?: number;
   set_id?: string;
+}
+
+export interface AssetQuery {
+  limit?: number;
+  offset?: number;
+  search?: string;
 }
 
 // API Functions
@@ -219,6 +251,34 @@ export const itemsApi = {
 
   getItemRecommendations: (championId: string) =>
     api.get(`/api/v1/items/recommendations/${championId}`),
+};
+
+export const augmentsApi = {
+  getAugments: (params?: AugmentQuery) =>
+    api.get<PaginatedResponse<AugmentSummary>>('/api/v1/augments', { params }),
+
+  getAugmentById: (id: string) =>
+    api.get(`/api/v1/augments/${id}`),
+};
+
+export const assetsApi = {
+  getChampionAssets: (params?: AssetQuery) =>
+    api.get<PaginatedResponse<AssetInfo>>('/api/v1/assets/champions', { params }),
+
+  getChampionAssetById: (id: string) =>
+    api.get(`/api/v1/assets/champions/${id}`),
+
+  getItemAssets: (params?: AssetQuery) =>
+    api.get<PaginatedResponse<AssetInfo>>('/api/v1/assets/items', { params }),
+
+  getItemAssetById: (id: string) =>
+    api.get(`/api/v1/assets/items/${id}`),
+
+  getAugmentAssets: (params?: AssetQuery) =>
+    api.get<PaginatedResponse<AssetInfo>>('/api/v1/assets/augments', { params }),
+
+  getAugmentAssetById: (id: string) =>
+    api.get(`/api/v1/assets/augments/${id}`),
 };
 
 export const searchApi = {

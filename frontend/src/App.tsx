@@ -1,5 +1,4 @@
 import { Routes, Route } from 'react-router-dom'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ThemeProvider } from './contexts/ThemeContext'
 import Layout from './components/Layout'
 import Home from './pages/Home'
@@ -9,24 +8,16 @@ import Champions from './pages/Champions'
 import Items from './pages/Items'
 import PatchNotes from './pages/PatchNotes'
 import TeamBuilder from './pages/TeamBuilder'
+import Augments from './pages/Augments'
+import AssetTestPage from './pages/AssetTestPage'
 import ThemeTestPage from './pages/ThemeTestPage'
 import BoardTestPage from './pages/BoardTestPage'
 import NotFound from './pages/NotFound'
 import { DetailedChampions } from './pages/DetailedChampions'
 import { DetailedItems } from './pages/DetailedItems'
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      retry: 1,
-    },
-  },
-})
-
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <Layout>
           <Routes>
@@ -35,6 +26,8 @@ function App() {
             <Route path="/compositions/:id" element={<CompositionDetail />} />
             <Route path="/champions" element={<Champions />} />
             <Route path="/items" element={<Items />} />
+            <Route path="/augments" element={<Augments />} />
+            <Route path="/asset-test" element={<AssetTestPage />} />
             <Route path="/detailed-champions" element={<DetailedChampions />} />
             <Route path="/detailed-items" element={<DetailedItems />} />
             <Route path="/team-builder" element={<TeamBuilder />} />
@@ -45,7 +38,6 @@ function App() {
           </Routes>
         </Layout>
       </ThemeProvider>
-    </QueryClientProvider>
   )
 }
 
