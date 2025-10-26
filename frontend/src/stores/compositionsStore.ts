@@ -35,7 +35,7 @@ export const useCompositionsStore = create<CompositionsState>((set, get) => ({
     try {
       const response = await compositionsApi.getCompositions(params);
       const data: PaginatedResponse<CompositionSummary> = response.data;
-      
+
       set({
         compositions: data.data,
         totalPages: data.total_pages,
@@ -44,9 +44,10 @@ export const useCompositionsStore = create<CompositionsState>((set, get) => ({
         loading: false
       });
     } catch (error: any) {
+      console.error('Failed to fetch compositions:', error);
       set({
         loading: false,
-        error: error.message || 'Failed to fetch compositions'
+        error: error.response?.data?.message || error.message || 'Failed to fetch compositions'
       });
     }
   },
@@ -56,15 +57,16 @@ export const useCompositionsStore = create<CompositionsState>((set, get) => ({
     try {
       const response = await compositionsApi.getCompositionById(id);
       const data: Composition = response.data;
-      
+
       set({
         currentComposition: data,
         loading: false
       });
     } catch (error: any) {
+      console.error('Failed to fetch composition by ID:', error);
       set({
         loading: false,
-        error: error.message || 'Failed to fetch composition'
+        error: error.response?.data?.message || error.message || 'Failed to fetch composition'
       });
     }
   },

@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useState, useEffect } from 'react'
+import { useCompositionsStore } from '../stores'
 import { Link } from 'react-router-dom'
 import { Filter, Star, Eye, ThumbsUp, ExternalLink } from 'lucide-react'
 import { compositionsApi, CompositionSummary, CompositionQuery } from '../lib/api'
@@ -9,11 +9,13 @@ const Compositions = () => {
     limit: 12,
     offset: 0,
   })
+  
+  const { compositions, loading, error, fetchCompositions, clearError, totalPages, currentPage } = useCompositionsStore()
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['compositions', filters],
-    queryFn: () => compositionsApi.getCompositions(filters).then(res => res.data),
-  })
+  // Fetch compositions when filters change
+  useEffect(() => {
+    fetchCompositions(filters)
+  }, [filters, fetchCompositions])
 
   const handleFilterChange = (key: keyof CompositionQuery, value: string | number) => {
     setFilters(prev => ({
@@ -34,7 +36,7 @@ const Compositions = () => {
     }
   }
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-tft-gold"></div>
@@ -45,7 +47,19 @@ const Compositions = () => {
   if (error) {
     return (
       <div className="text-center py-12">
-        <p className="text-red-600">Failed to load compositions. Please try again.</p>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
+          <h3 className="text-lg font-semibold text-red-800 mb-2">Failed to Load Compositions</h3>
+          <p className="text-red-600 mb-4">{error}</p>
+          <p className="text-sm text-gray-600 mb-4">
+            This might be because the backend server is not running or there are connection issues.
+          </p>
+          <button
+            onClick={() => fetchCompositions(filters)}
+            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
       </div>
     )
   }
@@ -141,7 +155,7 @@ const Compositions = () => {
 
       {/* Results */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {data?.data.map((comp: CompositionSummary) => (
+        {compositions?.map((comp: CompositionSummary) => (
           <Link
             key={comp.id}
             to={`/compositions/${comp.id}`}
@@ -188,7 +202,7 @@ const Compositions = () => {
                             const target = e.target as HTMLImageElement;
                             target.style.display = 'none';
                             // Show fallback
-                            const fallback = target.parentElement?.querySelector('.fallback-icon');
+                            const fallback = target.parentElement?.querySelector('.fallback-icon') as HTMLElement;
                             if (fallback) fallback.style.display = 'flex';
                           }}
                         />
@@ -244,7 +258,7 @@ const Compositions = () => {
       </div>
 
       {/* Pagination */}
-      {data && data.total_pages > 1 && (
+      {totalPages > 1 && (
         <div className="flex justify-center">
           <div className="flex gap-2">
             <button
@@ -256,12 +270,12 @@ const Compositions = () => {
             </button>
 
             <span className="px-4 py-2 text-gray-700">
-              Page {data.page} of {data.total_pages}
+              Page {currentPage} of {totalPages}
             </span>
 
             <button
               onClick={() => setFilters(prev => ({ ...prev, offset: (prev.offset || 0) + (prev.limit || 12) }))}
-              disabled={data.page >= data.total_pages}
+              disabled={currentPage >= totalPages}
               className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Next
@@ -270,7 +284,7 @@ const Compositions = () => {
         </div>
       )}
 
-      {data?.data.length === 0 && (
+      {compositions.length === 0 && !loading && (
         <div className="text-center py-12">
           <p className="text-gray-500">No compositions found matching your criteria.</p>
         </div>

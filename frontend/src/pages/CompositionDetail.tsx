@@ -1,18 +1,21 @@
-import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { ArrowLeft, Star, ThumbsUp, Clock, Users, Target, Zap, Shield, Sword, Heart } from 'lucide-react'
-import { compositionsApi, Composition } from '../lib/api'
+import { useCompositionsStore } from '../stores'
+import { Composition, ChampionInComposition } from '../lib/api'
 
 const CompositionDetail = () => {
   const { id } = useParams<{ id: string }>()
   const [isVoting, setIsVoting] = useState(false)
+  
+  const { currentComposition: composition, loading: isLoading, error, fetchCompositionById, clearError } = useCompositionsStore()
 
-  const { data: composition, isLoading, error } = useQuery<Composition>({
-    queryKey: ['composition', id],
-    queryFn: () => compositionsApi.getCompositionById(id!).then(res => res.data),
-    enabled: !!id,
-  })
+  // Fetch composition when id changes
+  useEffect(() => {
+    if (id) {
+      fetchCompositionById(id)
+    }
+  }, [id, fetchCompositionById])
 
   const handleVote = async (voteType: 'upvote' | 'downvote') => {
     if (!composition || isVoting) return
@@ -105,7 +108,7 @@ const CompositionDetail = () => {
                             target.onerror = null; // Prevent infinite loop
                             target.style.display = 'none';
                             // Show fallback
-                            const fallback = target.parentElement?.querySelector('.fallback');
+                            const fallback = target.parentElement?.querySelector('.fallback') as HTMLElement;
                             if (fallback) fallback.style.display = 'flex';
                           }}
                         />
@@ -132,7 +135,7 @@ const CompositionDetail = () => {
                       {/* Items */}
                       {champion.items && champion.items.length > 0 && (
                         <div className="absolute -bottom-1 left-0 flex">
-                          {champion.items.slice(0, 2).map((_, i) => (
+                          {champion.items.slice(0, 2).map((_: any, i: number) => (
                             <div key={i} className="w-3 h-3 rounded-full bg-tft-blue ml-[-4px] border border-gray-800"></div>
                           ))}
                           {champion.items.length > 2 && (
@@ -184,14 +187,24 @@ const CompositionDetail = () => {
   if (error || !composition) {
     return (
       <div className="text-center py-12">
-        <p className="text-red-600">Failed to load composition details. Please try again.</p>
-        <Link to="/compositions" className="text-tft-gold hover:underline mt-4 inline-block">
-          ← Back to Compositions
-        </Link>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
+          <h3 className="text-lg font-semibold text-red-800 mb-2">Failed to Load Composition</h3>
+          <p className="text-red-600 mb-4">{error || 'Composition not found'}</p>
+          <p className="text-sm text-gray-600 mb-4">
+            This composition may not exist or there might be a connection issue with the backend.
+          </p>
+          <Link
+            to="/compositions"
+            className="inline-block px-4 py-2 bg-tft-gold text-white rounded-lg hover:bg-yellow-600 transition-colors"
+          >
+            ← Back to Compositions
+          </Link>
+        </div>
       </div>
     )
   }
 
+  // Main return with loading and error handling
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -300,7 +313,7 @@ const CompositionDetail = () => {
           Champions
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {composition.champions.map((champion: Champion, index: number) => (
+          {composition.champions.map((champion: ChampionInComposition, index: number) => (
             <div key={index} className="border border-gray-200 rounded-lg p-4 bg-white">
               <div className="flex items-center gap-3 mb-3">
                 {champion.icon_url ? (
@@ -313,7 +326,7 @@ const CompositionDetail = () => {
                       target.onerror = null; // Prevent infinite loop
                       target.style.display = 'none';
                       // Show fallback
-                      const fallback = target.parentElement?.querySelector('.fallback-champion');
+                      const fallback = target.parentElement?.querySelector('.fallback-champion') as HTMLElement;
                       if (fallback) fallback.style.display = 'flex';
                     }}
                   />
@@ -373,7 +386,7 @@ const CompositionDetail = () => {
                         key={itemIndex}
                         className="px-2 py-1 bg-tft-gold/10 text-tft-gold rounded text-xs"
                       >
-                        {typeof item === 'string' ? item : item.name || 'Unknown Item'}
+                        {typeof item === 'string' ? item : (item as any).name || 'Unknown Item'}
                       </span>
                     ))}
                   </div>
@@ -403,7 +416,7 @@ const CompositionDetail = () => {
                 Preferred
               </h3>
               <ul className="space-y-2">
-                {composition.augments.preferred.map((augment: string | Augment, index: number) => (
+                {composition.augments.preferred.map((augment: string | any, index: number) => (
                   <li key={index} className="p-3 bg-white rounded-lg border border-gray-200">
                     <div className="font-medium text-gray-900">
                       {typeof augment === 'string' ? augment : augment.name || 'Unknown Augment'}
@@ -425,7 +438,7 @@ const CompositionDetail = () => {
                   Acceptable
                 </h3>
                 <ul className="space-y-2">
-                  {composition.augments.acceptable.map((augment: string | Augment, index: number) => (
+                  {composition.augments.acceptable.map((augment: string | any, index: number) => (
                     <li key={index} className="p-3 bg-white rounded-lg border border-gray-200">
                       <div className="font-medium text-gray-900">
                         {typeof augment === 'string' ? augment : augment.name || 'Unknown Augment'}
