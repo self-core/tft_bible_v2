@@ -2,6 +2,10 @@ use bson::doc;
 use mongodb::Client;
 use std::env;
 use backend::services::compositions::CompositionService;
+use backend::services::champions::ChampionService;
+use backend::services::items::ItemService;
+use backend::services::traits::TraitService;
+use backend::services::augments::AugmentService;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -23,23 +27,75 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Initialize services
     let composition_service = CompositionService::new(&database);
+    let champion_service = ChampionService::new(&database);
+    let item_service = ItemService::new(&database);
+    let trait_service = TraitService::new(&database);
+    let augment_service = AugmentService::new(&database);
 
     // Check if data already exists
-    let existing_count = composition_service.collection.count_documents(doc! {}).await?;
-    if existing_count > 0 {
-        println!("⚠️  Database already contains {} compositions. Skipping seeding.", existing_count);
-        println!("💡 If you want to reseed, drop the compositions collection first.");
+    let existing_compositions = composition_service.collection.count_documents(doc! {}).await?;
+    let existing_champions = champion_service.collection.count_documents(doc! {}).await?;
+    let existing_items = item_service.collection.count_documents(doc! {}).await?;
+    let existing_traits = trait_service.collection.count_documents(doc! {}).await?;
+    let existing_augments = augment_service.collection.count_documents(doc! {}).await?;
+
+    if existing_compositions > 0 || existing_champions > 0 || existing_items > 0 || existing_traits > 0 || existing_augments > 0 {
+        println!("⚠️  Database already contains data:");
+        println!("   - {} compositions", existing_compositions);
+        println!("   - {} champions", existing_champions);
+        println!("   - {} items", existing_items);
+        println!("   - {} traits", existing_traits);
+        println!("   - {} augments", existing_augments);
+        println!("💡 If you want to reseed, drop the collections first.");
         return Ok(());
     }
+
+    // Populate RIOT asset data first
+    println!("📝 Populating RIOT asset data...");
+
+    // Seed sets first (required for foreign keys)
+    println!("🌍 Creating TFT Set 15...");
+    trait_service.create_set().await?;
+    println!("✅ Set created");
+
+    // Seed champions
+    println!("👥 Populating champions from RIOT data...");
+    champion_service.populate_from_riot_data().await?;
+    println!("✅ Champions populated");
+
+    // Seed traits
+    println!("🏷️  Populating traits from RIOT data...");
+    trait_service.populate_from_riot_data().await?;
+    println!("✅ Traits populated");
+
+    // Seed items
+    println!("⚔️  Populating items from RIOT data...");
+    item_service.populate_from_riot_data().await?;
+    println!("✅ Items populated");
+
+    // Seed augments
+    println!("🔮 Populating augments from RIOT data...");
+    augment_service.populate_from_riot_data().await?;
+    println!("✅ Augments populated");
 
     // Populate compositions from scraped data
     println!("📝 Populating compositions from scraped data...");
     composition_service.populate_from_scraped_data().await?;
-    println!("✅ Successfully populated compositions!");
+    println!("✅ Compositions populated");
 
     // Verify the data
-    let final_count = composition_service.collection.count_documents(doc! {}).await?;
-    println!("📊 Total compositions in database: {}", final_count);
+    let final_compositions = composition_service.collection.count_documents(doc! {}).await?;
+    let final_champions = champion_service.collection.count_documents(doc! {}).await?;
+    let final_items = item_service.collection.count_documents(doc! {}).await?;
+    let final_traits = trait_service.collection.count_documents(doc! {}).await?;
+    let final_augments = augment_service.collection.count_documents(doc! {}).await?;
+
+    println!("📊 Final database counts:");
+    println!("   - {} compositions", final_compositions);
+    println!("   - {} champions", final_champions);
+    println!("   - {} items", final_items);
+    println!("   - {} traits", final_traits);
+    println!("   - {} augments", final_augments);
 
     println!("🎉 Database seeding completed successfully!");
     Ok(())

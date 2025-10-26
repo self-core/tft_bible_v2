@@ -2,6 +2,8 @@ use bson::{oid::ObjectId, DateTime};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+// Add Serialize and Deserialize derives to all models for MongoDB
+
 // Custom serialization for ObjectId and DateTime to handle serde issues
 pub mod serde_helpers {
     use bson::{oid::ObjectId, DateTime};
@@ -50,7 +52,7 @@ pub mod serde_helpers {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Set {
     pub id: Option<ObjectId>,
     pub name: String,
@@ -65,7 +67,7 @@ pub struct Set {
     pub updated_at: DateTime,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Trait {
     pub id: Option<ObjectId>,
     pub set_id: ObjectId,
@@ -85,7 +87,7 @@ pub struct TraitBreakpoint {
     pub bonuses: HashMap<String, f64>, // Flexible stat bonuses
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Champion {
     pub id: Option<ObjectId>,
     pub set_id: ObjectId,
@@ -163,7 +165,7 @@ pub struct AbilityScaling {
     pub additional_effects: HashMap<String, f64>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Item {
     pub id: Option<ObjectId>,
     pub set_id: ObjectId,
@@ -200,7 +202,7 @@ pub struct ItemStats {
     pub mana: Option<f64>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ItemRecipe {
     pub component1: ObjectId,
     pub component2: ObjectId,
@@ -216,7 +218,7 @@ pub struct ItemEffect {
     pub cooldown: Option<f64>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Augment {
     pub id: Option<ObjectId>,
     pub set_id: ObjectId,
@@ -235,7 +237,7 @@ pub struct Augment {
     pub updated_at: DateTime,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct HeroChampion {
     pub champion_id: ObjectId,
     pub star_level: u32,
