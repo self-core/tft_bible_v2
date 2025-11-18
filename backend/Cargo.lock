@@ -279,6 +279,7 @@ dependencies = [
  "anyhow",
  "axum",
  "axum-test",
+ "base64 0.22.1",
  "bson 3.0.0",
  "chrono",
  "dotenv",
