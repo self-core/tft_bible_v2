@@ -15,27 +15,11 @@ use crate::{
 use crate::AppState;
 
 pub async fn get_compositions(
-    State(_state): State<Arc<AppState>>,
+    State(state): State<Arc<AppState>>,
     Query(params): Query<CompositionQuery>,
 ) -> Result<Json<PaginatedResponse<CompositionSummary>>, ApiError> {
-    // TODO: Implement proper data fetching from database
-    let compositions: Vec<CompositionSummary> = vec![];
-
-    // Apply basic filtering if needed
-    let filtered_compositions = if let Some(tier) = &params.tier {
-        compositions.into_iter().filter(|c: &CompositionSummary| &c.tier == tier).collect()
-    } else {
-        compositions
-    };
-
-    let response = PaginatedResponse {
-        data: filtered_compositions,
-        total: 2500, // Total compositions
-        page: 1,
-        per_page: 20,
-        total_pages: 125,
-    };
-
+    let service = CompositionService::new(&state.db);
+    let response = service.get_compositions(params).await?;
     Ok(Json(response))
 }
 

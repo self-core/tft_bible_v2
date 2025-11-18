@@ -48,9 +48,38 @@ export interface CompositionSummary {
   views: number;
   upvotes: number;
   author?: string;
-  champion_count: number;
-  main_champions: string[];
+  champion_count?: number;
+  main_champions?: string[];
   created_at: string;
+  builder_code?: string;
+  champions?: Array<{
+    id: string;
+    name: string;
+    cost: number;
+    traits: string[];
+    icon_url?: string;
+  }>;
+}
+
+export interface ChampionInComposition {
+  id: string;
+  name: string;
+  star_level: number;
+  position: { x: number; y: number };
+  items: string[];
+  is_core: boolean;
+  priority: string;
+  cost: number;
+  traits: string[];
+  health: number;
+  attack_damage: number;
+  ability_name: string;
+  icon_url?: string;
+}
+
+export interface CompositionAugments {
+  preferred: (string | { name: string; description: string })[];
+  acceptable?: (string | { name: string; description: string })[];
 }
 
 export interface Composition {
@@ -61,8 +90,8 @@ export interface Composition {
   description: string;
   category: string;
   tags: string[];
-  champions: any[]; // Simplified for now
-  augments: any; // Simplified for now
+  champions: ChampionInComposition[];
+  augments: CompositionAugments;
   meta: {
     tier: string;
     difficulty: number;
@@ -86,6 +115,7 @@ export interface Composition {
   is_featured: boolean;
   created_at: string;
   updated_at: string;
+  builder_code?: string;
 }
 
 export interface ChampionSummary {
@@ -114,6 +144,25 @@ export interface ItemSummary {
   is_unique: boolean;
   priority: number;
   image_url?: string;
+  icon_url?: string;
+}
+
+export interface AssetInfo {
+  id: string;
+  name: string;
+  icon_url?: string;
+  image_url?: string;
+}
+
+export interface AugmentSummary {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  tier: string;
+  priority: number;
+  is_unique: boolean;
+  icon_url?: string;
 }
 
 export interface CompositionQuery {
@@ -145,11 +194,25 @@ export interface ItemQuery {
   search?: string;
 }
 
+export interface AugmentQuery {
+  set?: string;
+  category?: string;
+  tier?: string;
+  limit?: number;
+  search?: string;
+}
+
 export interface SearchQuery {
   q: string;
   type?: string;
   limit?: number;
   set_id?: string;
+}
+
+export interface AssetQuery {
+  limit?: number;
+  offset?: number;
+  search?: string;
 }
 
 // API Functions
@@ -193,6 +256,34 @@ export const itemsApi = {
 
   getItemRecommendations: (championId: string) =>
     api.get(`/api/v1/items/recommendations/${championId}`),
+};
+
+export const augmentsApi = {
+  getAugments: (params?: AugmentQuery) =>
+    api.get<PaginatedResponse<AugmentSummary>>('/api/v1/augments', { params }),
+
+  getAugmentById: (id: string) =>
+    api.get(`/api/v1/augments/${id}`),
+};
+
+export const assetsApi = {
+  getChampionAssets: (params?: AssetQuery) =>
+    api.get<PaginatedResponse<AssetInfo>>('/api/v1/assets/champions', { params }),
+
+  getChampionAssetById: (id: string) =>
+    api.get(`/api/v1/assets/champions/${id}`),
+
+  getItemAssets: (params?: AssetQuery) =>
+    api.get<PaginatedResponse<AssetInfo>>('/api/v1/assets/items', { params }),
+
+  getItemAssetById: (id: string) =>
+    api.get(`/api/v1/assets/items/${id}`),
+
+  getAugmentAssets: (params?: AssetQuery) =>
+    api.get<PaginatedResponse<AssetInfo>>('/api/v1/assets/augments', { params }),
+
+  getAugmentAssetById: (id: string) =>
+    api.get(`/api/v1/assets/augments/${id}`),
 };
 
 export const searchApi = {

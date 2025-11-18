@@ -18,6 +18,89 @@
   --spacing: 24px;
 }
 
+/* Light Theme */
+[data-theme="light"] {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f3f4f6;
+  --bg-accent: #e5e7eb;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --accent1: #ffd700;
+  --accent2: #3b82f6;
+  --accent3: #10b981;
+  --grid-color: #d1d5db;
+}
+
+/* Earthy Theme - https://coolors.co/palette/606c38-283618-fefae0-dda15e-bc6c25 */
+[data-theme="earthy"] {
+  --bg-primary: #283618; /* Dark green */
+  --bg-secondary: #606c38; /* Medium green */
+  --bg-accent: #dda15e; /* Warm yellow */
+  --text-primary: #fefae0; /* Off-white */
+  --text-secondary: #bc6c25; /* Brown */
+  --accent1: #bc6c25; /* Copper brown */
+  --accent2: #dda15e; /* Warm yellow */
+  --accent3: #606c38; /* Green */
+  --accent-glow: rgba(188, 108, 37, 0.3); /* Glow for copper theme */
+  --grid-color: #606c38;
+}
+
+/* Pastel Theme - https://coolors.co/palette/cdb4db-ffc8dd-ffafcc-bde0fe-a2d2ff */
+[data-theme="pastel"] {
+  --bg-primary: #a2d2ff; /* Light blue */
+  --bg-secondary: #bde0fe; /* Lighter blue */
+  --bg-accent: #cdb4db; /* Light purple */
+  --text-primary: #333333; /* Dark text for contrast */
+  --text-secondary: #6c5ce7; /* Purple */
+  --accent1: #cdb4db; /* Purple */
+  --accent2: #ffafcc; /* Pink */
+  --accent3: #ffc8dd; /* Light pink */
+  --accent-glow: rgba(205, 180, 219, 0.3); /* Glow for pastel theme */
+  --grid-color: #bde0fe;
+}
+
+/* Sunset Theme - https://coolors.co/palette/ffcdb2-ffb4a2-e5989b-b5838d-6d6875 */
+[data-theme="sunset"] {
+  --bg-primary: #6d6875; /* Dark gray */
+  --bg-secondary: #b5838d; /* Muted pink */
+  --bg-accent: #e5989b; /* Coral pink */
+  --text-primary: #ffddd2; /* Light peach */
+  --text-secondary: #ffb4a2; /* Peach */
+  --accent1: #e5989b; /* Coral pink */
+  --accent2: #ffb4a2; /* Peach */
+  --accent3: #ffcdb2; /* Light peach */
+  --accent-glow: rgba(229, 152, 155, 0.3); /* Glow for sunset theme */
+  --grid-color: #b5838d;
+}
+
+/* Copper Theme - https://coolors.co/palette/606c38-283618-fefae0-dda15e-bc6c25 */
+[data-theme="copper"] {
+  --bg-primary: #606c38; /* Green */
+  --bg-secondary: #283618; /* Dark green */
+  --bg-accent: #bc6c25; /* Copper */
+  --text-primary: #fefae0; /* Off-white */
+  --text-secondary: #dda15e; /* Gold */
+  --accent1: #bc6c25; /* Copper */
+  --accent2: #dda15e; /* Gold */
+  --accent3: #fefae0; /* Off-white */
+  --accent-glow: rgba(188, 108, 37, 0.3); /* Glow for copper theme */
+  --grid-color: #bc6c25;
+}
+
+/* Ocean Theme - https://coolors.co/palette/264653-2a9d8f-e9c46a-f4a261-e76f51 */
+[data-theme="ocean"] {
+  --bg-primary: #264653; /* Dark teal */
+  --bg-secondary: #2a9d8f; /* Teal */
+  --bg-accent: #e9c46a; /* Gold */
+  --text-primary: #f1faee; /* Light cream */
+  --text-secondary: #f4a261; /* Orange */
+  --accent1: #2a9d8f; /* Teal */
+  --accent2: #e76f51; /* Red-orange */
+  --accent3: #e9c46a; /* Gold */
+  --accent-glow: rgba(42, 157, 143, 0.3); /* Glow for ocean theme */
+  --grid-color: #2a9d8f;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -130,6 +213,106 @@
   .ring-tft-gold {
     --tw-ring-color: #ffd700;
   }
+  
+  /* Earthy theme colors */
+  .text-earthy-primary {
+    color: #606c38;
+  }
+  .bg-earthy-primary {
+    background-color: #606c38;
+  }
+  .text-earthy-secondary {
+    color: #283618;
+  }
+  .bg-earthy-secondary {
+    background-color: #283618;
+  }
+  .text-earthy-accent {
+    color: #bc6c25;
+  }
+  .bg-earthy-accent {
+    background-color: #bc6c25;
+  }
+  
+  /* Pastel theme colors */
+  .text-pastel-primary {
+    color: #cdb4db;
+  }
+  .bg-pastel-primary {
+    background-color: #cdb4db;
+  }
+  .text-pastel-secondary {
+    color: #ffc8dd;
+  }
+  .bg-pastel-secondary {
+    background-color: #ffc8dd;
+  }
+  .text-pastel-accent {
+    color: #ffafcc;
+  }
+  .bg-pastel-accent {
+    background-color: #ffafcc;
+  }
+  
+  /* Sunset theme colors */
+  .text-sunset-primary {
+    color: #ffcdb2;
+  }
+  .bg-sunset-primary {
+    background-color: #ffcdb2;
+  }
+  .text-sunset-secondary {
+    color: #ffb4a2;
+  }
+  .bg-sunset-secondary {
+    background-color: #ffb4a2;
+  }
+  .text-sunset-accent {
+    color: #e5989b;
+  }
+  .bg-sunset-accent {
+    background-color: #e5989b;
+  }
+  
+  /* Copper theme colors */
+  .text-copper-primary {
+    color: #606c38;
+  }
+  .bg-copper-primary {
+    background-color: #606c38;
+  }
+  .text-copper-secondary {
+    color: #283618;
+  }
+  .bg-copper-secondary {
+    background-color: #283618;
+  }
+  .text-copper-accent {
+    color: #bc6c25;
+  }
+  .bg-copper-accent {
+    background-color: #bc6c25;
+  }
+  
+  /* Ocean theme colors */
+  .text-ocean-primary {
+    color: #264653;
+  }
+  .bg-ocean-primary {
+    background-color: #264653;
+  }
+  .text-ocean-secondary {
+    color: #2a9d8f;
+  }
+  .bg-ocean-secondary {
+    background-color: #2a9d8f;
+  }
+  .text-ocean-accent {
+    color: #e76f51;
+  }
+  .bg-ocean-accent {
+    background-color: #e76f51;
+  }
 
   /* Cimplic-inspired button styles */
   .btn-cimplic {
@@ -155,7 +338,7 @@
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(45, 214, 182, 0.2), transparent);
+    background: linear-gradient(90deg, transparent, var(--accent-glow, rgba(45, 214, 182, 0.2)), transparent);
     transition: left 0.5s ease;
   }
 
@@ -167,17 +350,17 @@
     background: var(--accent1);
     color: var(--bg-primary);
     border: 2px solid var(--accent1);
-    box-shadow: 0 0 20px rgba(45, 214, 182, 0.3);
+    box-shadow: 0 0 20px var(--accent-glow, rgba(45, 214, 182, 0.3));
   }
 
   .btn-cimplic.accent:hover {
-    box-shadow: 0 0 30px rgba(45, 214, 182, 0.5);
+    box-shadow: 0 0 30px var(--accent-glow, rgba(45, 214, 182, 0.5));
     transform: translateY(-2px);
   }
 
   .btn-cimplic:hover {
-    background: rgba(45, 214, 182, 0.1);
-    box-shadow: 0 0 20px rgba(45, 214, 182, 0.2);
+    background: color-mix(in srgb, var(--accent1) 10%, transparent);
+    box-shadow: 0 0 20px var(--accent-glow, rgba(45, 214, 182, 0.2));
   }
 
   /* Cimplic-inspired card styles */

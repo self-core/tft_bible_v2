@@ -12,10 +12,13 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy the Cargo.toml and Cargo.lock files
-COPY Cargo.toml Cargo.lock ./
+COPY backend/Cargo.toml backend/Cargo.lock ./
 
 # Copy the source code
-COPY src ./src
+COPY backend/src ./src
+
+# Copy data files
+COPY backend/scraped_compositions.json ./scraped_compositions.json
 
 # Build both the main application and seed binary in release mode
 RUN cargo build --release
@@ -44,6 +47,13 @@ RUN chown tftuser:tftuser /app/backend /app/seed
 
 # Switch to non-root user
 USER tftuser
+
+# Copy data files for seeding
+COPY tft_champion_data.json /app/tft_champion_data.json
+COPY tft_trait_data.json /app/tft_trait_data.json
+COPY tft_item_data.json /app/tft_item_data.json
+COPY tft_augments_data.json /app/tft_augments_data.json
+COPY scraped_compositions.json /app/scraped_compositions.json
 
 # Expose the port the app runs on
 EXPOSE 8080
