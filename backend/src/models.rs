@@ -259,7 +259,7 @@ pub struct AugmentEffect {
     pub is_percentage: bool,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Composition {
     pub id: Option<ObjectId>,
     pub set_id: ObjectId,
@@ -294,6 +294,29 @@ pub struct Composition {
 
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub updated_at: chrono::DateTime<chrono::Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CompositionImportExport {
+    // Basic info
+    pub name: String,
+    pub description: String,
+    pub category: String,
+    pub tags: Vec<String>,
+
+    // Champions and items
+    pub champions: Vec<CompositionChampion>,
+    pub augments: CompositionAugments,
+    pub positioning: Option<PositioningStrategy>,
+    pub gameplan: Option<GamePlan>,
+
+    // Meta information
+    pub meta: CompositionMeta,
+    pub matchups: Option<Matchups>,
+
+    // Additional export information
+    pub export_date: chrono::DateTime<chrono::Utc>,
+    pub tft_set: String,  // Name of the set, for reference
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

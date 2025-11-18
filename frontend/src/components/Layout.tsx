@@ -9,6 +9,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   const navItems = [
     { path: '/', label: 'Home', icon: Home },
     { path: '/compositions', label: 'Compositions', icon: Swords },
+    { path: '/builder', label: 'Custom Builder', icon: Swords },
     { path: '/champions', label: 'Champions', icon: Users },
     { path: '/items', label: 'Items', icon: Package },
     { path: '/summoner-search', label: 'Riot Data', icon: Search },

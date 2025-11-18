@@ -234,5 +234,74 @@ impl CompositionService {
     ) -> Result<Votes, ApiError> {
         Err(ApiError::Forbidden("Voting is disabled in mock mode".to_string()))
     }
+
+    pub async fn export_composition(&self, id: ObjectId, set_name: &str) -> Result<String, ApiError> {
+        let composition = self.get_by_id(id).await?;
+
+        let export_data = CompositionImportExport {
+            name: composition.name,
+            description: composition.description,
+            category: composition.category,
+            tags: composition.tags,
+            champions: composition.champions,
+            augments: composition.augments,
+            positioning: composition.positioning,
+            gameplan: composition.gameplan,
+            meta: composition.meta,
+            matchups: composition.matchups,
+            export_date: Utc::now(),
+            tft_set: set_name.to_string(),
+        };
+
+        // Serialize to JSON string
+        let json_string = serde_json::to_string(&export_data)
+            .map_err(|e| ApiError::InternalServerError(format!("Serialization error: {}", e)))?;
+
+        // Encode to Base64 to create a shareable string
+        let encoded = base64::encode(&json_string);
+        Ok(encoded)
+    }
+
+    pub async fn import_composition(&self, import_string: &str) -> Result<Composition, ApiError> {
+        // Decode from Base64
+        let decoded_bytes = base64::decode(import_string)
+            .map_err(|e| ApiError::BadRequest(format!("Invalid import string: {}", e)))?;
+
+        let json_string = String::from_utf8(decoded_bytes)
+            .map_err(|e| ApiError::BadRequest(format!("Invalid import string: {}", e)))?;
+
+        // Deserialize from JSON
+        let import_data: CompositionImportExport = serde_json::from_str(&json_string)
+            .map_err(|e| ApiError::BadRequest(format!("Invalid composition data: {}", e)))?;
+
+        // Create a new composition from import data
+        // Note: In a real implementation, you'd need to validate champion/item/other IDs exist in the DB
+        let new_composition = Composition {
+            id: Some(ObjectId::new()), // Generate a new ID
+            set_id: ObjectId::new(), // This would be looked up by set_name in a real implementation
+            author_id: None, // Will be set by the importing user
+            name: import_data.name,
+            description: import_data.description,
+            category: import_data.category,
+            tags: import_data.tags,
+            champions: import_data.champions,
+            augments: import_data.augments,
+            positioning: import_data.positioning,
+            gameplan: import_data.gameplan,
+            meta: import_data.meta,
+            matchups: import_data.matchups,
+            votes: Votes { upvotes: 0, downvotes: 0 },
+            views: 0,
+            favorites: 0,
+            comments: vec![],
+            is_public: false, // User will need to publish after importing
+            is_verified: false,
+            is_featured: false,
+            created_at: Utc::now(),
+            updated_at: Utc::now(),
+        };
+
+        Ok(new_composition)
+    }
 }
 

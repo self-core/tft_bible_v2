@@ -118,14 +118,58 @@ pub async fn vote_composition(
 ) -> Result<Json<ApiResponse<Votes>>, ApiError> {
     let object_id = ObjectId::parse_str(&id)
         .map_err(|_| ApiError::BadRequest("Invalid composition ID".to_string()))?;
-    
+
     let service = CompositionService::new(&state.db);
     let votes = service.vote(object_id, &request.vote_type, None).await?; // TODO: Add user_id from auth
-    
+
     Ok(Json(ApiResponse {
         success: true,
         data: Some(votes),
         message: Some("Vote recorded successfully".to_string()),
+        errors: None,
+    }))
+}
+
+#[derive(Deserialize)]
+pub struct ExportRequest {
+    pub set_name: String,
+}
+
+pub async fn export_composition(
+    State(state): State<Arc<AppState>>,
+    Path(id): Path<String>,
+    Json(request): Json<ExportRequest>,
+) -> Result<Json<ApiResponse<String>>, ApiError> {
+    let object_id = ObjectId::parse_str(&id)
+        .map_err(|_| ApiError::BadRequest("Invalid composition ID".to_string()))?;
+
+    let service = CompositionService::new(&state.db);
+    let export_string = service.export_composition(object_id, &request.set_name).await?;
+
+    Ok(Json(ApiResponse {
+        success: true,
+        data: Some(export_string),
+        message: Some("Composition exported successfully".to_string()),
+        errors: None,
+    }))
+}
+
+#[derive(Deserialize)]
+pub struct ImportRequest {
+    pub import_string: String,
+}
+
+pub async fn import_composition(
+    State(state): State<Arc<AppState>>,
+    Json(request): Json<ImportRequest>,
+) -> Result<Json<ApiResponse<Composition>>, ApiError> {
+    let service = CompositionService::new(&state.db);
+    let composition = service.import_composition(&request.import_string).await?;
+
+    Ok(Json(ApiResponse {
+        success: true,
+        data: Some(composition),
+        message: Some("Composition imported successfully".to_string()),
         errors: None,
     }))
 }

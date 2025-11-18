@@ -67,10 +67,10 @@ A comprehensive Teamfight Tactics (TFT) companion application built with Rust an
 
 ## 🧪 Testing
 
-### Run Tests in Docker
+### Run Backend Tests in Docker
 
 ```bash
-# Run all tests
+# Run all backend tests
 docker-compose exec tft-backend cargo test
 
 # Run with coverage
@@ -80,11 +80,30 @@ docker-compose exec tft-backend cargo tarpaulin --ignore-tests --out Html
 docker-compose exec tft-backend cargo test test_champion_service
 ```
 
+### Run Frontend Tests
+
+```bash
+# Run all frontend tests
+docker-compose exec tft-frontend npm test
+
+# Run tests with coverage
+docker-compose exec tft-frontend npm test -- --coverage
+```
+
 ### Test Structure
 
-- **Unit Tests**: `backend/tests/unit/` - Service layer testing
-- **Integration Tests**: `backend/tests/integration/` - API endpoint testing
-- **Common**: `backend/tests/common/` - Test utilities and helpers
+- **Backend Unit Tests**: `backend/tests/` - Service layer and business logic testing
+- **Frontend Component Tests**: `frontend/src/components/Builder/__tests__/` - UI component testing
+- **API Integration Tests**: Coming soon - End-to-end API endpoint validation
+
+### Quality Metrics
+
+- **Code Coverage**: Target 80%+ for critical components
+- **Performance**: API response times < 500ms
+- **Accessibility**: WCAG 2.1 AA compliance
+- **Security**: Regular vulnerability scans
+
+See full testing documentation in [TESTING.md](TESTING.md).
 
 ## 🛠️ Development
 
@@ -152,13 +171,35 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduc
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
+## 🚀 Beta Release - December 3rd, 2025
+
+We're excited to announce that TFT Bible will be entering its beta phase in time for the release of **Lore & Legends (Set 16)** on **December 3rd, 2025**!
+
+### Beta Features
+- Interactive TFT team builder with support for Lore & Legends champions and traits
+- Modern, responsive UI optimized for composition building
+- Comprehensive champion and trait data
+- Set management system for easy updates
+- Full Docker containerization for easy deployment
+
+### How to Try the Beta
+1. Clone the repository
+2. Set up environment variables (see `.env.prod.example`)
+3. Run with production compose: `docker-compose -f docker-compose.prod.yml up -d`
+
+### Beta Testing Period
+- **Start**: November 25, 2025
+- **Target Release**: December 3, 2025
+- **Feedback**: Issues and suggestions welcome via GitLab issues
+
 ## 🔄 Current Status
 
 - ✅ Mock services implemented
 - ✅ API endpoints wired
 - ✅ Comprehensive test suite
 - ✅ Docker development environment
-- ✅ CI/CD pipeline
-- 🚧 MongoDB integration (planned)
-- 🚧 Authentication system (planned)
-- 🚧 Frontend application (planned)
+- ✅ Beta-ready frontend with builder component
+- ✅ Lore & Legends (Set 16) support
+- ✅ CI/CD pipeline with Jenkins
+- 🚧 Authentication system (planned for post-beta)
+- ⚠️ MongoDB integration (beta with mock data)

@@ -1,12 +1,12 @@
-use mongodb::{Database, Collection, bson::oid::ObjectId};
+use mongodb::{Client, Database, Collection, options::ClientOptions};
 use serde::{Deserialize, Serialize};
-use chrono::{DateTime, Utc};
 use std::collections::HashMap;
+use chrono::{DateTime, Utc};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Set {
-    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
-    pub id: Option<ObjectId>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub id: Option<mongodb::bson::oid::ObjectId>,
     pub name: String,
     pub short_name: String,
     pub version: String,
@@ -28,12 +28,12 @@ pub struct TraitBreakpoint {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Trait {
-    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
-    pub id: Option<ObjectId>,
-    pub set_id: ObjectId,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub id: Option<mongodb::bson::oid::ObjectId>,
+    pub set_id: mongodb::bson::oid::ObjectId,
     pub name: String,
     pub description: String,
-    pub trait_type: String, // "Origin", "Class", "Unique"
+    pub trait_type: String, // "Region", "Story", "Class", etc.
     pub image_url: Option<String>,
     pub breakpoints: Vec<TraitBreakpoint>,
     pub created_at: DateTime<Utc>,
@@ -100,9 +100,9 @@ pub struct ChampionAbility {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Champion {
-    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
-    pub id: Option<ObjectId>,
-    pub set_id: ObjectId,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub id: Option<mongodb::bson::oid::ObjectId>,
+    pub set_id: mongodb::bson::oid::ObjectId,
     pub name: String,
     pub display_name: Option<String>,
     pub cost: u32, // 1-5
@@ -138,8 +138,8 @@ pub struct ItemStats {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ItemRecipe {
-    pub component1: ObjectId,
-    pub component2: ObjectId,
+    pub component1: mongodb::bson::oid::ObjectId,
+    pub component2: mongodb::bson::oid::ObjectId,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -148,22 +148,24 @@ pub struct ItemEffect {
     pub effect_type: String, // "OnAttack", "OnCast", "Passive"
     pub description: String,
     pub value: Option<f64>,
+    #[serde(rename = "duration")]
     pub duration: Option<f64>,
+    #[serde(rename = "cooldown")]
     pub cooldown: Option<f64>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Item {
-    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
-    pub id: Option<ObjectId>,
-    pub set_id: ObjectId,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub id: Option<mongodb::bson::oid::ObjectId>,
+    pub set_id: mongodb::bson::oid::ObjectId,
     pub name: String,
     pub description: String,
     pub item_type: String, // "Component", "Completed", "Radiant", "Artifact"
     pub category: String,  // "AD", "AP", "Tank", "Utility"
     pub stats: ItemStats,
     pub recipe: Option<ItemRecipe>,
-    pub builds_into: Vec<ObjectId>,
+    pub builds_into: Vec<mongodb::bson::oid::ObjectId>,
     pub effects: Vec<ItemEffect>,
     pub priority: u32,
     pub is_unique: bool,
@@ -175,7 +177,7 @@ pub struct Item {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct HeroChampion {
-    pub champion_id: ObjectId,
+    pub champion_id: mongodb::bson::oid::ObjectId,
     pub star_level: u32,
 }
 
@@ -191,9 +193,9 @@ pub struct AugmentEffect {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Augment {
-    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
-    pub id: Option<ObjectId>,
-    pub set_id: ObjectId,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub id: Option<mongodb::bson::oid::ObjectId>,
+    pub set_id: mongodb::bson::oid::ObjectId,
     pub name: String,
     pub description: String,
     pub augment_type: String, // "Silver", "Gold", "Prismatic"
@@ -218,22 +220,35 @@ impl DatabaseSeeder {
         Self { db }
     }
 
-    pub async fn seed_all(&self) -> Result<(), Box<dyn std::error::Error>> {
-        println!("🌱 Starting database seeding...");
-
-        // Seed in order of dependencies
+    pub async fn seed_set16(&self) -> Result<(), Box<dyn std::error::Error>> {
+        println!("🌱 Starting Set 16: Lore & Legends database seeding...");
+        
+        // Create the set first
         let set_id = self.seed_sets().await?;
+        
+        // Then seed in order of dependencies
         self.seed_traits(set_id).await?;
         self.seed_items(set_id).await?;
-        let champion_ids = self.seed_champions(set_id).await?;
+        self.seed_champions(set_id).await?;
         self.seed_augments(set_id).await?;
 
-        println!("✅ Database seeding completed successfully!");
+        println!("✅ Set 16: Lore & Legends database seeding completed successfully!");
         Ok(())
     }
 
-    async fn seed_sets(&self) -> Result<ObjectId, Box<dyn std::error::Error>> {
+    async fn seed_sets(&self) -> Result<mongodb::bson::oid::ObjectId, Box<dyn std::error::Error>> {
         let sets_collection: Collection<Set> = self.db.collection("sets");
+
+        // Check if Lore & Legends set already exists
+        let existing_set = sets_collection.find_one(
+            mongodb::bson::doc! {"name": "Lore & Legends"}, 
+            None
+        ).await?;
+
+        if let Some(existing) = existing_set {
+            println!("⚠️  Set 'Lore & Legends' already exists, skipping creation.");
+            return Ok(existing.id.unwrap_or_default()); // Return existing set ID
+        }
 
         // Add the new Lore & Legends set (Set 16)
         let lore_legends_set = Set {
@@ -241,7 +256,7 @@ impl DatabaseSeeder {
             name: "Lore & Legends".to_string(),
             short_name: "Set16".to_string(),
             version: "16.0".to_string(),
-            is_active: true, // This will be the active set
+            is_active: true,
             release_date: chrono::DateTime::parse_from_rfc3339("2025-12-03T00:00:00Z")?.with_timezone(&Utc),
             end_date: None,
             description: Some("TFT Set 16: Lore & Legends - Dive into Runeterra's history with a massive Library of Lore".to_string()),
@@ -252,51 +267,73 @@ impl DatabaseSeeder {
 
         let result = sets_collection.insert_one(lore_legends_set).await?;
         let set_id = result.inserted_id.as_object_id().unwrap();
-
+        
         println!("✅ Seeded sets collection with Lore & Legends (Set 16)");
         Ok(set_id)
     }
 
-    async fn seed_traits(&self, set_id: ObjectId) -> Result<(), Box<dyn std::error::Error>> {
+    async fn seed_traits(&self, set_id: mongodb::bson::oid::ObjectId) -> Result<(), Box<dyn std::error::Error>> {
         let traits_collection: Collection<Trait> = self.db.collection("traits");
 
-        // Demacia trait (Region-based)
+        // Check if Set 16 traits already exist
+        let existing_traits = traits_collection.count_documents(
+            mongodb::bson::doc! {"set_id": set_id}, 
+            None
+        ).await?;
+
+        if existing_traits > 0 {
+            println!("⚠️  Set 16 traits already exist ({} found), skipping creation.", existing_traits);
+            return Ok(());
+        }
+
+        // Demacia trait
         let demacia_trait = Trait {
             id: None,
             set_id,
             name: "Demacia".to_string(),
-            description: "Demacia units gain bonus armor and magic resist. Additional Demacia units grant increased stats to all allies.".to_string(),
+            description: "Each time your team loses 25% max Health, Demacians RALLY, reducing the cost of their abilities by 10%. Demacians gain Armor and Magic Resist.".to_string(),
             trait_type: "Region".to_string(),
             image_url: Some("https://example.com/demacia-trait.jpg".to_string()),
             breakpoints: vec![
                 TraitBreakpoint {
-                    count: 2,
-                    description: "2 units: Demacia units gain +50 armor and magic resist".to_string(),
+                    count: 3,
+                    description: "3 units: 12 Armor & MR".to_string(),
                     bonuses: {
                         let mut map = HashMap::new();
-                        map.insert("armor".to_string(), 50.0);
-                        map.insert("magic_resist".to_string(), 50.0);
+                        map.insert("armor".to_string(), 12.0);
+                        map.insert("magic_resist".to_string(), 12.0);
                         map
                     },
                 },
                 TraitBreakpoint {
-                    count: 4,
-                    description: "4 units: All allies gain +30 armor and magic resist".to_string(),
+                    count: 5,
+                    description: "5 units: 25 Armor & MR".to_string(),
                     bonuses: {
                         let mut map = HashMap::new();
-                        map.insert("ally_armor".to_string(), 30.0);
-                        map.insert("ally_magic_resist".to_string(), 30.0);
+                        map.insert("armor".to_string(), 25.0);
+                        map.insert("magic_resist".to_string(), 25.0);
                         map
                     },
                 },
                 TraitBreakpoint {
-                    count: 6,
-                    description: "6 units: All allies gain +60 armor and magic resist, Demacia units gain 20% damage reduction".to_string(),
+                    count: 7,
+                    description: "7 units: 25 Armor & MR. On Rally, smite enemies for 5% of their max Health.".to_string(),
                     bonuses: {
                         let mut map = HashMap::new();
-                        map.insert("ally_armor".to_string(), 60.0);
-                        map.insert("ally_magic_resist".to_string(), 60.0);
-                        map.insert("damage_reduction".to_string(), 0.20);
+                        map.insert("armor".to_string(), 25.0);
+                        map.insert("magic_resist".to_string(), 25.0);
+                        map.insert("smite_damage".to_string(), 0.05);
+                        map
+                    },
+                },
+                TraitBreakpoint {
+                    count: 11,
+                    description: "11 units: 150 Armor & MR. BATTLE FOR DEMACIA!".to_string(),
+                    bonuses: {
+                        let mut map = HashMap::new();
+                        map.insert("armor".to_string(), 150.0);
+                        map.insert("magic_resist".to_string(), 150.0);
+                        map.insert("battle_for_demacia".to_string(), 1.0);
                         map
                     },
                 },
@@ -305,40 +342,51 @@ impl DatabaseSeeder {
             updated_at: Utc::now(),
         };
 
-        // Noxus trait (Region-based)
+        // Noxus trait
         let noxus_trait = Trait {
             id: None,
             set_id,
             name: "Noxus".to_string(),
-            description: "Noxus units gain bonus damage based on missing enemy health. Additional Noxus units grant increased damage to all allies.".to_string(),
+            description: "After the enemy team has lost 15% of their Health, summon Atakhan, Bringer of Ruin. Each Noxian champion's star level increases his power.".to_string(),
             trait_type: "Region".to_string(),
             image_url: Some("https://example.com/noxus-trait.jpg".to_string()),
             breakpoints: vec![
                 TraitBreakpoint {
-                    count: 2,
-                    description: "2 units: Noxus units deal +5% more damage per 10% missing enemy health".to_string(),
+                    count: 3,
+                    description: "3 units: He slashes enemies, dealing magic damage.".to_string(),
                     bonuses: {
                         let mut map = HashMap::new();
-                        map.insert("damage_per_missing_health".to_string(), 0.05);
+                        map.insert("slash_damage".to_string(), 200.0);
                         map
                     },
                 },
                 TraitBreakpoint {
-                    count: 4,
-                    description: "4 units: All allies deal +15% more damage".to_string(),
+                    count: 5,
+                    description: "5 units: Noxians get more powerful the longer he is alive.".to_string(),
                     bonuses: {
                         let mut map = HashMap::new();
-                        map.insert("ally_damage".to_string(), 0.15);
+                        map.insert("noxian_power_scaling".to_string(), 1.0);
+                        map.insert("duration_power".to_string(), 1.0);
                         map
                     },
                 },
                 TraitBreakpoint {
-                    count: 6,
-                    description: "6 units: All allies deal +25% more damage, Noxus units execute enemies below 15% health".to_string(),
+                    count: 7,
+                    description: "7 units: He drains the souls of enemies on cast.".to_string(),
                     bonuses: {
                         let mut map = HashMap::new();
-                        map.insert("ally_damage".to_string(), 0.25);
-                        map.insert("execute_threshold".to_string(), 0.15);
+                        map.insert("soul_drain".to_string(), 1.0);
+                        map.insert("cast_soul_drain".to_string(), 1.0);
+                        map
+                    },
+                },
+                TraitBreakpoint {
+                    count: 10,
+                    description: "10 units: After 10 seconds, BRING RUIN.".to_string(),
+                    bonuses: {
+                        let mut map = HashMap::new();
+                        map.insert("bring_ruin_timer".to_string(), 10.0);
+                        map.insert("bring_ruin".to_string(), 1.0);
                         map
                     },
                 },
@@ -347,75 +395,53 @@ impl DatabaseSeeder {
             updated_at: Utc::now(),
         };
 
-        // Void trait (Region-based)
+        // Void trait
         let void_trait = Trait {
             id: None,
             set_id,
             name: "Void".to_string(),
-            description: "Void units' attacks ignore a percentage of enemy armor. Additional Void units grant increased penetration.".to_string(),
+            description: "Gain Mutations that only Void champions can use. Void champions gain Attack Speed.".to_string(),
             trait_type: "Region".to_string(),
             image_url: Some("https://example.com/void-trait.jpg".to_string()),
             breakpoints: vec![
                 TraitBreakpoint {
-                    count: 3,
-                    description: "3 units: Void units' attacks ignore 50% of enemy armor".to_string(),
-                    bonuses: {
-                        let mut map = HashMap::new();
-                        map.insert("armor_penetration".to_string(), 0.50);
-                        map
-                    },
-                },
-                TraitBreakpoint {
-                    count: 6,
-                    description: "6 units: All allies' attacks ignore 30% of enemy armor and magic resist".to_string(),
-                    bonuses: {
-                        let mut map = HashMap::new();
-                        map.insert("ally_armor_penetration".to_string(), 0.30);
-                        map.insert("ally_magic_penetration".to_string(), 0.30);
-                        map
-                    },
-                },
-            ],
-            created_at: Utc::now(),
-            updated_at: Utc::now(),
-        };
-
-        // Cultist trait (Story-based)
-        let cultist_trait = Trait {
-            id: None,
-            set_id,
-            name: "Cultist".to_string(),
-            description: "Cultists gain attack speed and damage during combat. The effect increases as combat continues.".to_string(),
-            trait_type: "Story".to_string(),
-            image_url: Some("https://example.com/cultist-trait.jpg".to_string()),
-            breakpoints: vec![
-                TraitBreakpoint {
                     count: 2,
-                    description: "2 units: Cultists gain +20% attack speed and +10% damage".to_string(),
+                    description: "2 units: 1 Mutation, 8% AS".to_string(),
                     bonuses: {
                         let mut map = HashMap::new();
-                        map.insert("attack_speed".to_string(), 0.20);
-                        map.insert("damage".to_string(), 0.10);
+                        map.insert("mutations".to_string(), 1.0);
+                        map.insert("attack_speed".to_string(), 0.08);
                         map
                     },
                 },
                 TraitBreakpoint {
                     count: 4,
-                    description: "4 units: Cultists gain +45% attack speed and +20% damage".to_string(),
+                    description: "4 units: 2 Mutations, 18% AS".to_string(),
                     bonuses: {
                         let mut map = HashMap::new();
-                        map.insert("attack_speed".to_string(), 0.45);
-                        map.insert("damage".to_string(), 0.20);
+                        map.insert("mutations".to_string(), 2.0);
+                        map.insert("attack_speed".to_string(), 0.18);
                         map
                     },
                 },
                 TraitBreakpoint {
                     count: 6,
-                    description: "6 units: Cultists gain +80% attack speed and +35% damage".to_string(),
+                    description: "6 units: 3 Mutations, 28% AS".to_string(),
                     bonuses: {
                         let mut map = HashMap::new();
-                        map.insert("attack_speed".to_string(), 0.80);
-                        map.insert("damage".to_string(), 0.35);
+                        map.insert("mutations".to_string(), 3.0);
+                        map.insert("attack_speed".to_string(), 0.28);
+                        map
+                    },
+                },
+                TraitBreakpoint {
+                    count: 9,
+                    description: "9 units: Mutations become supercharged, increasing their power by 50%. 35% AS".to_string(),
+                    bonuses: {
+                        let mut map = HashMap::new();
+                        map.insert("mutations".to_string(), 3.0);
+                        map.insert("mutation_power".to_string(), 1.5);
+                        map.insert("attack_speed".to_string(), 0.35);
                         map
                     },
                 },
@@ -424,7 +450,7 @@ impl DatabaseSeeder {
             updated_at: Utc::now(),
         };
 
-        // Insert the updated traits based on accurate TFT Academy data
+        // Ionia trait
         let ionia_trait = Trait {
             id: None,
             set_id,
@@ -477,60 +503,7 @@ impl DatabaseSeeder {
             updated_at: Utc::now(),
         };
 
-        let void_trait_updated = Trait {
-            id: None,
-            set_id,
-            name: "Void".to_string(),
-            description: "Gain Mutations that only Void champions can use. Void champions gain Attack Speed.".to_string(),
-            trait_type: "Region".to_string(),
-            image_url: Some("https://example.com/void-trait.jpg".to_string()),
-            breakpoints: vec![
-                TraitBreakpoint {
-                    count: 2,
-                    description: "2 units: 1 Mutation, 8% Attack Speed".to_string(),
-                    bonuses: {
-                        let mut map = HashMap::new();
-                        map.insert("mutations".to_string(), 1.0);
-                        map.insert("attack_speed".to_string(), 0.08);
-                        map
-                    },
-                },
-                TraitBreakpoint {
-                    count: 4,
-                    description: "4 units: 2 Mutations, 18% Attack Speed".to_string(),
-                    bonuses: {
-                        let mut map = HashMap::new();
-                        map.insert("mutations".to_string(), 2.0);
-                        map.insert("attack_speed".to_string(), 0.18);
-                        map
-                    },
-                },
-                TraitBreakpoint {
-                    count: 6,
-                    description: "6 units: 3 Mutations, 28% Attack Speed".to_string(),
-                    bonuses: {
-                        let mut map = HashMap::new();
-                        map.insert("mutations".to_string(), 3.0);
-                        map.insert("attack_speed".to_string(), 0.28);
-                        map
-                    },
-                },
-                TraitBreakpoint {
-                    count: 9,
-                    description: "9 units: Mutations become supercharged, increasing their power by 50%. 35% Attack Speed".to_string(),
-                    bonuses: {
-                        let mut map = HashMap::new();
-                        map.insert("mutations".to_string(), 3.0);
-                        map.insert("mutation_power".to_string(), 1.5);
-                        map.insert("attack_speed".to_string(), 0.35);
-                        map
-                    },
-                },
-            ],
-            created_at: Utc::now(),
-            updated_at: Utc::now(),
-        };
-
+        // Bilgewater trait
         let bilgewater_trait = Trait {
             id: None,
             set_id,
@@ -584,19 +557,76 @@ impl DatabaseSeeder {
             updated_at: Utc::now(),
         };
 
-        traits_collection.insert_one(demacia_trait).await?;
-        traits_collection.insert_one(noxus_trait).await?;
-        traits_collection.insert_one(void_trait_updated).await?;
-        traits_collection.insert_one(cultist_trait).await?;
-        traits_collection.insert_one(ionia_trait).await?;
-        traits_collection.insert_one(bilgewater_trait).await?;
+        // Cultist trait
+        let cultist_trait = Trait {
+            id: None,
+            set_id,
+            name: "Cultist".to_string(),
+            description: "Cultists gain attack speed and damage during combat. The effect increases as combat continues.".to_string(),
+            trait_type: "Story".to_string(),
+            image_url: Some("https://example.com/cultist-trait.jpg".to_string()),
+            breakpoints: vec![
+                TraitBreakpoint {
+                    count: 2,
+                    description: "2 units: Cultists gain +20% attack speed and +10% damage".to_string(),
+                    bonuses: {
+                        let mut map = HashMap::new();
+                        map.insert("attack_speed".to_string(), 0.20);
+                        map.insert("damage".to_string(), 0.10);
+                        map
+                    },
+                },
+                TraitBreakpoint {
+                    count: 4,
+                    description: "4 units: Cultists gain +45% attack speed and +20% damage".to_string(),
+                    bonuses: {
+                        let mut map = HashMap::new();
+                        map.insert("attack_speed".to_string(), 0.45);
+                        map.insert("damage".to_string(), 0.20);
+                        map
+                    },
+                },
+                TraitBreakpoint {
+                    count: 6,
+                    description: "6 units: Cultists gain +80% attack speed and +35% damage".to_string(),
+                    bonuses: {
+                        let mut map = HashMap::new();
+                        map.insert("attack_speed".to_string(), 0.80);
+                        map.insert("damage".to_string(), 0.35);
+                        map
+                    },
+                },
+            ],
+            created_at: Utc::now(),
+            updated_at: Utc::now(),
+        };
 
-        println!("✅ Seeded traits collection with accurate Set 16 traits");
+        traits_collection.insert_many(vec![
+            demacia_trait,
+            noxus_trait,
+            void_trait,
+            ionia_trait,
+            bilgewater_trait,
+            cultist_trait,
+        ], None).await?;
+
+        println!("✅ Seeded traits collection with Set 16 traits");
         Ok(())
     }
 
-    async fn seed_champions(&self, set_id: ObjectId) -> Result<Vec<ObjectId>, Box<dyn std::error::Error>> {
+    async fn seed_champions(&self, set_id: mongodb::bson::oid::ObjectId) -> Result<(), Box<dyn std::error::Error>> {
         let champions_collection: Collection<Champion> = self.db.collection("champions");
+
+        // Check if Set 16 champions already exist
+        let existing_champions = champions_collection.count_documents(
+            mongodb::bson::doc! {"set_id": set_id}, 
+            None
+        ).await?;
+
+        if existing_champions > 0 {
+            println!("⚠️  Set 16 champions already exist ({} found), skipping creation.", existing_champions);
+            return Ok(());
+        }
 
         // Kai'Sa - Void, Marksman, Assimilator
         let kaisa = Champion {
@@ -666,7 +696,7 @@ impl DatabaseSeeder {
             },
             image_url: Some("https://example.com/kaisa.jpg".to_string()),
             splash_url: Some("https://example.com/kaisa-splash.jpg".to_string()),
-            rarity: "Rare".to_string(),
+            rarity: "Epic".to_string(),
             release_version: Some("Set16".to_string()),
             is_enabled: true,
             created_at: Utc::now(),
@@ -741,7 +771,7 @@ impl DatabaseSeeder {
             },
             image_url: Some("https://example.com/sylas.jpg".to_string()),
             splash_url: Some("https://example.com/sylas-splash.jpg".to_string()),
-            rarity: "Rare".to_string(),
+            rarity: "Epic".to_string(),
             release_version: Some("Set16".to_string()),
             is_enabled: true,
             created_at: Utc::now(),
@@ -903,23 +933,30 @@ impl DatabaseSeeder {
             updated_at: Utc::now(),
         };
 
-        let result1 = champions_collection.insert_one(kaisa).await?;
-        let result2 = champions_collection.insert_one(sylas).await?;
-        let result3 = champions_collection.insert_one(azir).await?;
-        let result4 = champions_collection.insert_one(aatrox).await?;
+        champions_collection.insert_many(vec![
+            kaisa,
+            sylas,
+            azir,
+            aatrox,
+        ], None).await?;
 
-        let mut champion_ids = Vec::new();
-        champion_ids.push(result1.inserted_id.as_object_id().unwrap());
-        champion_ids.push(result2.inserted_id.as_object_id().unwrap());
-        champion_ids.push(result3.inserted_id.as_object_id().unwrap());
-        champion_ids.push(result4.inserted_id.as_object_id().unwrap());
-
-        println!("✅ Seeded champions collection with accurate Set 16 champions");
-        Ok(champion_ids)
+        println!("✅ Seeded champions collection with Set 16 champions");
+        Ok(())
     }
 
-    async fn seed_items(&self, set_id: ObjectId) -> Result<(), Box<dyn std::error::Error>> {
+    async fn seed_items(&self, set_id: mongodb::bson::oid::ObjectId) -> Result<(), Box<dyn std::error::Error>> {
         let items_collection: Collection<Item> = self.db.collection("items");
+
+        // Check if Set 16 items already exist
+        let existing_items = items_collection.count_documents(
+            mongodb::bson::doc! {"set_id": set_id}, 
+            None
+        ).await?;
+
+        if existing_items > 0 {
+            println!("⚠️  Set 16 items already exist ({} found), skipping creation.", existing_items);
+            return Ok(());
+        }
 
         let bloodthirster = Item {
             id: None,
@@ -993,15 +1030,28 @@ impl DatabaseSeeder {
             updated_at: Utc::now(),
         };
 
-        items_collection.insert_one(bloodthirster).await?;
-        items_collection.insert_one(infinity_edge).await?;
+        items_collection.insert_many(vec![
+            bloodthirster,
+            infinity_edge,
+        ], None).await?;
 
         println!("✅ Seeded items collection with Set 16 items");
         Ok(())
     }
 
-    async fn seed_augments(&self, set_id: ObjectId) -> Result<(), Box<dyn std::error::Error>> {
+    async fn seed_augments(&self, set_id: mongodb::bson::oid::ObjectId) -> Result<(), Box<dyn std::error::Error>> {
         let augments_collection: Collection<Augment> = self.db.collection("augments");
+
+        // Check if Set 16 augments already exist
+        let existing_augments = augments_collection.count_documents(
+            mongodb::bson::doc! {"set_id": set_id}, 
+            None
+        ).await?;
+
+        if existing_augments > 0 {
+            println!("⚠️  Set 16 augments already exist ({} found), skipping creation.", existing_augments);
+            return Ok(());
+        }
 
         // Team-Up Augments (Returning from previous sets)
         let demacia_valor = Augment {
@@ -1118,12 +1168,47 @@ impl DatabaseSeeder {
             updated_at: Utc::now(),
         };
 
-        augments_collection.insert_one(demacia_valor).await?;
-        augments_collection.insert_one(void_corruption).await?;
-        augments_collection.insert_one(ascendant_charm).await?;
-        augments_collection.insert_one(bilgewater_black_market).await?;
+        augments_collection.insert_many(vec![
+            demacia_valor,
+            void_corruption,
+            ascendant_charm,
+            bilgewater_black_market,
+        ], None).await?;
 
-        println!("✅ Seeded augments collection with accurate Set 16 augments");
+        println!("✅ Seeded augments collection with Set 16 augments");
         Ok(())
     }
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Initialize logging
+    env_logger::init();
+
+    // Load environment variables
+    dotenv::dotenv().ok();
+    
+    let db_url = std::env::var("MONGODB_URL").unwrap_or("mongodb://localhost:27017".to_string());
+    let db_name = std::env::var("DATABASE_NAME").unwrap_or("tft_bible_dev".to_string());
+
+    println!("🔗 Connecting to MongoDB at: {}", db_url);
+
+    // Parse the connection string
+    let client_options = ClientOptions::parse(&db_url).await?;
+    let client = Client::with_options(client_options)?;
+
+    // Test database connection
+    client.database("admin").run_command(mongodb::bson::doc! { "ping": 1 }, None).await?;
+    println!("✅ Connected to MongoDB");
+
+    // Get the database
+    let db = client.database(&db_name);
+    println!("📋 Using database: {}", db_name);
+
+    // Create seeder and run Set 16 seeding
+    let seeder = DatabaseSeeder::new(db);
+    seeder.seed_set16().await?;
+
+    println!("🎯 Migration seeding completed successfully!");
+    Ok(())
 }

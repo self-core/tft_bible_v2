@@ -9,6 +9,7 @@ import Items from './pages/Items'
 import NotFound from './pages/NotFound'
 import RiotProfile from './pages/RiotProfile'
 import SummonerSearch from './pages/SummonerSearch'
+import CustomBuilder from './components/Builder/CustomBuilder'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -31,6 +32,7 @@ function App() {
           <Route path="/items" element={<Items />} />
           <Route path="/summoner-search" element={<SummonerSearch />} />
           <Route path="/riot-profile/:puuid" element={<RiotProfile />} />
+          <Route path="/builder" element={<CustomBuilder />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Layout>

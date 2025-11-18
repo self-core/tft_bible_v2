@@ -1,22 +1,19 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
-import { 
-  User, 
-  Clock, 
-  Award, 
-  Target, 
-  Users, 
-  Sword, 
-  Zap, 
-  TrendingUp, 
-  Database 
+import {
+  User,
+  Clock,
+  Award,
+  Target,
+  Users,
+  Sword,
+  Zap,
+  TrendingUp
 } from 'lucide-react';
-import { 
-  riotApi, 
-  RiotSummoner, 
-  RiotMatch, 
-  RiotMatchParticipant 
+import {
+  riotApi,
+  RiotMatch
 } from '../lib/api';
 
 const RiotProfile = () => {

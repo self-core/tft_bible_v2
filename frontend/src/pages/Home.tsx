@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Swords, Users, Package, TrendingUp, Star, Zap, Target, Cpu } from 'lucide-react'
+import { Swords, Users, Package, Search, Star, Zap, Target, Cpu } from 'lucide-react'
 
 const Home = () => {
   const features = [

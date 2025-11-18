@@ -91,12 +91,18 @@ export interface Composition {
 export interface ChampionSummary {
   id: string;
   name: string;
+  display_name?: string;
   cost: number;
   traits: string[];
   health: number;
   attack_damage: number;
   ability_name: string;
   image_url?: string;
+  splash_url?: string;
+  rarity: string;
+  release_version?: string;
+  set_id: string;
+  is_enabled: boolean;
 }
 
 export interface ItemSummary {
@@ -282,6 +288,28 @@ export const riotApi = {
 
   queueMatchHistoryFetch: (puuid: string) =>
     api.post(`/api/v1/riot/queue/match-history/${puuid}`),
+};
+
+export const setsApi = {
+  getSets: (params?: { active?: boolean }) =>
+    api.get('/api/v1/sets', { params }),
+
+  getActiveSet: () =>
+    api.get('/api/v1/sets/active'),
+
+  getSetById: (id: string) =>
+    api.get(`/api/v1/sets/${id}`),
+
+  getSetByName: (name: string) =>
+    api.get(`/api/v1/sets/name/${name}`),
+};
+
+export const traitsApi = {
+  getTraits: (params?: { set?: string }) =>
+    api.get('/api/v1/traits', { params }),
+
+  getTraitByName: (name: string) =>
+    api.get(`/api/v1/traits/${name}`),
 };
 
 export const healthApi = {

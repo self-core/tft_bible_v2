@@ -14,10 +14,22 @@ pub fn create_router() -> Router<Arc<AppState>> {
         // Compositions endpoints
         .route("/api/v1/compositions", get(handlers::compositions::get_compositions))
         .route("/api/v1/compositions/{id}/vote", post(handlers::compositions::vote_composition))
+        .route("/api/v1/compositions/{id}/export", post(handlers::compositions::export_composition))
+        .route("/api/v1/compositions/import", post(handlers::compositions::import_composition))
 
         // Champions endpoints
         .route("/api/v1/champions", get(handlers::champions::get_champions))
         .route("/api/v1/champions/trait/{trait}", get(handlers::champions::get_champions_by_trait))
+
+        // Traits endpoints
+        .route("/api/v1/traits", get(handlers::traits::get_traits))
+        .route("/api/v1/traits/{trait_name}", get(handlers::traits::get_trait_by_name))
+
+        // Sets endpoints
+        .route("/api/v1/sets", get(handlers::sets::get_sets))
+        .route("/api/v1/sets/active", get(handlers::sets::get_active_set))
+        .route("/api/v1/sets/{set_id}", get(handlers::sets::get_set_by_id))
+        .route("/api/v1/sets/name/{set_name}", get(handlers::sets::get_set_by_name))
 
         // Items endpoints
         .route("/api/v1/items", get(handlers::items::get_items))

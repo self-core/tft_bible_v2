@@ -1,3 +1,7 @@
+[[bin]]
+name = "manual_seed"
+path = "src/bin/manual_seed.rs"
+
 [package]
 name = "backend"
 version = "0.1.0"
@@ -31,6 +35,9 @@ log = "0.4"
 # Error handling
 anyhow = "1.0"
 thiserror = "2.0.17"
+
+# Encoding
+base64 = "0.22"
 
 # HTTP client
 reqwest = { version = "0.12.23", features = ["json"] }

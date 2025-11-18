@@ -1,16 +1,15 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useParams } from 'react-router-dom';
-import { 
-  User, 
-  Search, 
-  Database, 
-  Clock, 
-  CheckCircle, 
+import {
+  User,
+  Search,
+  Database,
+  Clock,
+  CheckCircle,
   AlertCircle,
   ExternalLink
 } from 'lucide-react';
-import { riotApi, RiotSummoner } from '../lib/api';
+import { riotApi } from '../lib/api';
 
 const SummonerSearch = () => {
   const [searchTerm, setSearchTerm] = useState('');
