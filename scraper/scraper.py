@@ -844,7 +844,7 @@ class TFTDataScraper:
         return persisted_count + updated_count
 
     def save_to_temp_file(self, data: List[Dict[str, Any]], filename: str = "scraped_compositions.json"):
-        """Save scraped data to temporary file for debugging (not committed to git)"""
+        """Save scraped data to file for use in mock server"""
         output = {
             "scraped_at": datetime.now().isoformat(),
             "sources": ["tftacademy.com", "metatft.com", "tactics.tools"],
@@ -852,6 +852,14 @@ class TFTDataScraper:
             "data": data
         }
 
+        # Save to project root for mock server use
+        output_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), filename)
+        with open(output_path, 'w', encoding='utf-8') as f:
+            json.dump(output, f, indent=2, ensure_ascii=False)
+
+        print(f"Saved {len(data)} compositions to {output_path}")
+
+        # Also save to temp for debugging
         temp_path = os.path.join(self.temp_dir, filename)
         with open(temp_path, 'w', encoding='utf-8') as f:
             json.dump(output, f, indent=2, ensure_ascii=False)

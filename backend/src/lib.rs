@@ -6,6 +6,7 @@ pub mod errors;
 pub mod router;
 pub mod mock_data;
 pub mod seed;
+pub mod dragontail_seeder;
 
 // Define AppState here for testing
 use mongodb::Database;

@@ -2,7 +2,9 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { X, RotateCw, Trash2, Download, Share2, Copy, Check } from 'lucide-react';
 import { Champion, Trait, Set } from '../../types';
+import { ChampionSummary } from '../../lib/api';
 import { api } from '../../lib/api';
+import { useChampionsStore } from '../../stores';
 
 // Types for our TFT custom builder
 interface BoardSlot {
@@ -48,45 +50,49 @@ const CustomBuilder: React.FC = () => {
   const [exportedString, setExportedString] = useState('');
   const [copied, setCopied] = useState(false);
 
-  // Fetch sets data
-  const { data: sets, isLoading: setsLoading } = useQuery<Set[]>({
-    queryKey: ['sets'],
-    queryFn: () => api.get('/api/v1/sets'),
-  });
-
-  // Fetch champions data with set filter
-  const { data: champions, isLoading: championsLoading } = useQuery<Champion[]>({
-    queryKey: ['champions', selectedSet?.id],
-    queryFn: () => {
-      const params = selectedSet ? { set: selectedSet.name } : {};
-      return api.get('/api/v1/champions', { params });
-    },
-  });
-
-  // Fetch traits data with set filter
+  // Fetch traits data without set filter (get all traits)
   const { data: traits, isLoading: traitsLoading } = useQuery<Trait[]>({
-    queryKey: ['traits', selectedSet?.id],
-    queryFn: () => {
-      const params = selectedSet ? { set: selectedSet.name } : {};
-      return api.get('/api/v1/traits', { params });
-    },
+    queryKey: ['traits'],
+    queryFn: () => api.get('/api/v1/traits'),
   });
 
-  // Load active set on component mount
-  useEffect(() => {
-    const fetchActiveSet = async () => {
-      try {
-        const activeSetResponse = await api.get('/api/v1/sets/active');
-        if (activeSetResponse.data && activeSetResponse.data.length > 0) {
-          setSelectedSet(activeSetResponse.data[0]);
-        }
-      } catch (error) {
-        console.error('Error fetching active set:', error);
-      }
-    };
+  // Fetch champions data without set filter (get all champions)
+  const { data: champions, isLoading: championsLoading } = useQuery<Champion[]>({
+    queryKey: ['champions'],
+    queryFn: () => api.get('/api/v1/champions'),
+  });
 
-    fetchActiveSet();
+  // Define sets locally since we're using static data
+  const sets = [{
+    id: 'tft_set16',
+    name: 'Set 16: Lore & Legends',
+    version: '16.01',
+    releaseDate: '2024-12-03'
+  }];
+
+  const setsLoading = false;
+
+  // Initialize with a default set to avoid API dependency
+  useEffect(() => {
+    // Create a default set to use
+    const defaultSet = {
+      id: 'tft_set16',
+      name: 'Set 16: Lore & Legends',
+      version: '16.01',
+      releaseDate: '2024-12-03',
+      champions: [],
+      traits: [],
+      items: []
+    };
+    setSelectedSet(defaultSet);
   }, []);
+
+  // Handle champion drag start from picker
+  const handleChampionDragStart = (champion: Champion) => {
+    // Set the champion as the drag data payload
+    const transferData = JSON.stringify(champion);
+    (window as any).currentDraggedChampion = champion;
+  };
 
   // Handle board slot click
   const handleBoardSlotClick = (row: number, col: number) => {
@@ -99,8 +105,29 @@ const CustomBuilder: React.FC = () => {
     } else {
       // Remove champion from board
       const newBoard = [...board];
-      newBoard[row][col] = { champion: null, position: { row, col } };
+      if (newBoard[row][col].champion) {
+        newBoard[row][col] = { champion: null, position: { row, col } };
+        setBoard(newBoard);
+      }
+    }
+  };
+
+  // Handle board slot drag over
+  const handleBoardSlotDragOver = (e: React.DragEvent<HTMLDivElement>, row: number, col: number) => {
+    e.preventDefault();
+  };
+
+  // Handle board slot drop
+  const handleBoardSlotDrop = (e: React.DragEvent<HTMLDivElement>, row: number, col: number) => {
+    e.preventDefault();
+    const champion = (window as any).currentDraggedChampion;
+    if (champion) {
+      // Place champion on board
+      const newBoard = [...board];
+      newBoard[row][col] = { champion, position: { row, col } };
       setBoard(newBoard);
+      // Clear the global variable after use
+      (window as any).currentDraggedChampion = null;
     }
   };
 
@@ -115,8 +142,29 @@ const CustomBuilder: React.FC = () => {
     } else {
       // Remove champion from bench
       const newBench = [...bench];
-      newBench[index] = null;
+      if (newBench[index]) {
+        newBench[index] = null;
+        setBench(newBench);
+      }
+    }
+  };
+
+  // Handle bench slot drag over
+  const handleBenchSlotDragOver = (e: React.DragEvent<HTMLDivElement>, index: number) => {
+    e.preventDefault();
+  };
+
+  // Handle bench slot drop
+  const handleBenchSlotDrop = (e: React.DragEvent<HTMLDivElement>, index: number) => {
+    e.preventDefault();
+    const champion = (window as any).currentDraggedChampion;
+    if (champion) {
+      // Place champion on bench
+      const newBench = [...bench];
+      newBench[index] = champion;
       setBench(newBench);
+      // Clear the global variable after use
+      (window as any).currentDraggedChampion = null;
     }
   };
 
@@ -163,13 +211,16 @@ const CustomBuilder: React.FC = () => {
 
     return traits.map(trait => {
       const count = championTraits.get(trait.name) || 0;
-      // For Set 16, a trait is considered active if the count matches any breakpoint
-      // In reality, you might want more sophisticated logic based on the breakpoints' effects
-      const isActive = trait.breakpoints.some(bp => bp.count <= count);
+      // Find the highest active breakpoint based on trait count
+      const activeBreakpoint = [...trait.breakpoints]
+        .sort((a, b) => b.count - a.count) // Sort by count descending
+        .find(bp => bp.count <= count);
+
       return {
         trait,
         count,
-        active: isActive
+        activeBreakpoint,
+        active: !!activeBreakpoint
       };
     });
   }, [board, bench, traits]);
@@ -183,25 +234,29 @@ const CustomBuilder: React.FC = () => {
 
   // Render the board slots
   const renderBoard = () => {
+    if (!board) return null;
     return board.map((row, rowIndex) => (
       <div key={rowIndex} className="flex gap-1" data-testid="board-row">
         {row.map((slot, colIndex) => (
           <div
             key={`${rowIndex}-${colIndex}`}
-            className={`w-16 h-16 border-2 rounded flex items-center justify-center cursor-pointer transition-all ${
-              slot.champion
-                ? 'bg-blue-100 border-blue-300'
-                : 'bg-gray-100 border-gray-300 hover:bg-gray-200'
+            className={`w-16 h-16 rounded flex items-center justify-center cursor-pointer transition-all border-2 ${
+              slot?.champion
+                ? 'bg-gradient-to-br from-blue-100 to-blue-200 border-blue-400 shadow-inner'
+                : 'bg-gradient-to-br from-gray-100 to-gray-200 border-gray-300 hover:from-gray-200 hover:to-gray-300'
             }`}
             onClick={() => handleBoardSlotClick(rowIndex, colIndex)}
+            onDragOver={(e) => handleBoardSlotDragOver(e, rowIndex, colIndex)}
+            onDrop={(e) => handleBoardSlotDrop(e, rowIndex, colIndex)}
           >
-            {slot.champion && (
+            {slot?.champion && slot.champion.image && (
               <img
                 src={slot.champion.image}
                 alt={slot.champion.name}
                 className="w-12 h-12 rounded border border-gray-300"
                 style={{ transform: `rotate(${rotation}deg)` }}
-                draggable={false}
+                draggable
+                onDragStart={() => handleChampionDragStart(slot.champion!)}
               />
             )}
           </div>
@@ -212,22 +267,27 @@ const CustomBuilder: React.FC = () => {
 
   // Render the bench
   const renderBench = () => {
+    if (!bench) return null;
     return bench.map((champion, index) => (
       <div
         key={index}
-        className={`w-16 h-16 border-2 rounded flex items-center justify-center cursor-pointer transition-all ${
+        className={`w-16 h-16 rounded flex items-center justify-center cursor-pointer transition-all border-2 ${
           champion
-            ? 'bg-green-100 border-green-300'
-            : 'bg-gray-100 border-gray-300 hover:bg-gray-200'
+            ? 'bg-gradient-to-br from-green-100 to-green-200 border-green-400 shadow-inner'
+            : 'bg-gradient-to-br from-gray-100 to-gray-200 border-gray-300 hover:from-gray-200 hover:to-gray-300'
         }`}
         onClick={() => handleBenchSlotClick(index)}
+        onDragOver={(e) => handleBenchSlotDragOver(e, index)}
+        onDrop={(e) => handleBenchSlotDrop(e, index)}
       >
-        {champion && (
+        {champion && champion.image && (
           <img
             src={champion.image}
             alt={champion.name}
             className="w-12 h-12 rounded border border-gray-300"
             style={{ transform: `rotate(${rotation}deg)` }}
+            draggable
+            onDragStart={() => handleChampionDragStart(champion)}
           />
         )}
       </div>
@@ -236,7 +296,16 @@ const CustomBuilder: React.FC = () => {
 
   // Render champion picker
   const renderChampionPicker = () => {
-    if (!champions) return null;
+    if (!champions) return (
+      <div className="overflow-hidden rounded-lg border bg-white shadow-sm">
+        <div className="border-b bg-gray-50 px-4 py-2">
+          <h3 className="font-semibold text-gray-700">Champions</h3>
+        </div>
+        <div className="p-4 text-center text-gray-500">
+          Loading champions...
+        </div>
+      </div>
+    );
 
     return (
       <div className="overflow-hidden rounded-lg border bg-white shadow-sm">
@@ -253,18 +322,22 @@ const CustomBuilder: React.FC = () => {
             {champions.map(champion => (
               <div
                 key={champion.id}
-                className={`p-2 rounded-lg border cursor-pointer transition-all flex flex-col items-center ${
+                className={`p-2 rounded-xl border cursor-pointer transition-all flex flex-col items-center shadow-sm ${
                   selectedChampion?.id === champion.id
-                    ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
-                    : 'border-gray-200 hover:bg-gray-50'
+                    ? 'border-blue-500 bg-gradient-to-b from-blue-50 to-blue-100 ring-2 ring-blue-200 transform scale-[1.02]'
+                    : 'border-gray-200 bg-gradient-to-b from-white to-gray-50 hover:from-gray-50 hover:to-gray-100'
                 }`}
                 onClick={() => setSelectedChampion(selectedChampion?.id === champion.id ? null : champion)}
+                draggable
+                onDragStart={() => handleChampionDragStart(champion)}
               >
-                <img
-                  src={champion.image}
-                  alt={champion.name}
-                  className="w-12 h-12 rounded border border-gray-300 mb-1"
-                />
+                {champion.image && (
+                  <img
+                    src={champion.image}
+                    alt={champion.name}
+                    className="w-12 h-12 rounded border border-gray-300 mb-1"
+                  />
+                )}
                 <div className="text-xs font-medium text-center truncate w-full">
                   {champion.display_name || champion.name}
                 </div>
@@ -290,29 +363,63 @@ const CustomBuilder: React.FC = () => {
     if (!activeTraits.length) return null;
 
     return (
-      <div className="overflow-hidden rounded-lg border bg-white shadow-sm">
-        <div className="border-b bg-gray-50 px-4 py-2">
-          <h3 className="font-semibold text-gray-700">Active Traits</h3>
+      <div className="overflow-hidden rounded-xl border bg-white shadow-md">
+        <div className="border-b bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-2">
+          <h3 className="font-semibold text-gray-800">Active Traits</h3>
         </div>
         <div className="p-2">
           <div className="grid grid-cols-2 gap-2">
             {activeTraits
               .filter(trait => trait.count > 0)
-              .map(({ trait, count, active }, index) => (
-                <div
-                  key={`${trait.name}-${index}`}
-                  className={`p-2 rounded border text-center ${
-                    active ? 'bg-green-50 border-green-300' : 'bg-gray-50 border-gray-300'
-                  }`}
-                >
-                  <div className="font-medium text-sm truncate">{trait.name}</div>
-                  <div className={`text-xs ${
-                    active ? 'text-green-700 font-medium' : 'text-gray-600'
-                  }`}>
-                    {count} {active ? '✓' : '✗'}
+              .map(({ trait, count, active, activeBreakpoint }, index) => {
+                // Find the next breakpoint after the current active one (or the first if none is active)
+                const sortedBreakpoints = [...trait.breakpoints].sort((a, b) => a.count - b.count);
+                const nextBreakpoint = sortedBreakpoints.find(bp => bp.count > (activeBreakpoint?.count || 0));
+
+                return (
+                  <div
+                    key={`${trait.name}-${index}`}
+                    className={`p-2 rounded-lg border text-center transition-all ${
+                      active
+                        ? 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-300 shadow-sm'
+                        : 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200'
+                    }`}
+                  >
+                    <div className="font-medium text-sm truncate">{trait.name}</div>
+                    <div className={`text-xs ${
+                      active ? 'text-green-700 font-medium' : 'text-gray-600'
+                    }`}>
+                      {count} {active ? (
+                        <span className="text-green-600 font-bold">✓</span>
+                      ) : (
+                        <span className="text-red-500 font-bold">✗</span>
+                      )}
+                      {activeBreakpoint && (
+                        <div className="text-[10px] mt-1 bg-blue-50 text-blue-700 rounded px-1 inline-block">
+                          {activeBreakpoint.description}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Progress bar for next trait level */}
+                    {nextBreakpoint && (
+                      <div className="mt-1">
+                        <div className="w-full bg-gray-200 rounded-full h-1.5">
+                          <div
+                            className="bg-blue-500 h-1.5 rounded-full"
+                            style={{
+                              width: `${Math.min(100, (count / nextBreakpoint.count) * 100)}%`
+                            }}
+                          ></div>
+                        </div>
+                        <div className="text-[8px] text-gray-500 mt-0.5">
+                          {count}/{nextBreakpoint.count} for +1
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
           </div>
         </div>
       </div>
@@ -321,21 +428,21 @@ const CustomBuilder: React.FC = () => {
 
   // Render set selector
   const renderSetSelector = () => {
-    if (!sets) return null;
+    if (!sets || sets.length === 0) return null;
 
     return (
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">Select Set</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Current Set</label>
         <div className="relative">
           <select
-            value={selectedSet?.id || ''}
+            value={selectedSet?.id || sets[0].id}
             onChange={(e) => {
               const set = sets.find(s => s.id === e.target.value);
-              if (set) handleSetChange(set);
+              if (set) setSelectedSet(set);
             }}
             className="w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm"
+            disabled // Disable since we're using static data
           >
-            <option value="">Select a set...</option>
             {sets.map(set => (
               <option key={set.id} value={set.id}>
                 {set.name} ({set.version})
@@ -369,10 +476,22 @@ const CustomBuilder: React.FC = () => {
         name: compositionName || 'My Custom Composition',
         description: compositionDescription || 'Custom composition built in the builder',
         board: board.flat().filter(slot => slot.champion !== null).map(slot => ({
-          champion: slot.champion,
+          champion: {
+            id: slot.champion!.id,
+            name: slot.champion!.name,
+            cost: slot.champion!.cost,
+            traits: slot.champion!.traits,
+            image: slot.champion!.image
+          },
           position: slot.position
         })),
-        bench: bench.filter(champ => champ !== null),
+        bench: bench.filter(champ => champ !== null).map(champ => ({
+          id: champ!.id,
+          name: champ!.name,
+          cost: champ!.cost,
+          traits: champ!.traits,
+          image: champ!.image
+        })),
         traits: activeTraits,
         set: selectedSet,
         exportDate: new Date().toISOString()
@@ -450,6 +569,8 @@ const CustomBuilder: React.FC = () => {
     );
   }
 
+  // No longer checking for sets since we provide them statically
+
   return (
     <div className="container mx-auto p-4 bg-gray-50 min-h-screen">
       <div className="mb-6">
@@ -505,6 +626,60 @@ const CustomBuilder: React.FC = () => {
               <div className="flex gap-2">
                 <button
                   className="flex items-center gap-1 px-3 py-1.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm"
+                  onClick={async () => {
+                    // Create composition object
+                    const composition = {
+                      name: compositionName,
+                      description: compositionDescription,
+                      set_id: selectedSet?.id || '',
+                      champions: board.flat()
+                        .filter(slot => slot.champion !== null)
+                        .map(slot => ({
+                          id: slot.champion!.id,
+                          name: slot.champion!.name,
+                          star_level: 1, // default
+                          position: slot.position,
+                          items: [], // default
+                          is_core: false, // default
+                          priority: 'medium' // default
+                        })),
+                      augments: {
+                        preferred: [],
+                        acceptable: []
+                      },
+                      meta: {
+                        tier: 'S',
+                        difficulty: 3,
+                        cost: 'Mixed',
+                        patch: '14.22',
+                        playstyle: 'Custom',
+                        winrate: 0,
+                        avg_placement: 0,
+                        playrate: 0,
+                        contest_rate: 0
+                      }
+                    };
+
+                    try {
+                      const response = await api.post('/api/v1/compositions', composition);
+                      alert('Composition saved successfully!');
+                      console.log('Saved composition ID:', response.data.id || response.data.data?.id);
+                    } catch (error: any) {
+                      console.error('Error saving composition:', error);
+                      let errorMessage = 'Failed to save composition';
+                      if (error.response?.data?.message) {
+                        errorMessage = error.response.data.message;
+                      } else if (error.message) {
+                        errorMessage = error.message;
+                      }
+                      alert(errorMessage);
+                    }
+                  }}
+                >
+                  <Save className="w-4 h-4" /> Save
+                </button>
+                <button
+                  className="flex items-center gap-1 px-3 py-1.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm"
                   onClick={exportComposition}
                 >
                   <Share2 className="w-4 h-4" /> Share
@@ -543,39 +718,41 @@ const CustomBuilder: React.FC = () => {
 
           {/* Selected champion info */}
           {selectedChampion && (
-            <div className="w-full bg-white rounded-xl shadow-md p-4 border border-blue-200">
+            <div className="w-full bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl shadow-lg p-4 border border-blue-200">
               <div className="flex items-start gap-4">
                 <img
                   src={selectedChampion.image}
                   alt={selectedChampion.name}
-                  className="w-20 h-20 rounded-lg border border-gray-300"
+                  className="w-20 h-20 rounded-xl border-2 border-white shadow-md"
                 />
                 <div className="flex-1">
                   <div className="flex justify-between">
-                    <h3 className="font-bold text-lg text-gray-900">{selectedChampion.display_name || selectedChampion.name}</h3>
+                    <div>
+                      <h3 className="font-bold text-lg text-gray-900">{selectedChampion.display_name || selectedChampion.name}</h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <div className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                          selectedChampion.cost === 1 ? 'bg-blue-200 text-blue-800' :
+                          selectedChampion.cost === 2 ? 'bg-green-200 text-green-800' :
+                          selectedChampion.cost === 3 ? 'bg-purple-200 text-purple-800' :
+                          selectedChampion.cost === 4 ? 'bg-yellow-200 text-yellow-800' :
+                          'bg-red-200 text-red-800'
+                        }`}>
+                          {selectedChampion.cost || '?'} Star
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          Traits: {selectedChampion.traits?.join(', ') || 'None'}
+                        </div>
+                      </div>
+                    </div>
                     <button
-                      className="text-gray-400 hover:text-gray-600"
+                      className="text-gray-500 hover:text-gray-700 bg-white rounded-full p-1 shadow-sm"
                       onClick={() => setSelectedChampion(null)}
                     >
-                      <X className="w-5 h-5" />
+                      <X className="w-4 h-4" />
                     </button>
                   </div>
-                  <div className="flex items-center gap-4 mt-2">
-                    <div className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      selectedChampion.cost === 1 ? 'bg-blue-100 text-blue-800' :
-                      selectedChampion.cost === 2 ? 'bg-green-100 text-green-800' :
-                      selectedChampion.cost === 3 ? 'bg-purple-100 text-purple-800' :
-                      selectedChampion.cost === 4 ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-red-100 text-red-800'
-                    }`}>
-                      {selectedChampion.cost || '?'} Star
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      Traits: {selectedChampion.traits?.join(', ') || 'None'}
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-700 mt-2">
-                    Ability: {selectedChampion.ability?.name || 'No ability name'} - {selectedChampion.ability?.description || 'No ability description'}
+                  <p className="text-sm text-gray-700 mt-3">
+                    {selectedChampion.description || 'No description available for this champion.'}
                   </p>
                 </div>
               </div>

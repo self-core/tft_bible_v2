@@ -406,3 +406,10 @@ export const traitsApi = {
 export const healthApi = {
   check: () => api.get('/api/v1/health'),
 };
+
+export const traitTrackerApi = {
+  getTraitTracker: (request: {
+    target_traits: { trait_name: string; required_count: number }[];
+    current_traits?: { name: string; count: number }[];
+  }) => api.post('/api/v1/trait-tracker', request),
+};

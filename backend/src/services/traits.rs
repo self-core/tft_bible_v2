@@ -41,20 +41,19 @@ impl TraitService {
     }
 
     pub async fn get_all_traits(&self) -> Result<Vec<TraitSummary>, ApiError> {
-        let mut cursor = self.traits_collection.find(None, None).await
+        let mut cursor = self.traits_collection.find(None).await
             .map_err(|e| ApiError::DatabaseError(e.to_string()))?;
 
         let mut traits = Vec::new();
-        while let Some(trait_item) = cursor.next().await {
-            if let Ok(trait_item) = trait_item {
-                traits.push(TraitSummary {
-                    id: trait_item.id,
-                    name: trait_item.name,
-                    trait_type: trait_item.trait_type,
-                    description: trait_item.description,
-                    image_url: trait_item.image_url,
-                });
-            }
+        while let Some(trait_item) = cursor.try_next().await
+            .map_err(|e| ApiError::DatabaseError(e.to_string()))? {
+            traits.push(TraitSummary {
+                id: trait_item.id,
+                name: trait_item.name,
+                trait_type: trait_item.trait_type,
+                description: trait_item.description,
+                image_url: trait_item.image_url,
+            });
         }
 
         Ok(traits)

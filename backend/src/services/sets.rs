@@ -1,3 +1,4 @@
+use futures::stream::StreamExt;
 use mongodb::{Collection, Database};
 use serde::{Deserialize, Serialize};
 use crate::errors::ApiError;
@@ -46,7 +47,7 @@ impl SetService {
     }
 
     pub async fn get_all_sets(&self) -> Result<Vec<SetSummary>, ApiError> {
-        let mut cursor = self.sets_collection.find(None, None).await
+        let mut cursor = self.sets_collection.find(None).await
             .map_err(|e| ApiError::DatabaseError(e.to_string()))?;
 
         let mut sets = Vec::new();

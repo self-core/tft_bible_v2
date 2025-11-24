@@ -23,14 +23,12 @@ services:
     environment:
       - MONGODB_URL=mongodb://mongodb:27017
       - DATABASE_NAME=tft_bible_prod
-      - KAFKA_URL=kafka:9092
       - PORT=8080
       - JWT_SECRET=${JWT_SECRET}
       - CORS_ORIGIN=${CORS_ORIGIN}
       - RIOT_API_KEY=${RIOT_API_KEY}
     depends_on:
       - mongodb
-      - kafka
     networks:
       - tft-prod-network
     restart: unless-stopped

@@ -73,8 +73,8 @@ const CompositionDetail = () => {
     const board = Array(4).fill(null).map(() => Array(8).fill(null))
     
     // Place champions on the board
-    composition?.champions.forEach(champion => {
-      const { x, y } = champion.position
+    composition?.champions?.forEach(champion => {
+      const { x, y } = champion.position || { x: -1, y: -1 }
       if (y >= 0 && y < 4 && x >= 0 && x < 8) {
         board[y][x] = champion
       }
@@ -224,9 +224,11 @@ const CompositionDetail = () => {
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-3">
               <h1 className="text-3xl font-bold text-gray-900">{composition.name}</h1>
-              <span className={`px-3 py-1 rounded-full text-sm font-medium ${getTierColor(composition.meta.tier)}`}>
-                {composition.meta.tier} Tier
-              </span>
+              {composition.meta?.tier && (
+                <span className={`px-3 py-1 rounded-full text-sm font-medium ${getTierColor(composition.meta.tier)}`}>
+                  {composition.meta.tier} Tier
+                </span>
+              )}
               {composition.is_verified && (
                 <span className="px-2 py-1 rounded-full text-xs font-medium bg-tft-blue/20 text-tft-blue">
                   Verified
@@ -242,19 +244,19 @@ const CompositionDetail = () => {
             <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-4">
               <span className="flex items-center gap-1">
                 <Target className="h-4 w-4" />
-                {composition.category}
+                {composition.category || 'N/A'}
               </span>
               <span className="flex items-center gap-1">
                 <Clock className="h-4 w-4" />
-                Difficulty: {composition.meta.difficulty}/5
+                Difficulty: {composition.meta?.difficulty || 'N/A'}/5
               </span>
               <span className="flex items-center gap-1">
                 <Users className="h-4 w-4" />
-                {composition.champions.length} Champions
+                {composition.champions?.length || 0} Champions
               </span>
               <span className="flex items-center gap-1">
                 <Star className="h-4 w-4 text-tft-gold" />
-                {composition.meta.winrate.toFixed(1)}% Win Rate
+                {composition.meta?.winrate ? composition.meta.winrate.toFixed(1) : 'N/A'}% Win Rate
               </span>
             </div>
 
@@ -267,15 +269,15 @@ const CompositionDetail = () => {
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-4">
               <div className="text-center">
-                <div className="text-2xl font-bold text-tft-gold">{composition.views}</div>
+                <div className="text-2xl font-bold text-tft-gold">{composition.views || 0}</div>
                 <div className="text-sm text-gray-600">Views</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">{composition.votes.upvotes}</div>
+                <div className="text-2xl font-bold text-green-600">{composition.votes?.upvotes || 0}</div>
                 <div className="text-sm text-gray-600">Upvotes</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-red-600">{composition.votes.downvotes}</div>
+                <div className="text-2xl font-bold text-red-600">{composition.votes?.downvotes || 0}</div>
                 <div className="text-sm text-gray-600">Downvotes</div>
               </div>
             </div>
@@ -313,12 +315,12 @@ const CompositionDetail = () => {
           Champions
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {composition.champions.map((champion: ChampionInComposition, index: number) => (
+          {composition.champions?.map((champion: ChampionInComposition, index: number) => (
             <div key={index} className="border border-gray-200 rounded-lg p-4 bg-white">
               <div className="flex items-center gap-3 mb-3">
                 {champion.icon_url ? (
-                  <img 
-                    src={champion.icon_url} 
+                  <img
+                    src={champion.icon_url}
                     alt={champion.name}
                     className="w-12 h-12 rounded-lg object-cover border border-gray-200"
                     onError={(e) => {
@@ -331,13 +333,13 @@ const CompositionDetail = () => {
                     }}
                   />
                 ) : (
-                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${getCostColor(champion.cost)} bg-gray-100 border border-gray-200 fallback-champion`}>
+                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${getCostColor(champion.cost || 1)} bg-gray-100 border border-gray-200 fallback-champion`}>
                     <span className="text-sm font-medium">{champion.star_level}★</span>
                   </div>
                 )}
                 <div>
                   <h3 className="font-semibold text-gray-900">{champion.name || 'Unknown Champion'}</h3>
-                  <p className="text-sm text-gray-600">Priority: {champion.priority}</p>
+                  <p className="text-sm text-gray-600">Priority: {champion.priority || 'N/A'}</p>
                 </div>
                 {champion.is_core && (
                   <div className="ml-auto">
@@ -350,9 +352,9 @@ const CompositionDetail = () => {
 
               {/* Traits */}
               <div className="flex flex-wrap gap-1 mb-3">
-                {champion.traits.map((trait: string, traitIndex: number) => (
-                  <span 
-                    key={traitIndex} 
+                {champion.traits?.map((trait: string, traitIndex: number) => (
+                  <span
+                    key={traitIndex}
                     className={`px-2 py-1 rounded-full text-xs font-medium ${getTraitColor(trait)}`}
                   >
                     {trait}
@@ -364,15 +366,15 @@ const CompositionDetail = () => {
               <div className="grid grid-cols-2 gap-2 mb-3 text-sm">
                 <div className="flex items-center gap-1 text-gray-600">
                   <Heart className="h-4 w-4 text-red-500" />
-                  <span>{champion.health} HP</span>
+                  <span>{champion.health || 'N/A'} HP</span>
                 </div>
                 <div className="flex items-center gap-1 text-gray-600">
                   <Sword className="h-4 w-4 text-blue-500" />
-                  <span>{champion.attack_damage} AD</span>
+                  <span>{champion.attack_damage || 'N/A'} AD</span>
                 </div>
                 <div className="flex items-center gap-1 text-gray-600">
                   <Zap className="h-4 w-4 text-yellow-500" />
-                  <span>{champion.ability_name}</span>
+                  <span>{champion.ability_name || 'N/A'}</span>
                 </div>
               </div>
 
@@ -394,7 +396,7 @@ const CompositionDetail = () => {
               )}
 
               <div className="text-xs text-gray-500">
-                Position: ({champion.position.x}, {champion.position.y})
+                Position: ({champion.position?.x || 0}, {champion.position?.y || 0})
                 {champion.is_core && <span className="ml-2 text-tft-gold">★ Core</span>}
               </div>
             </div>
@@ -416,7 +418,7 @@ const CompositionDetail = () => {
                 Preferred
               </h3>
               <ul className="space-y-2">
-                {composition.augments.preferred.map((augment: string | any, index: number) => (
+                {composition.augments.preferred?.map((augment: string | any, index: number) => (
                   <li key={index} className="p-3 bg-white rounded-lg border border-gray-200">
                     <div className="font-medium text-gray-900">
                       {typeof augment === 'string' ? augment : augment.name || 'Unknown Augment'}
@@ -431,7 +433,7 @@ const CompositionDetail = () => {
               </ul>
             </div>
 
-            {composition.augments.acceptable && composition.augments.acceptable.length > 0 && (
+            {composition.augments?.acceptable && composition.augments.acceptable.length > 0 && (
               <div>
                 <h3 className="font-semibold text-gray-100 mb-3 flex items-center">
                   <Shield className="h-4 w-4 mr-2 text-tft-blue" />
@@ -466,8 +468,8 @@ const CompositionDetail = () => {
         <div className="text-gray-600">
           <p className="mb-4">
             This composition features a {composition.category.toLowerCase()} strategy with {composition.champions.length} champions.
-            It has a {composition.meta.difficulty <= 2 ? 'low' : composition.meta.difficulty <= 3 ? 'medium' : 'high'} difficulty rating
-            and performs well in {composition.meta.playstyle.toLowerCase()} playstyles.
+            It has a {composition.meta?.difficulty && composition.meta.difficulty <= 2 ? 'low' : composition.meta?.difficulty && composition.meta.difficulty <= 3 ? 'medium' : 'high'} difficulty rating
+            and performs well in {composition.meta?.playstyle?.toLowerCase() || 'N/A'} playstyles.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
@@ -479,19 +481,19 @@ const CompositionDetail = () => {
               <ul className="space-y-2 text-sm">
                 <li className="flex justify-between">
                   <span className="text-gray-600">Win Rate:</span>
-                  <span className="text-gray-900 font-medium">{composition.meta.winrate.toFixed(1)}%</span>
+                  <span className="text-gray-900 font-medium">{composition.meta?.winrate ? composition.meta.winrate.toFixed(1) : 'N/A'}%</span>
                 </li>
                 <li className="flex justify-between">
                   <span className="text-gray-600">Average Placement:</span>
-                  <span className="text-gray-900 font-medium">{composition.meta.avg_placement.toFixed(1)}</span>
+                  <span className="text-gray-900 font-medium">{composition.meta?.avg_placement ? composition.meta.avg_placement.toFixed(1) : 'N/A'}</span>
                 </li>
                 <li className="flex justify-between">
                   <span className="text-gray-600">Play Rate:</span>
-                  <span className="text-gray-900 font-medium">{(composition.meta.playrate * 100).toFixed(1)}%</span>
+                  <span className="text-gray-900 font-medium">{composition.meta?.playrate ? (composition.meta.playrate * 100).toFixed(1) : 'N/A'}%</span>
                 </li>
                 <li className="flex justify-between">
                   <span className="text-gray-600">Contest Rate:</span>
-                  <span className="text-gray-900 font-medium">{(composition.meta.contest_rate * 100).toFixed(1)}%</span>
+                  <span className="text-gray-900 font-medium">{composition.meta?.contest_rate ? (composition.meta.contest_rate * 100).toFixed(1) : 'N/A'}%</span>
                 </li>
               </ul>
             </div>
@@ -504,19 +506,19 @@ const CompositionDetail = () => {
               <ul className="space-y-2 text-sm">
                 <li className="flex justify-between">
                   <span className="text-gray-600">Cost:</span>
-                  <span className="text-gray-900 font-medium">{composition.meta.cost}</span>
+                  <span className="text-gray-900 font-medium">{composition.meta?.cost || 'N/A'}</span>
                 </li>
                 <li className="flex justify-between">
                   <span className="text-gray-600">Playstyle:</span>
-                  <span className="text-gray-900 font-medium">{composition.meta.playstyle}</span>
+                  <span className="text-gray-900 font-medium">{composition.meta?.playstyle || 'N/A'}</span>
                 </li>
                 <li className="flex justify-between">
                   <span className="text-gray-600">Patch:</span>
-                  <span className="text-gray-900 font-medium">{composition.meta.patch}</span>
+                  <span className="text-gray-900 font-medium">{composition.meta?.patch || 'N/A'}</span>
                 </li>
                 <li className="flex justify-between">
                   <span className="text-gray-600">Category:</span>
-                  <span className="text-gray-900 font-medium">{composition.category}</span>
+                  <span className="text-gray-900 font-medium">{composition.category || 'N/A'}</span>
                 </li>
               </ul>
             </div>
@@ -525,7 +527,7 @@ const CompositionDetail = () => {
       </div>
 
       {/* Tags */}
-      {composition.tags.length > 0 && (
+      {composition.tags && composition.tags.length > 0 && (
         <div className="bg-gray-800/50 rounded-xl shadow-sm border p-6">
           <h2 className="text-xl font-semibold text-gray-100 mb-4 flex items-center">
             <Target className="h-5 w-5 mr-2 text-tft-gold" />

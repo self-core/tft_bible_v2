@@ -1,14 +1,18 @@
 import { Link } from 'react-router-dom'
-import { Swords, Users, Package, Search, Star, Zap, Target, Cpu } from 'lucide-react'
+import { Swords, Users, Package, Search, Star, Zap, Target, Cpu, TrendingUp, Eye, ThumbsUp, Sword, Shield } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { useTheme } from '../contexts/ThemeContext'
+import { CompositionSummary, ChampionSummary } from '../types'
+import { compositionsApi, championsApi } from '../lib/api'
 
 const Home = () => {
   const { theme } = useTheme();
-  
+
   // State for trending compositions
   const [trendingCompositions, setTrendingCompositions] = useState<CompositionSummary[]>([]);
   const [trendingCompositionsLoading, setTrendingCompositionsLoading] = useState(false);
   const [trendingCompositionsError, setTrendingCompositionsError] = useState<string | null>(null);
-  
+
   // State for trending champions
   const [trendingChampions, setTrendingChampions] = useState<ChampionSummary[]>([]);
   const [trendingChampionsLoading, setTrendingChampionsLoading] = useState(false);
@@ -99,27 +103,6 @@ const Home = () => {
       title: 'Item Encyclopedia',
       description: 'Comprehensive item database with stats, recipes, and build recommendations',
       link: '/items',
-<<<<<<< HEAD
-      color: 'text-tft-green',
-      techBadge: 'Optimized',
-    },
-    {
-      icon: Search,
-      title: 'Riot Data Integration',
-      description: 'Access live TFT match data directly from Riot Games API with real player statistics.',
-      link: '/summoner-search',
-      color: 'text-tft-purple',
-      techBadge: 'Live Data',
-    },
-  ]
-
-  const stats = [
-    { label: 'Compositions', value: '2,500+', icon: Swords, accent: 'text-tft-gold' },
-    { label: 'Champions', value: '65', icon: Users, accent: 'text-tft-blue' },
-    { label: 'Items', value: '250+', icon: Package, accent: 'text-tft-green' },
-    { label: 'Riot Matches', value: '100K+', icon: Search, accent: 'text-tft-purple' },
-  ]
-=======
       color: 'text-tft-gold'
     }
   ];
@@ -130,7 +113,6 @@ const Home = () => {
     { label: 'Items', value: '250+', icon: Package, accent: 'text-tft-gold' },
     { label: 'Active Users', value: '10K+', icon: Star, accent: 'text-tft-gold' }
   ];
->>>>>>> 63a55aad1a5a18dde2970823ceb3991869034dff
 
   return (
     <div className="space-y-16">
@@ -141,35 +123,35 @@ const Home = () => {
           <div className="absolute top-10 left-10 w-32 h-32 bg-tft-gold/10 rounded-full blur-3xl"></div>
           <div className="absolute bottom-10 right-10 w-40 h-40 bg-tft-blue/10 rounded-full blur-3xl"></div>
         </div>
-        
+
         <div className="space-y-6">
           <div className="space-y-6">
             <h1 className="text-4xl md:text-6xl font-bold text-gray-100 font-mono">
               Master <span className="tech-highlight">Teamfight Tactics</span>
             </h1>
             <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
-              Your ultimate companion for TFT success. Discover winning compositions, master champion synergies, 
+              Your ultimate companion for TFT success. Discover winning compositions, master champion synergies,
               and optimize your item builds with <span className="tech-highlight">intelligent automation</span>.
             </p>
           </div>
-          
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link 
-              to="/compositions" 
+            <Link
+              to="/compositions"
               className="btn-cimplic accent text-white px-8 py-3 rounded-lg font-semibold hover:bg-tft-gold/90 transition-all duration-300 transform hover:scale-105"
             >
               <Swords className="h-5 w-5 mr-2" />
               Browse Compositions
             </Link>
-            <Link 
-              to="/champions" 
+            <Link
+              to="/champions"
               className="btn-cimplic text-gray-700 px-8 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-all duration-300"
             >
               <Users className="h-5 w-5 mr-2" />
               Explore Champions
             </Link>
           </div>
-          
+
           <div className="flex flex-wrap justify-center gap-4 mt-8 text-sm text-gray-400">
             <div className="flex items-center space-x-1">
               <Zap className="h-4 w-4 text-accent1" />
@@ -206,15 +188,15 @@ const Home = () => {
           <h2 className="section-title-cimplic" style={{ color: 'var(--text-primary)' }}>
             Trending Compositions
           </h2>
-          <Link 
-            to="/compositions" 
+          <Link
+            to="/compositions"
             className="text-sm font-medium hover:underline flex items-center gap-1"
             style={{ color: 'var(--accent1)' }}
           >
             View All <Zap className="h-4 w-4" />
           </Link>
         </div>
-        
+
         {trendingCompositionsLoading && (
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-tft-gold"></div>
@@ -251,7 +233,7 @@ const Home = () => {
                   </div>
 
                   <p className="text-sm mb-4 line-clamp-2" style={{ color: 'var(--text-secondary)' }}>
-                    {comp.category} • Difficulty: {comp.difficulty}/5
+                    {comp.category} • Difficulty: {comp.difficulty || 'N/A'}/5
                   </p>
 
                   {/* Champion row */}
@@ -260,16 +242,16 @@ const Home = () => {
                     <div className="flex -space-x-1 overflow-x-auto max-w-full">
                       {comp.champions && comp.champions.slice(0, 5).map((champion, idx) => (
                         <div key={idx} className="w-6 h-6 rounded-full border flex-shrink-0 flex items-center justify-center text-[8px] font-bold relative"
-                          style={{ 
-                            background: 'var(--bg-primary)', 
+                          style={{
+                            background: 'var(--bg-primary)',
                             borderColor: 'var(--bg-accent)',
                             color: 'var(--text-primary)',
                             width: '24px',
                             height: '24px'
                           }} title={champion.name}>
                           {champion.icon_url ? (
-                            <img 
-                              src={champion.icon_url} 
+                            <img
+                              src={champion.icon_url}
                               alt={champion.name}
                               className="w-full h-full rounded-full object-cover"
                               onError={(e) => {
@@ -290,8 +272,8 @@ const Home = () => {
                       ))}
                       {comp.champions && comp.champions.length > 5 && (
                         <div className="w-6 h-6 rounded-full border flex-shrink-0 flex items-center justify-center text-[8px] font-bold"
-                          style={{ 
-                            background: 'var(--bg-accent)', 
+                          style={{
+                            background: 'var(--bg-accent)',
                             borderColor: 'var(--bg-primary)',
                             color: 'var(--text-primary)',
                             width: '24px',
@@ -307,16 +289,16 @@ const Home = () => {
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-1">
                         <Eye className="h-4 w-4" style={{ color: 'var(--text-secondary)' }} />
-                        <span>{comp.views}</span>
+                        <span>{comp.views || 0}</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <ThumbsUp className="h-4 w-4" style={{ color: 'var(--text-secondary)' }} />
-                        <span>{comp.upvotes}</span>
+                        <span>{comp.upvotes || 0}</span>
                       </div>
                     </div>
                     <div className="flex items-center gap-1">
                       <Star className="h-4 w-4" style={{ color: 'var(--accent1)' }} />
-                      <span>{comp.winrate.toFixed(1)}%</span>
+                      <span>{comp.winrate ? comp.winrate.toFixed(1) : 'N/A'}%</span>
                     </div>
                   </div>
                 </div>
@@ -338,15 +320,15 @@ const Home = () => {
           <h2 className="section-title-cimplic" style={{ color: 'var(--text-primary)' }}>
             Trending Champions
           </h2>
-          <Link 
-            to="/champions" 
+          <Link
+            to="/champions"
             className="text-sm font-medium hover:underline flex items-center gap-1"
             style={{ color: 'var(--accent1)' }}
           >
             View All <Zap className="h-4 w-4" />
           </Link>
         </div>
-        
+
         {trendingChampionsLoading && (
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-tft-gold"></div>
@@ -381,8 +363,8 @@ const Home = () => {
                   }`}>
                     {champ.icon_url ? (
                       <div className="w-20 h-20 mx-auto rounded-xl flex items-center justify-center bg-gray-800">
-                        <img 
-                          src={champ.icon_url} 
+                        <img
+                          src={champ.icon_url}
                           alt={champ.name}
                           className="w-16 h-16 rounded-lg object-cover"
                           onError={(e) => {
@@ -422,26 +404,26 @@ const Home = () => {
                   <div className="space-y-3">
                     <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
                       <Sword className="h-4 w-4" style={{ color: 'var(--text-secondary)' }} />
-                      <span>AD: {champ.attack_damage.toFixed(0)}</span>
+                      <span>AD: {champ.attack_damage ? champ.attack_damage.toFixed(0) : 'N/A'}</span>
                     </div>
 
                     <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
                       <Shield className="h-4 w-4" style={{ color: 'var(--text-secondary)' }} />
-                      <span>HP: {champ.health.toFixed(0)}</span>
+                      <span>HP: {champ.health ? champ.health.toFixed(0) : 'N/A'}</span>
                     </div>
 
                     <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
                       <Zap className="h-4 w-4" style={{ color: 'var(--text-secondary)' }} />
-                      <span>{champ.ability_name}</span>
+                      <span>{champ.ability_name || 'N/A'}</span>
                     </div>
 
                     <div className="flex flex-wrap gap-1 mt-2">
-                      {champ.traits.slice(0, 3).map((trait_name, index) => (
+                      {champ.traits?.slice(0, 3).map((trait_name, index) => (
                         <span
                           key={index}
                           className="text-xs px-2 py-1 rounded"
-                          style={{ 
-                            backgroundColor: 'var(--bg-secondary)', 
+                          style={{
+                            backgroundColor: 'var(--bg-secondary)',
                             color: 'var(--text-secondary)',
                             border: '1px solid var(--bg-accent)'
                           }}
@@ -449,11 +431,11 @@ const Home = () => {
                           {trait_name}
                         </span>
                       ))}
-                      {champ.traits.length > 3 && (
-                        <span 
+                      {champ.traits && champ.traits.length > 3 && (
+                        <span
                           className="text-xs px-2 py-1 rounded"
-                          style={{ 
-                            backgroundColor: 'var(--bg-secondary)', 
+                          style={{
+                            backgroundColor: 'var(--bg-secondary)',
                             color: 'var(--text-secondary)',
                             border: '1px solid var(--bg-accent)'
                           }}
@@ -479,11 +461,11 @@ const Home = () => {
       {/* Features Section */}
       <div className="space-y-12">
         <h2 className="section-title-cimplic text-center">Everything You Need to Win</h2>
-        
+
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {features.map(({ icon: Icon, title, description, link, color }) => (
-            <Link 
-              key={title} 
+            <Link
+              key={title}
               to={link}
               className="card-cimplic p-6 hover:shadow-xl transition-all duration-300 group"
             >
@@ -509,17 +491,17 @@ const Home = () => {
         <div className="absolute inset-0 opacity-20">
           <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-tft-gold/30 via-tft-blue/30 to-tft-green/30 animate-pulse"></div>
         </div>
-        
+
         <div className="relative z-10">
           <Star className="h-12 w-12 mx-auto mb-4 text-tft-gold" />
           <h3 className="text-2xl font-bold mb-4 font-mono">Ready to Climb the Ladder?</h3>
           <p className="text-lg mb-6 opacity-90 max-w-2xl mx-auto">
-            Join thousands of TFT players who use TFT Bible to improve their game with 
+            Join thousands of TFT players who use TFT Bible to improve their game with
             <span className="tech-highlight"> cutting-edge analytics</span> and
             <span className="tech-highlight"> intelligent insights</span>.
           </p>
-          <Link 
-            to="/compositions" 
+          <Link
+            to="/compositions"
             className="btn-cimplic accent bg-gray-100 text-gray-900 px-8 py-3 rounded-lg font-semibold hover:bg-white transition-all duration-300 inline-flex items-center"
           >
             <Swords className="h-5 w-5 mr-2" />

@@ -1,12 +1,15 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
-var cors = require('cors')
+var cors = require('cors');
+const { graphqlHTTP } = require('express-graphql');
+const schema = require('./schema');
+const resolvers = require('./resolvers');
 const app = express();
 const PORT = 8080;
 
 // CORS configuration
-const allowedOrigins = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['http://localhost:3000', 'http://localhost:5173'];
+const allowedOrigins = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:3001'];
 app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
@@ -337,8 +340,8 @@ const mockAugments = [
   }
 ];
 
-// Extend the db object with augments
-db.augments = mockAugments;
+// Use augments from db.json instead of hardcoded mockAugments
+// db.augments = mockAugments;
 //db.traits = mockTraits;
 
 // API endpoints for augments
@@ -681,6 +684,14 @@ app.get('/api/v1/assets/augments', (req, res) => {
   res.json(result);
 });
 
+// GraphQL endpoint
+app.use('/graphql', graphqlHTTP({
+  schema: schema,
+  rootValue: resolvers,
+  graphiql: true, // Enable GraphiQL interface for testing
+}));
+
 app.listen(PORT, () => {
   console.log(`Mock server running on http://localhost:${PORT}`);
+  console.log(`GraphQL API available at http://localhost:${PORT}/graphql`);
 });

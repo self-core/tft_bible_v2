@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { compositionsApi } from '../lib/api';
 import { 
   Sword, 
   Heart, 
@@ -162,6 +164,9 @@ const traitData = {
 };
 
 const TeamBuilder = () => {
+  const [searchParams] = useSearchParams();
+  const compositionId = searchParams.get('composition');
+
   // State for the team/composition
   const [team, setTeam] = useState<any[]>([]);
   const [selectedChampion, setSelectedChampion] = useState<any>(null);
@@ -171,17 +176,121 @@ const TeamBuilder = () => {
   const [compositionName, setCompositionName] = useState('My Custom Composition');
   const [compositionDesc, setCompositionDesc] = useState('A custom TFT composition built with the team builder');
   const [traits, setTraits] = useState<any>({});
+  const [loadingComposition, setLoadingComposition] = useState(false);
+
+  // Load composition if compositionId is provided
+  useEffect(() => {
+    if (compositionId) {
+      setLoadingComposition(true);
+      compositionsApi.getCompositionById(compositionId)
+        .then(response => {
+          const composition = response.data;
+          if (composition && composition.champions) {
+            // Set composition name and description first
+            setCompositionName(composition.name || 'Loaded Composition');
+            setCompositionDesc(composition.description || 'Composition loaded from database');
+
+            // For each champion in the composition, find the full champion data
+            const loadChampionDetails = async () => {
+              try {
+                // Get all champions to match by name
+                const championsResponse = await api.get('/api/v1/champions');
+                const allChampions = championsResponse.data;
+
+                // Load champions from composition with full details
+                const loadedTeam = composition.champions.map((compChampion: any) => {
+                  // Find the detailed champion by name
+                  const detailedChampion = allChampions.find((champ: any) =>
+                    champ.name.toLowerCase() === compChampion.name.toLowerCase()
+                  );
+
+                  if (detailedChampion) {
+                    return {
+                      ...detailedChampion, // Full champion details
+                      originalPosition: compChampion.position || { x: -1, y: -1 },
+                      items: compChampion.items || [],
+                      starLevel: compChampion.star_level || 1,
+                      id: `${detailedChampion.id}-${Date.now()}-${Math.random()}`
+                    };
+                  } else {
+                    // Fallback if champion not found in detailed list
+                    return {
+                      id: `${compChampion.name}-${Date.now()}-${Math.random()}`,
+                      name: compChampion.name,
+                      cost: compChampion.cost || 1,
+                      traits: compChampion.traits || [],
+                      icon_url: compChampion.icon_url,
+                      image_url: compChampion.icon_url,
+                      originalPosition: compChampion.position || { x: -1, y: -1 },
+                      items: compChampion.items || [],
+                      starLevel: compChampion.star_level || 1
+                    };
+                  }
+                });
+
+                setTeam(loadedTeam);
+
+                // Place champions on board if they have positions (4x7 grid)
+                const newBoard = Array(4).fill(null).map(() => Array(7).fill(null));
+                loadedTeam.forEach(champ => {
+                  const pos = champ.originalPosition;
+                  if (pos && pos.x >= 0 && pos.x < 7 && pos.y >= 0 && pos.y < 4) {
+                    newBoard[pos.y][pos.x] = { ...champ, position: { x: pos.x, y: pos.y } };
+                  }
+                });
+                setBoard(newBoard);
+              } catch (error) {
+                console.error('Error loading champion details:', error);
+
+                // Fallback: use composition champions as-is if detailed lookup fails
+                const loadedTeam = composition.champions.map((champ: any) => ({
+                  id: `${champ.name}-${Date.now()}-${Math.random()}`,
+                  name: champ.name,
+                  cost: champ.cost || 1,
+                  traits: champ.traits || [],
+                  icon_url: champ.icon_url,
+                  image_url: champ.icon_url,
+                  originalPosition: champ.position || { x: -1, y: -1 },
+                  items: champ.items || [],
+                  starLevel: champ.star_level || 1
+                }));
+
+                setTeam(loadedTeam);
+
+                // Place champions on board if they have positions
+                const newBoard = Array(4).fill(null).map(() => Array(7).fill(null));
+                loadedTeam.forEach(champ => {
+                  const pos = champ.originalPosition;
+                  if (pos && pos.x >= 0 && pos.x < 7 && pos.y >= 0 && pos.y < 4) {
+                    newBoard[pos.y][pos.x] = { ...champ, position: { x: pos.x, y: pos.y } };
+                  }
+                });
+                setBoard(newBoard);
+              }
+            };
+
+            loadChampionDetails();
+          }
+        })
+        .catch(error => {
+          console.error('Failed to load composition:', error);
+        })
+        .finally(() => {
+          setLoadingComposition(false);
+        });
+    }
+  }, [compositionId]);
 
   // Calculate active traits based on the current team
   useEffect(() => {
     const traitCount: Record<string, number> = {};
-    
+
     team.forEach(champion => {
       champion.traits.forEach((trait: string) => {
         traitCount[trait] = (traitCount[trait] || 0) + 1;
       });
     });
-    
+
     setTraits(traitCount);
   }, [team]);
 
@@ -213,240 +322,95 @@ const TeamBuilder = () => {
   // Place champion on the board
   const placeChampionOnBoard = (championId: string, x: number, y: number) => {
     // First, remove from any existing position
-    const updatedBoard = board.map(row => 
+    const updatedBoard = board.map(row =>
       row.map(cell => cell && cell.id === championId ? null : cell)
     );
-    
+
     // Update the champion's position in the team
-    const updatedTeam = team.map(champ => 
-      champ.id === championId ? { ...champ, position: { x, y } } : champ
+    const updatedTeam = team.map(champ =>
+      champ.id === championId ? { ...champ, originalPosition: { x, y } } : champ
     );
-    
+
     // Place a COPY of the champion on the new position
     const championToPlace = team.find(champ => champ.id === championId);
     if (championToPlace) {
-      updatedBoard[y][x] = { ...championToPlace }; // Create a shallow copy
+      updatedBoard[y][x] = { ...championToPlace, position: { x, y } }; // Create a copy with position
     }
-    
+
     setTeam(updatedTeam);
     setBoard(updatedBoard);
   };
 
   // Clear the board
   const clearBoard = () => {
-    setBoard(Array(4).fill(null).map(() => Array(8).fill(null)));
-    setTeam(team.map(champ => ({ ...champ, position: { x: -1, y: -1 } })));
+    setBoard(Array(4).fill(null).map(() => Array(7).fill(null)));
+    setTeam(team.map(champ => ({ ...champ, originalPosition: { x: -1, y: -1 } })));
   };
 
   // Render the TFT board with hexagonal grid
   const renderBoard = () => {
     return (
       <div className="flex justify-center">
-        <div className="hex-grid-container flex gap-8">
-          {/* Player 1 side (left) */}
-          <div className="hex-grid-player">
-            <h3 className="text-center mb-2 font-semibold" style={{ color: 'var(--text-primary)' }}>Player 1</h3>
-            <div className="grid grid-cols-7 grid-rows-4 gap-0">
-              {board.slice(0, 4).map((row, y) =>
-                row.slice(0, 7).map((cell, x) => (
-                  <div
-                    key={`p1-${x}-${y}`}
-                    className="hex-cell relative"
-                    onClick={() => {
-                      if (cell) {
-                        // Clicking on a placed champion removes it from board
-                        const updatedBoard = [...board];
-                        updatedBoard[y][x] = null;
-                        setBoard(updatedBoard);
-                        
-                        // Update the champion's position in the team
-                        const updatedTeam = team.map(champ => 
-                          champ.id === cell.id ? { ...champ, position: { x: -1, y: -1 } } : champ
-                        );
-                        setTeam(updatedTeam);
-                      }
-                    }}
-                    onDragOver={(e) => e.preventDefault()}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      const championId = e.dataTransfer.getData('championId');
-                      if (championId) {
-                        placeChampionOnBoard(championId, x, y);
-                      }
-                    }}
-                  >
-                    <div className="hexagon-wrapper">
-                      <div className={`hexagon-content ${cell ? 'occupied' : 'empty'}`}>
-                        {cell && (
-                          <>
-                            {cell.icon_url ? (
-                              <img 
-                                src={cell.icon_url} 
-                                alt={cell.name}
-                                className="hexagon-image"
-                                onError={(e) => {
-                                  const target = e.target as HTMLImageElement;
-                                  target.onerror = null; // Prevent infinite loop
-                                  target.style.display = 'none';
-                                  // Show fallback
-                                  const fallback = target.parentElement?.querySelector('.fallback-board-hex');
-                                  if (fallback) fallback.style.display = 'flex';
-                                }}
-                              />
-                            ) : (
-                              <div className="hexagon-fallback fallback-board-hex">
-                                {cell.name.charAt(0)}
-                              </div>
-                            )}
-                          </>
-                        )}
-                      </div>
+        <div className="board-container">
+          <h3 className="text-center mb-2 font-semibold" style={{ color: 'var(--text-primary)' }}>TFT Game Board</h3>
+          <div className="grid grid-cols-7 grid-rows-4 gap-1 p-4 bg-gray-200 rounded-lg border-2 border-dashed border-gray-400">
+            {board.map((row, y) =>
+              row.map((cell, x) => (
+                <div
+                  key={`board-${x}-${y}`}
+                  className={`w-14 h-14 rounded flex items-center justify-center cursor-pointer transition-all border-2 ${
+                    cell
+                      ? 'bg-gradient-to-br from-blue-200 to-blue-300 border-blue-500 shadow-inner'
+                      : 'bg-gradient-to-br from-gray-100 to-gray-200 border-gray-300 hover:bg-gray-300'
+                  }`}
+                  onClick={() => {
+                    if (cell) {
+                      // Clicking on a placed champion removes it from board
+                      const updatedBoard = [...board];
+                      updatedBoard[y][x] = null;
+                      setBoard(updatedBoard);
+
+                      // Update the champion's position in the team
+                      const updatedTeam = team.map(champ =>
+                        champ.id === cell.id ? { ...champ, originalPosition: { x: -1, y: -1 } } : champ
+                      );
+                      setTeam(updatedTeam);
+                    }
+                  }}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const championId = e.dataTransfer.getData('championId');
+                    if (championId) {
+                      placeChampionOnBoard(championId, x, y);
+                    }
+                  }}
+                >
+                  {cell && cell.icon_url && (
+                    <img
+                      src={cell.icon_url}
+                      alt={cell.name}
+                      className="w-12 h-12 rounded border border-gray-400"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.onerror = null; // Prevent infinite loop
+                        target.style.display = 'none';
+                        // Show fallback
+                        const fallback = target.parentElement?.querySelector('.fallback-board');
+                        if (fallback) fallback.style.display = 'flex';
+                      }}
+                    />
+                  )}
+                  {cell && !cell.icon_url && (
+                    <div className="w-12 h-12 rounded flex items-center justify-center bg-gray-300 border border-gray-400 fallback-board">
+                      {cell.name.charAt(0)}
                     </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-          
-          {/* Player 2 side (right) - mirrored for opponent view */}
-          <div className="hex-grid-player">
-            <h3 className="text-center mb-2 font-semibold" style={{ color: 'var(--text-primary)' }}>Player 2</h3>
-            <div className="grid grid-cols-7 grid-rows-4 gap-0">
-              {board.slice(0, 4).map((row, y) =>
-                [...row.slice(0, 7)].reverse().map((cell, x) => (
-                  <div
-                    key={`p2-${x}-${y}`}
-                    className="hex-cell relative"
-                    onClick={() => {
-                      if (cell) {
-                        // Clicking on a placed champion removes it from board
-                        const updatedBoard = [...board];
-                        updatedBoard[y][6 - x] = null;
-                        setBoard(updatedBoard);
-                        
-                        // Update the champion's position in the team
-                        const updatedTeam = team.map(champ => 
-                          champ.id === cell.id ? { ...champ, position: { x: -1, y: -1 } } : champ
-                        );
-                        setTeam(updatedTeam);
-                      }
-                    }}
-                    onDragOver={(e) => e.preventDefault()}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      const championId = e.dataTransfer.getData('championId');
-                      if (championId) {
-                        placeChampionOnBoard(championId, 6 - x, y);
-                      }
-                    }}
-                  >
-                    <div className="hexagon-wrapper">
-                      <div className={`hexagon-content ${cell ? 'occupied' : 'empty'}`}>
-                        {cell && (
-                          <>
-                            {cell.icon_url ? (
-                              <img 
-                                src={cell.icon_url} 
-                                alt={cell.name}
-                                className="hexagon-image"
-                                onError={(e) => {
-                                  const target = e.target as HTMLImageElement;
-                                  target.onerror = null; // Prevent infinite loop
-                                  target.style.display = 'none';
-                                  // Show fallback
-                                  const fallback = target.parentElement?.querySelector('.fallback-board-hex');
-                                  if (fallback) fallback.style.display = 'flex';
-                                }}
-                              />
-                            ) : (
-                              <div className="hexagon-fallback fallback-board-hex">
-                                {cell.name.charAt(0)}
-                              </div>
-                            )}
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
+                  )}
+                </div>
+              ))
+            )}
           </div>
         </div>
-        
-        <style jsx>{`
-          .hex-grid-container {
-            display: flex;
-            gap: 20px;
-            align-items: center;
-          }
-          
-          .hex-grid-player {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-          }
-          
-          .hex-cell {
-            width: 60px;
-            height: 69px;
-            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-            position: relative;
-          }
-          
-          .hexagon-wrapper {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-          }
-          
-          .hexagon-content {
-            width: 50px;
-            height: 58px;
-            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-          }
-          
-          .hexagon-content.empty {
-            background: var(--bg-primary);
-            border: 1px solid var(--bg-accent);
-          }
-          
-          .hexagon-content.occupied {
-            background: var(--bg-accent);
-            border: 2px solid var(--accent1);
-          }
-          
-          .hexagon-content:hover {
-            transform: scale(1.1);
-            box-shadow: 0 0 10px var(--accent1);
-          }
-          
-          .hexagon-image {
-            width: 40px;
-            height: 40px;
-            object-fit: cover;
-            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-          }
-          
-          .hexagon-fallback {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 14px;
-            background: var(--bg-secondary);
-            color: var(--text-primary);
-            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-          }
-        `}</style>
       </div>
     );
   };

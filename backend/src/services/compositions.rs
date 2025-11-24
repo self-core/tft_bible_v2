@@ -85,7 +85,9 @@ static COMPOSITIONS: Lazy<RwLock<Vec<Composition>>> = Lazy::new(|| {
     RwLock::new(sample)
 });
 
-pub struct CompositionService;
+pub struct CompositionService {
+    collection: Collection<Composition>,
+}
 
 impl CompositionService {
     pub fn new(db: &Database) -> Self {
@@ -204,8 +206,8 @@ impl CompositionService {
                 is_public: true,
                 is_verified: false,
                 is_featured: false,
-                created_at: now,
-                updated_at: now,
+                created_at: now.into(),
+                updated_at: now.into(),
             };
 
             // Insert into MongoDB

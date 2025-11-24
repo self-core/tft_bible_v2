@@ -15,6 +15,11 @@ export default defineConfig({
           return path.replace(/^\/api\/v1/, '');
         }
       },
+      '/graphql': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false,
+      },
     },
   },
 })

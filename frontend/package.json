@@ -13,8 +13,11 @@
     "test:ui": "vitest --ui"
   },
   "dependencies": {
+    "@apollo/client": "^3.9.0",
+    "@tanstack/react-query": "^5.90.10",
     "@types/react-dnd": "^2.0.36",
     "axios": "^1.6.7",
+    "graphql": "^16.12.0",
     "lucide-react": "^0.344.0",
     "react": "^18.2.0",
     "react-dnd": "^16.0.1",

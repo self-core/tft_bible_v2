@@ -6,10 +6,10 @@ import { ViteDevServer } from 'vite';
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 3000,
+    port: 3001,
     open: true,
     hmr: {
-      port: 3000,
+      port: 3001,
     },
     host: 'localhost',
     proxy: {

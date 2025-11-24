@@ -5,10 +5,10 @@ FROM rust:1.90-slim AS builder
 WORKDIR /app
 
 # Install required packages for building
+# Note: Skipping librdkafka-dev to avoid build issues on some systems
 RUN apt-get update && apt-get install -y \
     pkg-config \
     libssl-dev \
-    librdkafka-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy the Cargo.toml and Cargo.lock files
@@ -18,7 +18,7 @@ COPY backend/Cargo.toml backend/Cargo.lock ./
 COPY backend/src ./src
 
 # Copy data files
-COPY backend/scraped_compositions.json ./scraped_compositions.json
+COPY scraped_compositions.json ./scraped_compositions.json
 
 # Build both the main application and seed binary in release mode
 RUN cargo build --release

@@ -75,8 +75,8 @@ impl AugmentService {
                 pick_rate: None,
                 is_enabled: true,
                 image_url,
-                created_at: now,
-                updated_at: now,
+                created_at: now.into(),
+                updated_at: now.into(),
             };
 
             // Insert into MongoDB

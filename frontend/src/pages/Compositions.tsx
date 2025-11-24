@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useCompositionsStore } from '../stores'
 import { Link } from 'react-router-dom'
-import { Filter, Star, Eye, ThumbsUp, ExternalLink } from 'lucide-react'
+import { Filter, Star, Eye, ThumbsUp, ExternalLink, Target } from 'lucide-react'
 import { compositionsApi, CompositionSummary, CompositionQuery } from '../lib/api'
 
 const Compositions = () => {
@@ -177,26 +177,26 @@ const Compositions = () => {
               </div>
 
               <p className="text-sm mb-4 line-clamp-2" style={{ color: 'var(--text-secondary)' }}>
-                {comp.category} • Difficulty: {comp.difficulty}/5
+                {comp.category} • Difficulty: {comp.difficulty || 'N/A'}/5
               </p>
 
               {/* Champion row with actual champion data */}
               <div className="flex items-center gap-1 mb-4" style={{ color: 'var(--text-secondary)' }}>
                 <span className="text-xs">Champions:</span>
                 <div className="flex -space-x-1 overflow-x-auto max-w-full">
-                  {comp.champions && comp.champions.slice(0, 5).map((champion, idx) => (
+                  {comp.champions?.slice(0, 5).map((champion, idx) => (
                     <div key={idx} className="w-6 h-6 rounded-full border flex-shrink-0 flex items-center justify-center text-[8px] font-bold relative"
-                      style={{ 
-                        background: 'var(--bg-primary)', 
+                      style={{
+                        background: 'var(--bg-primary)',
                         borderColor: 'var(--bg-accent)',
                         color: 'var(--text-primary)',
                         width: '24px',
                         height: '24px'
-                      }} title={champion.name}>
-                      {champion.icon_url ? (
-                        <img 
-                          src={champion.icon_url} 
-                          alt={champion.name}
+                      }} title={champion?.name}>
+                      {champion?.icon_url ? (
+                        <img
+                          src={champion?.icon_url}
+                          alt={champion?.name}
                           className="w-full h-full rounded-full object-cover"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
@@ -208,7 +208,7 @@ const Compositions = () => {
                         />
                       ) : (
                         <span className="fallback-icon flex items-center justify-center w-full h-full">
-                          {champion.name.substring(0, 2)}
+                          {champion?.name?.substring(0, 2)}
                         </span>
                       )}
                     </div>
@@ -232,24 +232,34 @@ const Compositions = () => {
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-1">
                     <Eye className="h-4 w-4" style={{ color: 'var(--text-secondary)' }} />
-                    <span>{comp.views}</span>
+                    <span>{comp.views || 0}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <ThumbsUp className="h-4 w-4" style={{ color: 'var(--text-secondary)' }} />
-                    <span>{comp.upvotes}</span>
+                    <span>{comp.upvotes || 0}</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1">
-                    <Star className="h-4 w-4" style={{ color: 'var(--accent1)' }} />
-                    <span>{comp.winrate.toFixed(1)}%</span>
-                  </div>
-                  {comp.builder_code && (
-                    <div className="flex items-center gap-1" style={{ color: 'var(--accent2)' }}>
-                      <ExternalLink className="h-3 w-3" style={{ color: 'var(--accent2)' }} />
-                      <span className="text-xs">Builder</span>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
+                      <Star className="h-4 w-4" style={{ color: 'var(--accent1)' }} />
+                      <span>{comp.winrate ? comp.winrate.toFixed(1) : 'N/A'}%</span>
                     </div>
-                  )}
+                    {comp.builder_code && (
+                      <div className="flex items-center gap-1" style={{ color: 'var(--accent2)' }}>
+                        <ExternalLink className="h-3 w-3" style={{ color: 'var(--accent2)' }} />
+                        <span className="text-xs">Builder</span>
+                      </div>
+                    )}
+                  </div>
+                  <Link
+                    to={`/team-builder?composition=${comp.id}`}
+                    className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors hover:bg-tft-gold hover:text-gray-900"
+                    style={{ color: 'var(--accent3)' }}
+                  >
+                    <Target className="h-3 w-3" />
+                    Build Team
+                  </Link>
                 </div>
               </div>
             </div>

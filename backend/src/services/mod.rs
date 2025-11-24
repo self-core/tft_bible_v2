@@ -6,3 +6,4 @@ pub mod sets;
 pub mod traits;
 pub mod augments;
 pub mod tft_data_service;
+pub mod trait_tracker;

@@ -1,5 +1,6 @@
 use bson::oid::ObjectId;
 use chrono::Utc;
+use mongodb::Collection;
 use once_cell::sync::Lazy;
 use std::sync::RwLock;
 
@@ -160,7 +161,9 @@ static ITEMS: Lazy<RwLock<Vec<Item>>> = Lazy::new(|| {
     RwLock::new(sample)
 });
 
-pub struct ItemService;
+pub struct ItemService {
+    pub collection: Collection<crate::models::Item>,
+}
 
 impl ItemService {
     pub fn new(db: &Database) -> Self {

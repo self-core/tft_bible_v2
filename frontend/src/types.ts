@@ -84,3 +84,18 @@ export interface Set {
   traits: Trait[];
   items: Item[];
 }
+
+export interface TraitRequirement {
+  trait_name: string;
+  required_count: number;
+}
+
+export interface CurrentTrait {
+  name: string;
+  count: number;
+}
+
+export interface TraitTrackerResponse {
+  path: Champion[];
+  efficiency: number;
+}

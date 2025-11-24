@@ -1,5 +1,7 @@
-﻿use mongodb::{Client, Database};
-use rdkafka::config::ClientConfig;
+﻿use async_graphql::{Schema, EmptyMutation, EmptySubscription};
+use async_graphql_axum::{GraphQLRequest, GraphQLResponse, GraphQL};
+use axum::{response::Html, routing::get, Extension, Router};
+use mongodb::{Client, Database};
 use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
 use dotenv::dotenv;
@@ -10,19 +12,22 @@ mod services;
 mod config;
 mod errors;
 mod router;
-mod queue;
-mod riot_api;
+mod riot_api; // Removed queue module temporarily
+mod graphql;
 #[cfg(test)]
 mod tests;
 
 use config::Config;
+use crate::graphql::{resolvers::{QueryRoot, MutationRoot}, schema::TraitTrackerInput};
 
 #[derive(Clone)]
 pub struct AppState {
     pub db: Database,
-    pub kafka_config: ClientConfig,
     pub config: Config,
     pub start_time: u64,
+    pub champion_service: crate::services::champions::ChampionService,
+    pub trait_service: crate::services::traits::TraitService,
+    pub item_service: crate::services::items::ItemService,
 }
 
 #[tokio::main]
@@ -47,37 +52,60 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     log::info!("Successfully connected to MongoDB database: {}", config.database_name);
     println!("✅ Connected to MongoDB: {}", config.database_name);
     
-    // Configure Kafka
-    let kafka_url = config.kafka_url.as_ref().unwrap_or(&"localhost:9092".to_string());
-    log::info!("Configuring Kafka connection to: {}", kafka_url);
-    let mut kafka_config = ClientConfig::new();
-    kafka_config.set("bootstrap.servers", kafka_url);
-    kafka_config.set("message.timeout.ms", "5000");
-    log::info!("Kafka configured: {}", kafka_url);
-    println!("✅ Kafka configured: {}", kafka_url);
-    
     // Create app state
     let start_time = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap()
         .as_secs();
-    
+
+    let champion_service = crate::services::champions::ChampionService::new(&db);
+    let trait_service = crate::services::traits::TraitService::new(&db);
+    let item_service = crate::services::items::ItemService::new(&db);
+
     let state = AppState {
         db,
-        kafka_config,
         config: config.clone(),
         start_time,
+        champion_service,
+        trait_service,
+        item_service,
     };
     
+    // Create the GraphQL schema
+    let schema = Schema::build(QueryRoot, MutationRoot, EmptySubscription)
+        .data(Arc::new(state.clone())) // Add the state as data to the schema
+        .finish();
+
     // Create router with all routes
-    let app = router::create_router().with_state(Arc::new(state));
-    
+    let app = router::create_router()
+        .with_state(Arc::new(state))
+        // Add GraphQL endpoint
+        .route("/graphql", get(graphql_playground).post(graphql_handler))
+        .layer(Extension(schema));
+
     // Start server
     let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", config.port)).await.unwrap();
     println!("🚀 TFT API server running on http://0.0.0.0:{}", config.port);
     println!("📚 Health check: http://localhost:{}/api/v1/health", config.port);
-    
+    println!("🔍 GraphQL endpoint: http://localhost:{}/graphql", config.port);
+    println!("🎮 GraphQL playground: http://localhost:{}/graphql", config.port);
+
     axum::serve(listener, app).await?;
     Ok(())
+}
+
+// GraphQL playground handler
+async fn graphql_playground() -> Html<String> {
+    Html(async_graphql::http::playground_source(
+        async_graphql::http::GraphQLPlaygroundConfig::new("/graphql"),
+    ))
+}
+
+// GraphQL request handler
+async fn graphql_handler(
+    schema: Extension<Schema<QueryRoot, MutationRoot, EmptySubscription>>,
+    req: GraphQLRequest,
+) -> GraphQLResponse {
+    schema.execute(req.into_inner()).await.into()
 }
 

@@ -1,0 +1,28 @@
+# Override to run frontend independently for testing UI changes
+services:
+  tft-frontend:
+    # Remove dependency on backend to test frontend in isolation
+    depends_on: []
+    # Use a mock API URL for testing
+    environment:
+      - VITE_API_URL=http://localhost:8080 # Using mock service
+    # Expose on port 3000 for development
+    ports:
+      - "3004:80"
+  
+  # Disable backend service temporarily
+  tft-backend:
+    profiles:
+      - with-backend
+
+  mongodb:
+    profiles:
+      - with-backend
+
+  zookeeper:
+    profiles:
+      - with-backend
+
+  kafka:
+    profiles:
+      - with-backend

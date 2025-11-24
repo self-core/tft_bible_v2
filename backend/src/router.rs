@@ -38,6 +38,9 @@ pub fn create_router() -> Router<Arc<AppState>> {
         // Search endpoint
         .route("/api/v1/search", get(handlers::search::search))
 
+        // Trait Tracker endpoint
+        .route("/api/v1/trait-tracker", post(handlers::trait_tracker::get_trait_tracker))
+
         // Riot TFT API endpoints (background fetch)
         .route("/api/v1/riot/queue/summoner/:identifier", post(handlers::riot_data::queue_summoner_fetch))
         .route("/api/v1/riot/queue/match-history/:puuid", post(handlers::riot_data::queue_match_history_fetch))

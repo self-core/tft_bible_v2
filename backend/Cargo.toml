@@ -46,12 +46,15 @@ reqwest = { version = "0.12.23", features = ["json"] }
 # Authentication
 jsonwebtoken = { version = "10", features = ["aws_lc_rs"] }
 
-# Message queue
-rdkafka = { version = "0.37", features = ["cmake-build", "tokio", "sasl", "ssl"] }
+# GraphQL
+async-graphql = { version = "7.0", features = ["dataloader", "log"] }
+async-graphql-axum = "7.0"
+
+# Message queue (optional - can be disabled for simpler deployments)
+rdkafka = { version = "0.37", features = ["tokio"], optional = true }
 
 # Async processing
 tokio-util = { version = "0.7", features = ["codec"] }
-futures = "0.3"
 
 [dev-dependencies]
 # Testing

@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Mock, vi, describe, test, beforeEach, expect } from 'vitest';
+import { expect as jestExpect } from 'vitest';
 import '@testing-library/jest-dom';
 import Builder from '../Builder';
 import { api } from '../../../lib/api';
