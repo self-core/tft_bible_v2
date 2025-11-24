@@ -137,3 +137,95 @@ pub struct CurrentTraitInput {
     name: String,
     count: i32,
 }
+
+#[derive(InputObject)]
+pub struct CreateCompositionInput {
+    name: String,
+    description: String,
+    category: String,
+    tags: Vec<String>,
+    champions: Vec<CompositionChampionInput>,
+    augments: Vec<String>,
+    positioning: Option<String>,
+    gameplan: Option<String>,
+    meta: CompositionMetaInput,
+    matchups: Option<String>,
+}
+
+#[derive(InputObject)]
+pub struct UpdateCompositionInput {
+    name: String,
+    description: String,
+    category: String,
+    tags: Vec<String>,
+    champions: Vec<CompositionChampionInput>,
+    augments: Vec<String>,
+    positioning: Option<String>,
+    gameplan: Option<String>,
+    meta: CompositionMetaInput,
+    matchups: Option<String>,
+}
+
+#[derive(InputObject)]
+pub struct CompositionChampionInput {
+    champion_id: String,
+    star_level: i32,
+    items: Vec<String>,
+    position: PositionInput,
+    is_core: bool,
+}
+
+#[derive(InputObject)]
+pub struct PositionInput {
+    x: i32,
+    y: i32,
+}
+
+#[derive(InputObject)]
+pub struct CompositionMetaInput {
+    tier: String,
+    difficulty: i32,
+    cost: String,
+    patch: String,
+    playstyle: String,
+    winrate: f64,
+    avg_placement: f64,
+    playrate: f64,
+    contest_rate: f64,
+}
+
+impl From<CompositionMetaInput> for crate::models::CompositionMeta {
+    fn from(input: CompositionMetaInput) -> Self {
+        crate::models::CompositionMeta {
+            tier: input.tier,
+            difficulty: input.difficulty as u32,
+            cost: input.cost,
+            patch: input.patch,
+            playstyle: input.playstyle,
+            winrate: input.winrate,
+            avg_placement: input.avg_placement,
+            playrate: input.playrate,
+            contest_rate: input.contest_rate,
+        }
+    }
+}
+
+impl From<CompositionChampionInput> for crate::models::CompositionChampion {
+    fn from(input: CompositionChampionInput) -> Self {
+        crate::models::CompositionChampion {
+            champion_id: bson::oid::ObjectId::parse_str(&input.champion_id)
+                .unwrap_or_else(|_| bson::oid::ObjectId::new()),
+            star_level: input.star_level as u32,
+            items: input.items.iter()
+                .filter_map(|id| bson::oid::ObjectId::parse_str(id).ok())
+                .collect(),
+            position: crate::models::Position {
+                x: input.position.x as u32,
+                y: input.position.y as u32,
+            },
+            priority: 1, // Default priority
+            is_core: input.is_core,
+            alternatives: vec![], // Default alternatives
+        }
+    }
+}

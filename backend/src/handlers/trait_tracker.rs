@@ -53,8 +53,9 @@ pub async fn get_trait_tracker(
         .map(|ct| (ct.name, ct.count))
         .collect();
 
-    // Find the optimal path using the trait tracker service
-    let result = TraitTrackerService::find_optimal_trait_path(
+    // Create a trait tracker service instance and find the optimal path
+    let trait_tracker_service = TraitTrackerService::new();
+    let result = trait_tracker_service.find_optimal_trait_path(
         champions,
         request.target_traits,
         current_traits,

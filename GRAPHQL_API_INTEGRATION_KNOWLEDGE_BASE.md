@@ -1,468 +1,290 @@
 # GraphQL API Integration Knowledge Base
 
 ## Overview
+This document provides comprehensive information about the GraphQL API implementation in the TFT Bible v2 project, including schema definitions, resolvers, and client-side usage patterns.
 
-This document provides comprehensive guidance for integrating with the TFT Bible GraphQL API. It covers schema definitions, usage patterns, common queries, and best practices for development.
+## GraphQL Schema
 
-## Table of Contents
+### Query Types
+- `health`: Returns a simple health check string
+- `champions(limit: Int)`: Fetches a list of champions with optional limit
+- `champion(id: String!)`: Fetches a specific champion by ID
+- `traits`: Fetches all available traits
+- `items`: Fetches all available items
+- `sets`: Fetches all TFT sets
+- `compositions(limit: Int, offset: Int)`: Fetches paginated list of compositions
+- `composition(id: String!)`: Fetches a specific composition by ID
 
-1. [Getting Started](#getting-started)
-2. [Schema Definitions](#schema-definitions)
-3. [Query Examples](#query-examples)
-4. [Mutation Examples](#mutation-examples)
-5. [Frontend Integration](#frontend-integration)
-6. [Best Practices](#best-practices)
-7. [Troubleshooting](#troubleshooting)
-
-## Getting Started
-
-### API Endpoint
-- Development: `http://localhost:8080/graphql`
-- Production: `https://api.tftbible.com/graphql`
-
-### Required Dependencies
-For frontend integration, you'll need:
-- `@apollo/client`
-- `graphql`
-
-### Installation
-```bash
-npm install @apollo/client graphql
-```
-
-### Apollo Client Setup
-```javascript
-import {
-  ApolloClient,
-  InMemoryCache,
-  createHttpLink,
-} from '@apollo/client';
-import { setContext } from '@apollo/client/link/context';
-
-const httpLink = createHttpLink({
-  uri: 'http://localhost:8080/graphql',
-});
-
-const authLink = setContext((_, { headers }) => {
-  const token = localStorage.getItem('auth_token');
-  return {
-    headers: {
-      ...headers,
-      authorization: token ? `Bearer ${token}` : "",
-    }
-  }
-});
-
-export const apolloClient = new ApolloClient({
-  link: authLink.concat(httpLink),
-  cache: new InMemoryCache(),
-});
-```
+### Mutation Types
+- `trait_tracker(input: TraitTrackerInput!)`: Calculates optimal path to achieve target traits
+- `create_composition(input: CreateCompositionInput!)`: Creates a new composition
+- `update_composition(id: String!, input: UpdateCompositionInput!)`: Updates an existing composition
+- `delete_composition(id: String!)`: Deletes a composition
 
 ## Schema Definitions
 
-### Core Types
-
-#### Champion
-```graphql
-type Champion {
-  id: String!
-  name: String!
-  cost: Int!
-  traits: [String!]!
-  stats: ChampionStats!
-  ability: ChampionAbility!
-  image: String
-}
+### Trait Tracker
+The trait tracker feature allows users to find the optimal path to acquire target traits:
 ```
-
-#### TraitTrackerResponse
-```graphql
-type TraitTrackerResponse {
-  path: [TraitPath!]!
-  efficiency: Float!
-}
-```
-
-#### TraitPath
-```graphql
-type TraitPath {
-  champion: Champion!
-  traitsGained: [String!]!
-  cost: Int!
-  efficiency: Float!
-}
-```
-
-### Root Query
-```graphql
-type Query {
-  health: String!
-  champions(limit: Int): [Champion!]!
-  traits: [Trait!]!
-  items: [Item!]!
-}
-```
-
-### Root Mutation
-```graphql
-type Mutation {
-  traitTracker(input: TraitTrackerInput!): TraitTrackerResponse!
-}
-```
-
-### Input Types
-
-#### TraitTrackerInput
-```graphql
 input TraitTrackerInput {
-  targetTraits: [TraitRequirement!]!
-  currentTraits: [CurrentTraitInput!]
+  target_traits: [TraitRequirement!]!
+  current_traits: [CurrentTraitInput]
 }
-```
 
-#### TraitRequirement
-```graphql
 input TraitRequirement {
-  traitName: String!
-  requiredCount: Int!
+  trait_name: String!
+  required_count: Int!
 }
-```
 
-#### CurrentTraitInput
-```graphql
 input CurrentTraitInput {
   name: String!
   count: Int!
 }
+
+type TraitTrackerResponse {
+  path: [TraitPath!]!
+  efficiency: Float!
+}
+
+type TraitPath {
+  champion: ChampionType!
+  traits_gained: [String!]!
+  cost: Int!
+  efficiency: Float!
+}
 ```
 
-## Query Examples
+### Composition Management
+Compositions can be created, updated, and deleted through the GraphQL API:
+```
+input CreateCompositionInput {
+  name: String!
+  description: String!
+  category: String!
+  tags: [String!]!
+  champions: [CompositionChampionInput!]!
+  augments: [String!]!
+  positioning: String
+  gameplan: String
+  meta: CompositionMetaInput!
+  matchups: String
+}
 
-### Get All Champions
-```graphql
-query GetChampions($limit: Int) {
-  champions(limit: $limit) {
-    id
-    name
-    cost
-    traits
-    stats {
-      health
-      attackDamage
-    }
-    ability {
+input UpdateCompositionInput {
+  name: String!
+  description: String!
+  category: String!
+  tags: [String!]!
+  champions: [CompositionChampionInput!]!
+  augments: [String!]!
+  positioning: String
+  gameplan: String
+  meta: CompositionMetaInput!
+  matchups: String
+}
+
+input CompositionChampionInput {
+  champion_id: String!
+  star_level: Int!
+  items: [String!]!
+  position: PositionInput!
+  is_core: Boolean!
+}
+
+input PositionInput {
+  x: Int!
+  y: Int!
+}
+
+input CompositionMetaInput {
+  tier: String!
+  difficulty: Int!
+  cost: String!
+  patch: String!
+  playstyle: String!
+  winrate: Float!
+  avg_placement: Float!
+  playrate: Float!
+  contest_rate: Float!
+}
+```
+
+## Backend Implementation
+
+### Core Components
+- `src/graphql/schema.rs`: Defines all GraphQL types, queries, and mutations
+- `src/graphql/resolvers.rs`: Implements the resolver logic for all queries and mutations
+- `src/services/`: Business logic services that GraphQL resolvers depend on
+- `src/models.rs`: Internal data models that are converted to GraphQL types
+
+### Database Integration
+All GraphQL resolvers connect to MongoDB through the services layer, which provides:
+- Type-safe database operations
+- Proper error handling
+- Efficient data fetching with indexes
+- Data validation before storage
+
+### Resolver Implementation Details
+
+#### Trait Tracker Resolver
+The trait tracker resolver:
+1. Fetches all champions and traits from the database
+2. Converts GraphQL input types to internal service types
+3. Calls the trait tracker service algorithm
+4. Converts the internal result back to GraphQL types
+5. Returns the optimal path with efficiency metrics
+
+#### Composition Resolvers
+The composition resolvers handle CRUD operations:
+- **Query**: Fetches compositions with pagination and filtering
+- **Create**: Creates new compositions with validation
+- **Update**: Updates existing compositions with authorization
+- **Delete**: Removes compositions with authorization
+
+## Frontend Implementation
+
+### Client Setup
+The frontend uses Apollo Client for GraphQL operations:
+```typescript
+import { ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client';
+
+const client = new ApolloClient({
+  link: createHttpLink({ uri: '/graphql' }),
+  cache: new InMemoryCache()
+});
+```
+
+### Query and Mutation Patterns
+The frontend follows these patterns:
+1. Define GraphQL operations using `gql` template literals
+2. Use Apollo hooks (`useQuery`, `useMutation`, `useSubscription`)
+3. Handle loading and error states appropriately
+4. Update local UI state based on mutation results
+
+### Common Operations
+#### Getting Started with Queries
+```typescript
+import { useQuery, gql } from '@apollo/client';
+
+const GET_CHAMPIONS = gql`
+  query GetChampions($limit: Int) {
+    champions(limit: $limit) {
+      id
       name
-      description
-    }
-    image
-  }
-}
-```
-
-### Get All Traits
-```graphql
-query GetTraits {
-  traits {
-    id
-    name
-    description
-    traitType
-    breakpoints {
-      count
-      description
-      bonuses
-    }
-  }
-}
-```
-
-### Health Check
-```graphql
-query GetHealth {
-  health
-}
-```
-
-## Mutation Examples
-
-### Trait Tracker
-```graphql
-mutation GetTraitTracker($input: TraitTrackerInput!) {
-  traitTracker(input: $input) {
-    path {
-      champion {
-        id
-        name
-        cost
-        traits
-        stats {
-          health
-          attackDamage
-        }
-        ability {
-          name
-          description
-        }
-        image
-      }
-      traitsGained
       cost
-      efficiency
+      traits
     }
-    efficiency
   }
-}
-```
+`;
 
-### Example Variables
-```json
-{
-  "input": {
-    "targetTraits": [
-      {
-        "traitName": "Assassin",
-        "requiredCount": 3
-      },
-      {
-        "traitName": "Shapeshifter",
-        "requiredCount": 2
-      }
-    ],
-    "currentTraits": [
-      {
-        "name": "Assassin",
-        "count": 1
-      }
-    ]
-  }
-}
-```
-
-## Frontend Integration
-
-### Using React with Apollo
-```jsx
-import React from 'react';
-import { useQuery, useMutation } from '@apollo/client';
-import { GET_CHAMPIONS, GET_TRAIT_TRACKER } from '../lib/graphql';
-
-function TraitTrackerComponent() {
-  const { data, loading, error } = useQuery(GET_CHAMPIONS, {
-    variables: { limit: 100 }
+function ChampionList() {
+  const { loading, error, data } = useQuery(GET_CHAMPIONS, {
+    variables: { limit: 10 }
   });
-
-  const [getTraitTracker, { data: pathData, loading: pathLoading }] = 
-    useMutation(GET_TRAIT_TRACKER);
-
-  const handleTraitTracker = () => {
-    const input = {
-      targetTraits: [
-        { traitName: "Assassin", requiredCount: 3 },
-        { traitName: "Shapeshifter", requiredCount: 2 }
-      ],
-      currentTraits: [
-        { name: "Assassin", count: 1 }
-      ]
-    };
-
-    getTraitTracker({
-      variables: {
-        input
-      }
-    });
-  };
-
+  
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error.message}</p>;
-
+  
   return (
     <div>
-      <h1>Trait Tracker</h1>
-      <button onClick={handleTraitTracker}>Calculate Path</button>
-      {pathData && (
-        <div>
-          <h2>Optimal Path</h2>
-          {pathData.traitTracker.path.map((pathItem, index) => (
-            <div key={index}>
-              <p>Champion: {pathItem.champion.name}</p>
-              <p>Traits: {pathItem.traitsGained.join(', ')}</p>
-              <p>Cost: {pathItem.champion.cost}</p>
-            </div>
-          ))}
-        </div>
-      )}
+      {data.champions.map(champion => (
+        <div key={champion.id}>{champion.name}</div>
+      ))}
     </div>
   );
 }
 ```
 
-### Type Definitions for TypeScript
+#### Working with Mutations
 ```typescript
-// types.ts
-export interface Champion {
-  id: string;
-  name: string;
-  cost: number;
-  traits: string[];
-  stats: ChampionStats;
-  ability: ChampionAbility;
-  image?: string;
-}
+import { useMutation, gql } from '@apollo/client';
 
-export interface ChampionStats {
-  health: number;
-  mana: number;
-  startingMana: number;
-  armor: number;
-  magicResist: number;
-  attackDamage: number;
-  attackSpeed: number;
-  attackRange: number;
-  critChance: number;
-  critMultiplier: number;
-}
-
-export interface ChampionAbility {
-  name: string;
-  description: string;
-  type: string;
-  targeting: string;
-  damageType: string;
-}
-```
-
-## Best Practices
-
-### 1. Efficient Queries
-- Always specify only the fields you need to minimize payload size
-- Use variables for dynamic values instead of string interpolation
-- Consider pagination for large data sets
-
-### 2. Error Handling
-- Implement proper error handling for both network and GraphQL errors
-- Use Apollo's error states to provide user feedback
-- Consider implementing retry mechanisms for failed requests
-
-### 3. Caching
-- Leverage Apollo Client's caching capabilities
-- Use appropriate cache policies (cache-first, network-only, etc.)
-- Implement cache updates for mutations when needed
-
-### 4. Performance
-- Use fragments to avoid duplicate field requests
-- Batch queries when possible
-- Consider using Apollo Link for advanced request handling
-
-## Common Use Cases
-
-### Use Case 1: Trait Tracker for Set 16
-**Objective:** Find the shortest path to acquire 5 region traits to unlock Ryze
-
-**Query:**
-```graphql
-mutation {
-  traitTracker(input: {
-    targetTraits: [
-      { traitName: "Noxus", requiredCount: 5 }
-      { traitName: "Demacia", requiredCount: 5 }
-      { traitName: "Piltover", requiredCount: 5 }
-      { traitName: "Ionia", requiredCount: 5 }
-      { traitName: "Shadow Isles", requiredCount: 5 }
-    ]
-  }) {
-    path {
-      champion { name, cost, traits }
-      efficiency
-    }
-    efficiency
-  }
-}
-```
-
-### Use Case 2: Quest Augment Requirement
-**Objective:** Find optimal path to activate 8 bronze trait actives
-
-**Query:**
-```graphql
-mutation {
-  traitTracker(input: {
-    targetTraits: [
-      { traitName: "Brawler", requiredCount: 2 }
-      { traitName: "Assassin", requiredCount: 2 }
-      { traitName: "Duelist", requiredCount: 2 }
-      { traitName: "Mage", requiredCount: 2 }
-    ]
-  }) {
-    path {
-      champion { name, cost, traits }
-      traitsGained
+const CREATE_COMPOSITION = gql`
+  mutation CreateComposition($input: CreateCompositionInput!) {
+    createComposition(input: $input) {
+      id
+      name
+      description
     }
   }
+`;
+
+function CreateCompositionForm() {
+  const [createComposition, { loading, error }] = useMutation(CREATE_COMPOSITION);
+
+  return (
+    <form onSubmit={async (e) => {
+      e.preventDefault();
+      await createComposition({
+        variables: {
+          input: {
+            name: "My Composition",
+            description: "A sample composition",
+            // ... other fields
+          }
+        }
+      });
+    }}>
+      {/* Form fields */}
+    </form>
+  );
 }
 ```
 
-## Troubleshooting
+## Best Practices for Future Development
 
-### Common Issues
+### Adding New Mutations/Queries
+1. Define the schema in `src/graphql/schema.rs`
+2. Implement the resolver in `src/graphql/resolvers.rs`
+3. Add the operation to the frontend GraphQL file
+4. Use the operation in the appropriate component
+5. Update this documentation
 
-#### 1. Network Error
-**Symptoms:** `Network error: Failed to fetch`
-**Solutions:**
-- Check if the GraphQL server is running
-- Verify the correct URL is configured
-- Ensure CORS is properly configured
+### Error Handling
+- Use appropriate GraphQL error types in resolvers
+- Handle loading states in the frontend
+- Provide meaningful error messages to users
+- Log errors for debugging in the backend
 
-#### 2. Schema Mismatch
-**Symptoms:** Field not found or type mismatch errors
-**Solutions:**
-- Update your queries to match the current schema
-- Run introspection query to get latest schema: `npx get-graphql-schema http://localhost:8080/graphql`
+### Performance Considerations
+- Use proper database indexing
+- Implement pagination for large datasets
+- Optimize queries to avoid over-fetching
+- Use Apollo Client's caching effectively
 
-#### 3. Authorization Issues
-**Symptoms:** Unauthorized or forbidden responses
-**Solutions:**
-- Ensure proper JWT token is provided in headers
-- Check token expiration status
-- Verify API key if required
+### Security
+- Always validate input parameters
+- Implement proper authentication where needed
+- Sanitize user inputs
+- Prevent injection attacks
 
-### Debugging Tools
+## Testing GraphQL API
 
-#### GraphQL Playground
-Access the GraphQL Playground at: `http://localhost:8080/graphql`
+### Backend Testing
+- Unit tests for individual resolvers
+- Integration tests for API endpoints
+- Mock database operations for faster testing
 
-This provides:
-- Interactive schema documentation
-- Query testing environment
-- Real-time error feedback
+### Frontend Testing
+- Component tests with GraphQL mocks
+- End-to-end tests for critical workflows
+- Mock Apollo Client for isolated component testing
 
-#### Apollo Client DevTools
-Install browser extension for:
-- Query/mutation inspection
-- Cache visualization
-- Performance metrics
+## Troubleshooting Common Issues
 
-## Migration Notes
+### Schema Mismatch
+- Ensure frontend and backend schemas are in sync
+- Check type conversions between internal models and GraphQL types
+- Verify field names match between client and server
 
-### From REST to GraphQL
-1. Replace REST endpoints with GraphQL operations
-2. Use fragments for consistent data shapes
-3. Leverage GraphQL's type system for better validation
-4. Update error handling to handle GraphQL errors
+### Database Connection Issues
+- Verify MongoDB connection string in environment variables
+- Check database indexing for performance issues
+- Review connection pooling configuration
 
-### Common Migration Pattern
-- REST: `/api/v1/champions?limit=20`
-- GraphQL: `query { champions(limit: 20) { id name cost traits } }`
+### Apollo Client Caching Issues
+- Verify cache updates after mutations
+- Use `refetchQueries` or `update` functions when needed
+- Implement proper cache invalidation strategies
 
-## Versioning
-
-- API Version: 1.0.0
-- GraphQL Schema Version: 1.0.0
-- Last Updated: [Current Date]
-
-## Support
-
-For technical issues or questions:
-- Check the GraphQL Playground schema documentation
-- Review Apollo Client documentation
-- Contact the development team for specific integration issues
+This knowledge base should be updated whenever significant changes are made to the GraphQL API implementation.

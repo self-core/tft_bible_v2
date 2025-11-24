@@ -1,8 +1,9 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useApolloClient } from '@apollo/client';
 import { X, Save, RotateCw, Trash2, Download } from 'lucide-react';
 import { Champion, Trait, Set } from '../../types';
 import { api } from '../../lib/api';
+import { CREATE_COMPOSITION, UPDATE_COMPOSITION } from '../../lib/graphql';
 
 // Types for our TFT builder
 interface BoardSlot {
@@ -161,6 +162,84 @@ const Builder: React.FC = () => {
   }, [board, bench, traits]);
 
   const activeTraits = calculateTraits();
+
+  // GraphQL mutation for saving composition
+  const [createComposition, { loading: saveLoading }] = useMutation(CREATE_COMPOSITION);
+
+  // Function to save the current composition
+  const saveCurrentComposition = async () => {
+    try {
+      // Prepare the composition data from the current board state
+      const compositionChampions = [];
+
+      // Process board champions
+      for (let row = 0; row < BOARD_ROWS; row++) {
+        for (let col = 0; col < BOARD_COLS; col++) {
+          const slot = board[row][col];
+          if (slot.champion) {
+            compositionChampions.push({
+              champion_id: slot.champion.id,
+              star_level: 1, // Default star level
+              items: [], // Default to no items
+              position: { x: col, y: row },
+              is_core: false, // Default to non-core
+            });
+          }
+        }
+      }
+
+      // Process bench champions
+      bench.forEach((champion, index) => {
+        if (champion) {
+          // Add bench champions at positions beyond the board
+          compositionChampions.push({
+            champion_id: champion.id,
+            star_level: 1, // Default star level
+            items: [], // Default to no items
+            position: { x: index, y: 4 }, // Use y=4 for bench
+            is_core: false, // Default to non-core
+          });
+        }
+      });
+
+      // Prepare the input for the GraphQL mutation
+      const input = {
+        name: `Composition ${new Date().toLocaleDateString()}`,
+        description: `Saved composition on ${new Date().toLocaleString()}`,
+        category: "Custom",
+        tags: ["saved", "user-generated"],
+        champions: compositionChampions,
+        augments: [],
+        positioning: null,
+        gameplan: null,
+        meta: {
+          tier: "C",
+          difficulty: 1,
+          cost: "Flexible",
+          patch: "16.0",
+          playstyle: "Balanced",
+          winrate: 0.5,
+          avg_placement: 4.0,
+          playrate: 0.1,
+          contest_rate: 0.1
+        },
+        matchups: null
+      };
+
+      // Execute the mutation
+      const result = await createComposition({
+        variables: {
+          input: input
+        }
+      });
+
+      console.log('Composition saved successfully:', result.data.createComposition);
+      alert('Composition saved successfully!');
+    } catch (error) {
+      console.error('Error saving composition:', error);
+      alert('Error saving composition. Please try again.');
+    }
+  };
 
   // Handle set selection
   const handleSetChange = (set: Set) => {
@@ -364,12 +443,14 @@ const Builder: React.FC = () => {
               <div className="flex gap-2">
                 <button
                   className="flex items-center gap-1 px-3 py-1.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm"
-                  onClick={() => {
-                    // TODO: Implement save functionality
-                    console.log('Saving composition...');
-                  }}
+                  onClick={saveCurrentComposition}
+                  disabled={saveLoading}
                 >
-                  <Save className="w-4 h-4" /> Save
+                  {saveLoading ? 'Saving...' : (
+                    <>
+                      <Save className="w-4 h-4" /> Save
+                    </>
+                  )}
                 </button>
                 <button
                   className="flex items-center gap-1 px-3 py-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm"

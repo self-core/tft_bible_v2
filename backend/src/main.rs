@@ -28,6 +28,7 @@ pub struct AppState {
     pub champion_service: crate::services::champions::ChampionService,
     pub trait_service: crate::services::traits::TraitService,
     pub item_service: crate::services::items::ItemService,
+    pub composition_service: crate::services::compositions::CompositionService,
 }
 
 #[tokio::main]
@@ -61,6 +62,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let champion_service = crate::services::champions::ChampionService::new(&db);
     let trait_service = crate::services::traits::TraitService::new(&db);
     let item_service = crate::services::items::ItemService::new(&db);
+    let composition_service = crate::services::compositions::CompositionService::new(&db);
 
     let state = AppState {
         db,
@@ -69,6 +71,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         champion_service,
         trait_service,
         item_service,
+        composition_service,
     };
     
     // Create the GraphQL schema

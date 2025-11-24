@@ -17,8 +17,14 @@ pub struct TraitRequirement {
 pub struct TraitTrackerService;
 
 impl TraitTrackerService {
+    /// Create a new instance of the trait tracker service
+    pub fn new() -> Self {
+        TraitTrackerService
+    }
+
     /// Find the shortest path to acquire required traits using BFS algorithm
     pub async fn find_shortest_trait_path(
+        &self,
         champions: Vec<Champion>,
         target_traits: Vec<TraitRequirement>,
         current_traits: HashMap<String, u32>,
@@ -111,6 +117,7 @@ impl TraitTrackerService {
 
     /// Alternative implementation using A* algorithm for better efficiency
     pub async fn find_optimal_trait_path(
+        &self,
         champions: Vec<Champion>,
         target_traits: Vec<crate::services::trait_tracker::TraitRequirement>,
         current_traits: HashMap<String, u32>,

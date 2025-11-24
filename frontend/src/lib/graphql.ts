@@ -74,3 +74,122 @@ export const GET_HEALTH = gql`
     health
   }
 `;
+
+// Query to get all compositions
+export const GET_COMPOSITIONS = gql`
+  query GetCompositions($limit: Int, $offset: Int) {
+    compositions(limit: $limit, offset: $offset) {
+      id
+      name
+      description
+      category
+      champions {
+        champion {
+          id
+          name
+          cost
+          traits
+        }
+        starLevel
+        items
+        position {
+          x
+          y
+        }
+        isCore
+      }
+      augments
+    }
+  }
+`;
+
+// Query to get a single composition by ID
+export const GET_COMPOSITION = gql`
+  query GetComposition($id: String!) {
+    composition(id: $id) {
+      id
+      name
+      description
+      category
+      champions {
+        champion {
+          id
+          name
+          cost
+          traits
+        }
+        starLevel
+        items
+        position {
+          x
+          y
+        }
+        isCore
+      }
+      augments
+    }
+  }
+`;
+
+// Mutation to create a composition
+export const CREATE_COMPOSITION = gql`
+  mutation CreateComposition($input: CreateCompositionInput!) {
+    createComposition(input: $input) {
+      id
+      name
+      description
+      category
+      champions {
+        champion {
+          id
+          name
+          cost
+          traits
+        }
+        starLevel
+        items
+        position {
+          x
+          y
+        }
+        isCore
+      }
+      augments
+    }
+  }
+`;
+
+// Mutation to update a composition
+export const UPDATE_COMPOSITION = gql`
+  mutation UpdateComposition($id: String!, $input: UpdateCompositionInput!) {
+    updateComposition(id: $id, input: $input) {
+      id
+      name
+      description
+      category
+      champions {
+        champion {
+          id
+          name
+          cost
+          traits
+        }
+        starLevel
+        items
+        position {
+          x
+          y
+        }
+        isCore
+      }
+      augments
+    }
+  }
+`;
+
+// Mutation to delete a composition
+export const DELETE_COMPOSITION = gql`
+  mutation DeleteComposition($id: String!) {
+    deleteComposition(id: $id)
+  }
+`;

@@ -122,8 +122,91 @@ impl QueryRoot {
         todo!("Implement sets resolver")
     }
 
-    async fn compositions(&self, ctx: &Context<'_>) -> FieldResult<Vec<CompositionType>> {
-        todo!("Implement compositions resolver")
+    async fn compositions(&self, ctx: &Context<'_>, limit: Option<i32>, offset: Option<i32>) -> FieldResult<Vec<CompositionType>> {
+        let state = ctx.data::<Arc<AppState>>().unwrap();
+        let params = crate::models::CompositionQuery {
+            tier: None,
+            category: None,
+            tags: None,
+            champion: None,
+            patch: None,
+            difficulty: None,
+            limit: limit.map(|l| l as i64),
+            offset: offset.map(|o| o as i64),
+        };
+
+        let result = state.composition_service.get_compositions(params).await
+            .map_err(|e| FieldError::new(format!("Failed to get compositions: {}", e)))?;
+
+        let mut compositions = Vec::new();
+        for summary in result.data {
+            compositions.push(CompositionType {
+                id: summary.id.to_hex(),
+                name: summary.name,
+                description: "Placeholder description".to_string(), // Would need to fetch full composition
+                category: summary.category,
+                champions: vec![], // Would need to fetch full composition
+                augments: vec![], // Would need to fetch full composition
+            });
+        }
+
+        Ok(compositions)
+    }
+
+    async fn composition(&self, ctx: &Context<'_>, id: String) -> FieldResult<Option<CompositionType>> {
+        let state = ctx.data::<Arc<AppState>>().unwrap();
+        let id_obj = bson::oid::ObjectId::parse_str(&id)
+            .map_err(|_| FieldError::new("Invalid ID format"))?;
+
+        let composition = state.composition_service.get_by_id(id_obj).await
+            .map_err(|e| FieldError::new(format!("Failed to get composition: {}", e)))?;
+
+        let champions: Vec<CompositionChampionType> = composition.champions.into_iter()
+            .map(|cc| CompositionChampionType {
+                champion: ChampionType {
+                    id: cc.champion_id.to_hex(),
+                    name: "Placeholder".to_string(), // Would need to fetch champion details
+                    cost: 1,
+                    traits: vec![], // Would need to fetch champion details
+                    stats: crate::graphql::schema::ChampionStatsType {
+                        health: 0.0,
+                        mana: 0.0,
+                        starting_mana: 0.0,
+                        armor: 0.0,
+                        magic_resist: 0.0,
+                        attack_damage: 0.0,
+                        attack_speed: 0.0,
+                        attack_range: 0.0,
+                        crit_chance: 0.0,
+                        crit_multiplier: 0.0,
+                    },
+                    ability: crate::graphql::schema::ChampionAbilityType {
+                        name: "Placeholder".to_string(),
+                        description: "Placeholder".to_string(),
+                        ability_type: "Placeholder".to_string(),
+                        targeting: "Placeholder".to_string(),
+                        damage_type: "Placeholder".to_string(),
+                    },
+                    image: None,
+                },
+                star_level: cc.star_level as i32,
+                items: cc.items.iter().map(|id| id.to_hex()).collect(),
+                position: PositionType {
+                    x: cc.position.x as i32,
+                    y: cc.position.y as i32,
+                },
+                is_core: cc.is_core,
+            })
+            .collect();
+
+        Ok(Some(CompositionType {
+            id: composition.id.unwrap_or_else(|| bson::oid::ObjectId::new()).to_hex(),
+            name: composition.name,
+            description: composition.description,
+            category: composition.category,
+            champions,
+            augments: composition.augments.preferred.iter().map(|id| id.to_string()).collect(),
+        }))
     }
 }
 
@@ -233,5 +316,154 @@ impl MutationRoot {
             path,
             efficiency: result.efficiency,
         })
+    }
+
+    async fn create_composition(&self, ctx: &Context<'_>, input: CreateCompositionInput) -> FieldResult<CompositionType> {
+        let state = ctx.data::<Arc<AppState>>().unwrap();
+
+        // Convert input to internal model
+        let request = crate::models::CreateCompositionRequest {
+            name: input.name,
+            description: input.description,
+            category: input.category,
+            tags: input.tags,
+            champions: input.champions.into_iter().map(|c| c.into()).collect(),
+            augments: input.augments.into(),
+            positioning: input.positioning,
+            gameplan: input.gameplan,
+            meta: input.meta.into(),
+            matchups: input.matchups,
+        };
+
+        let composition = state.composition_service.create(request, None).await
+            .map_err(|e| FieldError::new(format!("Failed to create composition: {}", e)))?;
+
+        let champions: Vec<CompositionChampionType> = composition.champions.into_iter()
+            .map(|cc| CompositionChampionType {
+                champion: ChampionType {
+                    id: cc.champion_id.to_hex(),
+                    name: "Placeholder".to_string(), // Would need to fetch champion details
+                    cost: 1,
+                    traits: vec![], // Would need to fetch champion details
+                    stats: crate::graphql::schema::ChampionStatsType {
+                        health: 0.0,
+                        mana: 0.0,
+                        starting_mana: 0.0,
+                        armor: 0.0,
+                        magic_resist: 0.0,
+                        attack_damage: 0.0,
+                        attack_speed: 0.0,
+                        attack_range: 0.0,
+                        crit_chance: 0.0,
+                        crit_multiplier: 0.0,
+                    },
+                    ability: crate::graphql::schema::ChampionAbilityType {
+                        name: "Placeholder".to_string(),
+                        description: "Placeholder".to_string(),
+                        ability_type: "Placeholder".to_string(),
+                        targeting: "Placeholder".to_string(),
+                        damage_type: "Placeholder".to_string(),
+                    },
+                    image: None,
+                },
+                star_level: cc.star_level as i32,
+                items: cc.items.iter().map(|id| id.to_hex()).collect(),
+                position: PositionType {
+                    x: cc.position.x as i32,
+                    y: cc.position.y as i32,
+                },
+                is_core: cc.is_core,
+            })
+            .collect();
+
+        Ok(CompositionType {
+            id: composition.id.unwrap_or_else(|| bson::oid::ObjectId::new()).to_hex(),
+            name: composition.name,
+            description: composition.description,
+            category: composition.category,
+            champions,
+            augments: composition.augments.preferred.iter().map(|id| id.to_string()).collect(),
+        })
+    }
+
+    async fn update_composition(&self, ctx: &Context<'_>, id: String, input: UpdateCompositionInput) -> FieldResult<CompositionType> {
+        let state = ctx.data::<Arc<AppState>>().unwrap();
+        let id_obj = bson::oid::ObjectId::parse_str(&id)
+            .map_err(|_| FieldError::new("Invalid ID format"))?;
+
+        // Convert input to internal model
+        let request = crate::models::UpdateCompositionRequest {
+            name: input.name,
+            description: input.description,
+            category: input.category,
+            tags: input.tags,
+            champions: input.champions.into_iter().map(|c| c.into()).collect(),
+            augments: input.augments.into(),
+            positioning: input.positioning,
+            gameplan: input.gameplan,
+            meta: input.meta.into(),
+            matchups: input.matchups,
+        };
+
+        let composition = state.composition_service.update(id_obj, request, None).await
+            .map_err(|e| FieldError::new(format!("Failed to update composition: {}", e)))?;
+
+        let champions: Vec<CompositionChampionType> = composition.champions.into_iter()
+            .map(|cc| CompositionChampionType {
+                champion: ChampionType {
+                    id: cc.champion_id.to_hex(),
+                    name: "Placeholder".to_string(), // Would need to fetch champion details
+                    cost: 1,
+                    traits: vec![], // Would need to fetch champion details
+                    stats: crate::graphql::schema::ChampionStatsType {
+                        health: 0.0,
+                        mana: 0.0,
+                        starting_mana: 0.0,
+                        armor: 0.0,
+                        magic_resist: 0.0,
+                        attack_damage: 0.0,
+                        attack_speed: 0.0,
+                        attack_range: 0.0,
+                        crit_chance: 0.0,
+                        crit_multiplier: 0.0,
+                    },
+                    ability: crate::graphql::schema::ChampionAbilityType {
+                        name: "Placeholder".to_string(),
+                        description: "Placeholder".to_string(),
+                        ability_type: "Placeholder".to_string(),
+                        targeting: "Placeholder".to_string(),
+                        damage_type: "Placeholder".to_string(),
+                    },
+                    image: None,
+                },
+                star_level: cc.star_level as i32,
+                items: cc.items.iter().map(|id| id.to_hex()).collect(),
+                position: PositionType {
+                    x: cc.position.x as i32,
+                    y: cc.position.y as i32,
+                },
+                is_core: cc.is_core,
+            })
+            .collect();
+
+        Ok(CompositionType {
+            id: composition.id.unwrap_or_else(|| bson::oid::ObjectId::new()).to_hex(),
+            name: composition.name,
+            description: composition.description,
+            category: composition.category,
+            champions,
+            augments: composition.augments.preferred.iter().map(|id| id.to_string()).collect(),
+        })
+    }
+
+    async fn delete_composition(&self, ctx: &Context<'_>, id: String) -> FieldResult<bool> {
+        let state = ctx.data::<Arc<AppState>>().unwrap();
+        let id_obj = bson::oid::ObjectId::parse_str(&id)
+            .map_err(|_| FieldError::new("Invalid ID format"))?;
+
+        state.composition_service.delete(id_obj, None).await
+            .map_err(|e| FieldError::new(format!("Failed to delete composition: {}", e)))?;
+
+        Ok(true)
     }
 }
