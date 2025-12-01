@@ -1,0 +1,86 @@
+# Jenkins home directory (contains sensitive data)
+jenkins_home/
+
+# Docker volumes
+jenkins_data/
+jenkins_logs/
+
+# Build artifacts
+target/
+*.jar
+*.war
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# Environment files
+.env
+.env.local
+
+# SSH keys (if any)
+*.pem
+*.key
+id_rsa*
+
+# Docker files
+.dockerignore
+
+# Jenkins specific
+jobs/
+workspace/
+builds/
+fingerprints/
+secrets/
+users/
+userContent/
+
+# Pipeline artifacts
+artifacts/
+archive/
+
+# Cache
+.cache/
+.jpi-cache/
+
+# Plugins
+plugins/
+updates/
+
+# War files
+*.war
+
+# Backup files
+*.bak
+*.backup
+
+# Configuration backups
+config.xml.bak
+
+# Lock files
+*.lock
+
+# Temporary directories
+tmp/
+temp/
+
+# Node modules (if any)
+node_modules/
+
+# Python cache
+__pycache__/
+*.pyc

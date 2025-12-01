@@ -1,12 +1,17 @@
-# TFT Bible v2
+# TFT Bible v2 - Microservices Architecture
 
-A comprehensive Teamfight Tactics (TFT) companion application built with Rust and modern web technologies.
+A comprehensive Teamfight Tactics (TFT) companion application built with Rust and modern web technologies using a microservices architecture.
 
 ## 🏗️ Architecture
 
-- **Backend**: Rust with Axum web framework
+- **Architecture**: Microservices with API Gateway pattern
+- **Backend Services**: Multiple Rust services communicating via REST APIs
+- **API Gateway**: Centralized routing and cross-cutting concerns
 - **Database**: MongoDB for data persistence
-- **Testing**: Comprehensive unit and integration tests
+- **Service Discovery**: Dynamic service registration and discovery
+- **Circuit Breaker**: Resilience pattern for handling service failures
+- **Trello Integration**: Project management and task tracking
+- **Testing**: Comprehensive unit, integration, and E2E tests
 - **Development**: Docker-based development environment
 
 ## 🚀 Quick Start
@@ -201,5 +206,6 @@ We're excited to announce that TFT Bible will be entering its beta phase in time
 - ✅ Beta-ready frontend with builder component
 - ✅ Lore & Legends (Set 16) support
 - ✅ CI/CD pipeline with Jenkins
+- ✅ Trello integration for project management
 - 🚧 Authentication system (planned for post-beta)
 - ⚠️ MongoDB integration (beta with mock data)

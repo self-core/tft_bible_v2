@@ -1,0 +1,119 @@
+services:
+  # API Gateway
+  api-gateway:
+    build:
+      context: ../microservices/gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - RUST_LOG=info
+      - PORT=8080
+    depends_on:
+      - champion-service
+      - trait-service
+      - composition-service
+      - trait-tracker-service
+    networks:
+      - tft-network
+
+  # Champion Service
+  champion-service:
+    build:
+      context: ../microservices
+      dockerfile: ./champion-service/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - RUST_LOG=info
+      - DATABASE_URL=mongodb://mongodb:27017
+      - DATABASE_NAME=tft_champions_db
+      - PORT=8000
+    depends_on:
+      - mongodb
+    networks:
+      - tft-network
+
+  # Trait Service
+  trait-service:
+    build:
+      context: ../microservices/trait-service
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    environment:
+      - RUST_LOG=info
+      - DATABASE_URL=mongodb://mongodb:27017
+      - DATABASE_NAME=tft_traits_db
+      - PORT=8001
+    depends_on:
+      - mongodb
+    networks:
+      - tft-network
+
+  # Composition Service
+  composition-service:
+    build:
+      context: ../microservices/composition-service
+      dockerfile: Dockerfile
+    ports:
+      - "8002:8002"
+    environment:
+      - RUST_LOG=info
+      - DATABASE_URL=mongodb://mongodb:27017
+      - DATABASE_NAME=tft_compositions_db
+      - PORT=8002
+    depends_on:
+      - mongodb
+    networks:
+      - tft-network
+
+  # Trait Tracker Service
+  trait-tracker-service:
+    build:
+      context: ../microservices/trait-tracker-service
+      dockerfile: Dockerfile
+    ports:
+      - "8003:8003"
+    environment:
+      - RUST_LOG=info
+      - DATABASE_URL=mongodb://mongodb:27017
+      - DATABASE_NAME=tft_trait_tracker_db
+      - PORT=8003
+    depends_on:
+      - mongodb
+    networks:
+      - tft-network
+
+  # MongoDB
+  mongodb:
+    image: mongo:7.0
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - tft-network
+    restart: unless-stopped
+
+  # Redis for caching and circuit breaker state
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - tft-network
+    restart: unless-stopped
+
+networks:
+  tft-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+  redis_data:

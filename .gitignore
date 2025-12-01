@@ -27,4 +27,59 @@ cimplic.html
 
 # Railway specific
 .railway/
-frontend/node_modules
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dist/
+build/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+
+# Build artifacts
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Frontend build (now in microservices)
+microservices/frontend-service/node_modules
+microservices/frontend-service/dist
+microservices/frontend-service/build
+
+# Backend build
+backend/target
+
+# Microservices build
+microservices/*/target
+microservices/target/
+
+# Mock server (now in microservices)
+microservices/mock-server-service/node_modules
+
+# Jenkins (now in microservices)
+microservices/jenkins-service/jenkins_home/
+
+# AI generated files
+.qwen/
