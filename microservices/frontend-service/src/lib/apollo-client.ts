@@ -2,9 +2,19 @@
 import { ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
 
+// Get the API URL from either the runtime environment or build-time environment
+const getApiUrl = () => {
+  // First try to get from runtime configuration (window.env)
+  if (typeof window !== 'undefined' && window.env && window.env.VITE_API_URL) {
+    return window.env.VITE_API_URL;
+  }
+  // Fallback to build-time environment variable
+  return import.meta.env.VITE_API_URL || 'http://localhost:8080';
+};
+
 // Create the HTTP link for GraphQL
 const httpLink = createHttpLink({
-  uri: `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/graphql`,
+  uri: `${getApiUrl()}/graphql`,
 });
 
 // Set up authentication context if needed

@@ -1,19 +1,27 @@
 use axum::{
     extract::{Path, State},
-    http::{header::CONTENT_TYPE, HeaderValue, Request, StatusCode},
+    http::{Request, StatusCode},
     middleware::{self, Next},
     response::Response,
     routing::{get, post},
     Json, Router,
 };
+use tower_http::cors::CorsLayer;
+use tower::ServiceBuilder;
+use async_graphql::{EmptySubscription};
+use axum::response::Html;
+use async_graphql::http::playground_source;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use std::collections::HashMap;
 
+// Import schema module
+mod schema;
+
 // Service registry and circuit breaker imports
 use common::{
-    service_discovery::{ServiceRegistry, ServiceInstance, ServiceHealth, get_registry},
+    service_discovery::{ServiceRegistry, ServiceInstance},
     circuit_breaker::{CircuitBreaker, CircuitBreakerError},
 };
 
@@ -34,6 +42,24 @@ struct ProxyResponse {
     status: u16,
     headers: HashMap<String, String>,
     body: serde_json::Value,
+}
+
+use schema::{QueryRoot, MutationRoot, Schema as ApiSchema};
+
+// Handler for GraphQL requests
+async fn graphql_handler(
+    State(_state): State<GatewayState>,
+    req: async_graphql_axum::GraphQLRequest,
+) -> async_graphql_axum::GraphQLResponse {
+    let schema = async_graphql::Schema::build(schema::QueryRoot, schema::MutationRoot, async_graphql::EmptySubscription)
+        .finish();
+
+    schema.execute(req.into_inner()).await.into()
+}
+
+// Handler for GraphQL playground
+async fn graphql_playground() -> Html<String> {
+    Html(playground_source(async_graphql::http::GraphQLPlaygroundConfig::new("/graphql")))
 }
 
 #[derive(Serialize)]
@@ -160,39 +186,60 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         circuit_breakers: Arc::new(tokio::sync::Mutex::new(HashMap::new())),
     };
 
-    // Build our application with a route
+    // Build our application without state first
     let app = Router::new()
-        // Middleware
-        .layer(middleware::from_fn(logging_middleware))
-        
         // Health check
         .route("/health", get(gateway_health))
-        
+
         // Service registration/discovery endpoints
         .route("/register", post(register_service))
-        .route("/discover/:service_name", get(discover_service))
-        
+        .route("/discover/{service_name}", get(discover_service))
+
         // Main proxy endpoint
         .route("/proxy", post(proxy_request))
-        
+
+        // GraphQL endpoint
+        .route("/graphql", post(graphql_handler).get(graphql_playground))
+
         // Trello integration endpoints (commented out for now)
         // .route("/api/v1/trello/board", post(create_trello_board))
         // .route("/api/v1/trello/board/:board_id/setup", post(setup_trello_board))
         // .route("/api/v1/trello/board/:board_id/import-tasks", post(import_trello_tasks))
 
-        // Catch-all proxy for direct path-based routing
-        .route("/*path", get(proxy_passthrough).post(proxy_passthrough).put(proxy_passthrough).delete(proxy_passthrough))
-        
+        // Apply middleware
+        .layer(middleware::from_fn(logging_middleware));
+
+    // Apply CORS layer first, then state to avoid compatibility issues
+    let app = app
+        .layer(
+            CorsLayer::new()
+                .allow_origin(tower_http::cors::Any)
+                .allow_methods(tower_http::cors::Any)
+                .allow_headers(tower_http::cors::Any)
+        )
         .with_state(gateway_state);
 
-    let port: u16 = std::env::var("PORT").unwrap_or_else(|_| "8080".to_string()).parse()?;
+    let port: u16 = std::env::var("PORT")
+        .unwrap_or_else(|_| "8080".to_string())
+        .parse()
+        .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidInput, e))?;
     let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", port)).await?;
     println!("🚀 API Gateway listening on port {}", port);
 
-    // Run our application with hyper
-    axum::serve(listener, app).await.unwrap();
+    // Run the server
+    let server = axum::serve(listener, app);
+    server.await.map_err(|err| {
+        eprintln!("Server error: {}", err);
+        std::io::Error::new(std::io::ErrorKind::Other, err)
+    })?;
 
     Ok(())
+}
+
+async fn shutdown_signal() {
+    tokio::signal::ctrl_c()
+        .await
+        .expect("Failed to install CTRL+C signal handler");
 }
 
 // Trello integration handlers
@@ -352,6 +399,14 @@ async fn import_trello_tasks(
     }
 }
 
+// Options handler for CORS preflight requests
+async fn options_passthrough() -> Result<Response, StatusCode> {
+    Ok(Response::builder()
+        .status(axum::http::StatusCode::NO_CONTENT)
+        .body(axum::body::Body::empty())
+        .unwrap())
+}
+
 // Passthrough proxy for direct path-based routing
 async fn proxy_passthrough(
     State(state): State<GatewayState>,
@@ -380,8 +435,8 @@ async fn proxy_passthrough(
         .ok_or(StatusCode::SERVICE_UNAVAILABLE)?;
 
     // Construct the URL for the target service
-    let target_path = if path.starts_with("/api/champions") || 
-                      path.starts_with("/api/traits") || 
+    let target_path = if path.starts_with("/api/champions") ||
+                      path.starts_with("/api/traits") ||
                       path.starts_with("/api/compositions") ||
                       path.starts_with("/api/trait-tracker") {
         // Strip the API prefix to get the actual service-specific path
@@ -395,9 +450,9 @@ async fn proxy_passthrough(
         path.to_string()
     };
 
-    let target_url = format!("http://{}:{}{}", 
-        service_instance.host, 
-        service_instance.port, 
+    let target_url = format!("http://{}:{}{}",
+        service_instance.host,
+        service_instance.port,
         target_path
     );
 
