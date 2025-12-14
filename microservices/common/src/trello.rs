@@ -59,6 +59,18 @@ pub struct ProjectTask {
 
 impl TrelloClient {
     pub fn new(api_key: &str, token: &str) -> Self {
+        // In the .env file, TRELLO_API_KEY is actually the token
+        // So we'll use the token parameter as the API key and the API key as the token
+        // Wait, that's not right. Let me check the actual structure:
+        // The Trello URL format is: https://api.trello.com/1/boards?key=API_KEY&token=OAUTH_TOKEN
+        // So api_key should come from TRELLO_API_KEY, and token should come from TRELLO_TOKEN
+        // But based on your previous message, TRELLO_API_KEY IS the token
+        // This means TRELLO_TOKEN is not needed
+
+        // Actually, based on the format, the URL is: https://api.trello.com/1/boards?key=API_KEY&token=OAUTH_TOKEN
+        // So we DO need both the API key AND the token
+        // The API key is from the app (from trello.com/app-key)
+        // The token is the user's authentication token
         Self {
             api_key: api_key.to_string(),
             token: token.to_string(),

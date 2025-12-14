@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Champion, Trait, Set } from '../../types';
 import { api } from '../../lib/api';
+import { useCompositionsStore } from '../../stores';
 import Board from './Board';
 
 interface CompositionBoardProps {
@@ -97,49 +98,60 @@ const CompositionBoard: React.FC<CompositionBoardProps> = ({
     if (compositionId) {
       const loadComposition = async () => {
         try {
-          const response = await api.get(`/api/v1/compositions/${compositionId}`);
-          const composition = response.data;
-          
-          if (composition && composition.champions) {
-            // Initialize empty board
-            const newBoard = Array(BOARD_ROWS).fill(null).map(() =>
-              Array(BOARD_COLS).fill(null).map((_, colIndex) => ({
-                champion: null,
-                position: { row: 0, col: colIndex }
-              }))
-            );
-            
-            // Find champions by name and place them on the board
-            composition.champions.forEach((compChampion: any) => {
-              if (champions) {
-                const foundChampion = champions.find(champ => 
-                  champ.name.toLowerCase() === compChampion.name.toLowerCase()
-                );
-                
-                if (foundChampion && compChampion.position) {
-                  const { x, y } = compChampion.position;
-                  if (y >= 0 && y < BOARD_ROWS && x >= 0 && x < BOARD_COLS) {
-                    newBoard[y][x] = { 
-                      champion: foundChampion, 
-                      position: { row: y, col: x } 
-                    };
-                  }
-                }
-              }
-            });
-            
-            setBoard(newBoard);
-          }
+          // Using the Zustand store instead of direct API call
+          await useCompositionsStore.getState().fetchCompositionById(compositionId);
         } catch (error) {
           console.error('Error loading composition:', error);
         }
       };
-      
+
       loadComposition();
     } else if (initialBoardState) {
       setBoard(initialBoardState);
     }
-  }, [compositionId, champions, initialBoardState]);
+  }, [compositionId, initialBoardState]);
+
+  // Subscribe to the store for composition data changes
+  useEffect(() => {
+    const unsubscribe = useCompositionsStore.subscribe((state) => {
+      if (state.currentComposition && compositionId) {
+        const composition = state.currentComposition;
+
+        if (composition && composition.champions) {
+          // Initialize empty board
+          const newBoard = Array(BOARD_ROWS).fill(null).map(() =>
+            Array(BOARD_COLS).fill(null).map((_, colIndex) => ({
+              champion: null,
+              position: { row: 0, col: colIndex }
+            }))
+          );
+
+          // Find champions by name and place them on the board
+          composition.champions.forEach((compChampion: any) => {
+            if (champions) {
+              const foundChampion = champions.find(champ =>
+                champ.name.toLowerCase() === compChampion.champion.name.toLowerCase()
+              );
+
+              if (foundChampion && compChampion.position) {
+                const { x, y } = compChampion.position;
+                if (y >= 0 && y < BOARD_ROWS && x >= 0 && x < BOARD_COLS) {
+                  newBoard[y][x] = {
+                    champion: foundChampion,
+                    position: { row: y, col: x }
+                  };
+                }
+              }
+            }
+          });
+
+          setBoard(newBoard);
+        }
+      }
+    });
+
+    return () => unsubscribe();
+  }, [compositionId, champions]);
 
   // Handle board slot click
   const handleBoardSlotClick = (row: number, col: number) => {

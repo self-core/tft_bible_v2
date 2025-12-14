@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, ChevronDown, ChevronUp } from 'lucide-react';
-import { championsApi } from '../lib/api';
+import { Search, Filter, ChevronDown, ChevronUp, Zap, Shield, Target } from 'lucide-react';
 import { useChampionsStore } from '../stores';
 
 interface Champion {
@@ -20,17 +19,28 @@ interface ChampionCardProps {
   champion: Champion;
 }
 
+interface ChampionsFilterProps {
+  searchQuery: string;
+  onSearchChange: (value: string) => void;
+  sortBy: string;
+  onSortChange: (value: string) => void;
+  costFilter: number | null;
+  onCostFilterChange: (value: number | null) => void;
+  traitFilter: string;
+  onTraitFilterChange: (value: string) => void;
+}
+
 const ChampionCard: React.FC<ChampionCardProps> = ({ champion }) => {
   const [showTooltip, setShowTooltip] = useState(false);
 
   const getCostColor = (cost: number) => {
     switch (cost) {
-      case 1: return 'text-gray-400';
-      case 2: return 'text-green-400';
-      case 3: return 'text-blue-400';
-      case 4: return 'text-purple-400';
-      case 5: return 'text-yellow-400';
-      default: return 'text-gray-400';
+      case 1: return 'bg-gray-600 text-white';
+      case 2: return 'bg-green-600 text-white';
+      case 3: return 'bg-blue-600 text-white';
+      case 4: return 'bg-purple-600 text-white';
+      case 5: return 'bg-yellow-600 text-yellow-900';
+      default: return 'bg-gray-600 text-white';
     }
   };
 
@@ -55,15 +65,20 @@ const ChampionCard: React.FC<ChampionCardProps> = ({ champion }) => {
         
         {/* Traits */}
         <div className="absolute bottom-2 left-2 flex space-x-1">
-          {champion.trait_images.slice(0, 3).map((trait, idx) => (
-            <img 
-              key={idx} 
-              src={trait} 
-              alt={`Trait ${idx}`} 
-              className="w-6 h-6 rounded-full border border-gray-300" 
+          {(champion.trait_images || []).slice(0, 3).map((trait, idx) => (
+            <img
+              key={idx}
+              src={trait}
+              alt={`Trait ${idx}`}
+              className="w-6 h-6 rounded-full border border-gray-300"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.onerror = null; // Prevent infinite loop
+                target.style.display = 'none'; // Hide broken image
+              }}
             />
           ))}
-          {champion.trait_images.length > 3 && (
+          {champion.trait_images && champion.trait_images.length > 3 && (
             <div className="w-6 h-6 rounded-full bg-gray-700 flex items-center justify-center text-xs">
               +{champion.trait_images.length - 3}
             </div>
@@ -79,11 +94,11 @@ const ChampionCard: React.FC<ChampionCardProps> = ({ champion }) => {
         <div className="mt-3 text-sm text-gray-300">
           <div className="flex justify-between">
             <span>Play Rate:</span>
-            <span>{champion.play_rate.toFixed(1)}%</span>
+            <span>{champion.play_rate?.toFixed(1) || 'N/A'}%</span>
           </div>
           <div className="flex justify-between">
             <span>Avg. Placement:</span>
-            <span>{champion.avg_placement.toFixed(1)}</span>
+            <span>{champion.avg_placement?.toFixed(1) || 'N/A'}</span>
           </div>
         </div>
       </div>
@@ -93,10 +108,10 @@ const ChampionCard: React.FC<ChampionCardProps> = ({ champion }) => {
         <div className="absolute z-10 bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-64 bg-gray-900 border border-gray-700 rounded-lg p-3 shadow-lg">
           <div className="text-center text-white font-bold mb-2">{champion.name}</div>
           <div className="grid grid-cols-2 gap-2 text-sm">
-            <div className="bg-gray-800 p-2 rounded">Health: {champion.health}</div>
-            <div className="bg-gray-800 p-2 rounded">AD: {champion.attack_damage}</div>
+            <div className="bg-gray-800 p-2 rounded">Health: {champion.health || 'N/A'}</div>
+            <div className="bg-gray-800 p-2 rounded">AD: {champion.attack_damage || 'N/A'}</div>
             <div className="bg-gray-800 p-2 rounded">Cost: {champion.cost}</div>
-            <div className="bg-gray-800 p-2 rounded">Traits: {champion.traits.join(', ')}</div>
+            <div className="bg-gray-800 p-2 rounded">Traits: {champion.traits?.join(', ') || 'None'}</div>
           </div>
         </div>
       )}
@@ -130,8 +145,8 @@ const ChampionsFilter: React.FC<ChampionsFilterProps> = ({
   return (
     <div className="bg-gray-800 rounded-xl p-4 mb-6 border border-gray-700">
       <div className="flex flex-col md:flex-row gap-4 items-center">
-        <div className="flex items-center flex-grow">
-          <Search className="text-gray-400 absolute ml-3" size={20} />
+        <div className="relative flex-grow">
+          <Search className="text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" size={20} />
           <input
             type="text"
             placeholder="Search champions by name, traits..."
@@ -170,7 +185,7 @@ const ChampionsFilter: React.FC<ChampionsFilterProps> = ({
         <div className="mt-4 pt-4 border-t border-gray-700 grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm text-gray-300 mb-2">Cost</label>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {[1, 2, 3, 4, 5].map((cost) => (
                 <button
                   key={cost}
@@ -201,7 +216,7 @@ const ChampionsFilter: React.FC<ChampionsFilterProps> = ({
             <label className="block text-sm text-gray-300 mb-2">Trait</label>
             <input
               type="text"
-              placeholder="e.g., Assassin, Mage..."
+              placeholder="e.g., Big Shot, Rapid Fire..."
               className="w-full py-2 px-3 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-500"
               value={traitFilter}
               onChange={(e) => onTraitFilterChange(e.target.value)}
@@ -223,13 +238,14 @@ export const DetailedChampions: React.FC = () => {
 
   // Fetch champions on mount
   useEffect(() => {
-    fetchChampions({});
+    if (fetchChampions) {
+      fetchChampions({ limit: 100 }); // Fetch up to 100 champions
+    }
   }, [fetchChampions]);
 
   // Mock data to use if API fails
   useEffect(() => {
-    if (!champions && !loading && !error) {
-      // In a real app, this would come from the API
+    if ((!champions || champions.length === 0) && !loading && !error) {
       const mockChampions = [
         {
           id: 'jinx',
@@ -284,7 +300,11 @@ export const DetailedChampions: React.FC = () => {
           <h2 className="text-2xl font-bold mb-4">Error loading champions data</h2>
           <p className="text-gray-400">Please try again later</p>
           <button
-            onClick={() => fetchChampions({})}
+            onClick={() => {
+              if (fetchChampions) {
+                fetchChampions({ limit: 100 });
+              }
+            }}
             className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
           >
             Retry
@@ -299,25 +319,25 @@ export const DetailedChampions: React.FC = () => {
 
   if (searchQuery) {
     const query = searchQuery.toLowerCase();
-    filteredChampions = filteredChampions.filter((champion: any) =>
+    filteredChampions = filteredChampions.filter((champion) =>
       champion.name.toLowerCase().includes(query) ||
-      champion.traits.some((trait: string) => trait.toLowerCase().includes(query))
+      champion.traits.some((trait) => trait.toLowerCase().includes(query))
     );
   }
 
   if (costFilter !== null) {
-    filteredChampions = filteredChampions.filter((champion: any) => champion.cost === costFilter);
+    filteredChampions = filteredChampions.filter((champion) => champion.cost === costFilter);
   }
 
   if (traitFilter) {
     const trait = traitFilter.toLowerCase();
-    filteredChampions = filteredChampions.filter((champion: any) =>
-      champion.traits.some((traitName: string) => traitName.toLowerCase().includes(trait))
+    filteredChampions = filteredChampions.filter((champion) =>
+      champion.traits.some((traitName) => traitName.toLowerCase().includes(trait))
     );
   }
 
   // Sort champions
-  filteredChampions.sort((a: any, b: any) => {
+  filteredChampions.sort((a, b) => {
     switch (sortBy) {
       case 'cost':
         return a.cost - b.cost;

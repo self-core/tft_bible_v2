@@ -1,23 +1,28 @@
 version: '3.8'
 
 services:
-  # API Gateway
-  api-gateway:
+  # New Go API Gateway
+  gateway-api:
     build:
-      context: .
-      dockerfile: ./gateway/Dockerfile
+      context: ./gateway-api
+      dockerfile: Dockerfile
     ports:
       - "8080:8080"
     environment:
-      - RUST_LOG=info
       - PORT=8080
+      - ETCD_ENDPOINT=etcd:2379
+      - SERVICE_NAME=gateway-api
+      - SERVICE_HOST=gateway-api
     depends_on:
-      - champion-service
-      - trait-service
-      - composition-service
-      - trait-tracker-service
+      - etcd
     networks:
       - tft-network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
 
   # Champion Service
   champion-service:
@@ -28,9 +33,11 @@ services:
       - "8000:8000"
     environment:
       - RUST_LOG=info
-      - DATABASE_URL=mongodb://mongodb:27017
-      - DATABASE_NAME=tft_champions_db
+      - DATABASE_URL=${MONGODB_URL_WITH_CREDS:-mongodb://admin:password@mongodb:27017/?authSource=admin}
+      - DATABASE_NAME=${CHAMPION_DB_NAME:-tft_champions_db}
       - PORT=8000
+      - SERVICE_HOST=champion-service
+      - GATEWAY_URL=http://gateway-api:8080
     depends_on:
       - mongodb
     networks:
@@ -51,9 +58,11 @@ services:
       - "8001:8001"
     environment:
       - RUST_LOG=info
-      - DATABASE_URL=mongodb://mongodb:27017
-      - DATABASE_NAME=tft_traits_db
+      - DATABASE_URL=${MONGODB_URL_WITH_CREDS:-mongodb://admin:password@mongodb:27017/?authSource=admin}
+      - DATABASE_NAME=${TRAIT_DB_NAME:-tft_traits_db}
       - PORT=8001
+      - SERVICE_HOST=trait-service
+      - GATEWAY_URL=http://gateway-api:8080
     depends_on:
       - mongodb
     networks:
@@ -74,9 +83,11 @@ services:
       - "8002:8002"
     environment:
       - RUST_LOG=info
-      - DATABASE_URL=mongodb://mongodb:27017
-      - DATABASE_NAME=tft_compositions_db
+      - DATABASE_URL=${MONGODB_URL_WITH_CREDS:-mongodb://admin:password@mongodb:27017/?authSource=admin}
+      - DATABASE_NAME=${COMPOSITION_DB_NAME:-tft_compositions_db}
       - PORT=8002
+      - SERVICE_HOST=composition-service
+      - GATEWAY_URL=http://gateway-api:8080
     depends_on:
       - mongodb
     networks:
@@ -97,9 +108,11 @@ services:
       - "8003:8003"
     environment:
       - RUST_LOG=info
-      - DATABASE_URL=mongodb://mongodb:27017
-      - DATABASE_NAME=tft_trait_tracker_db
+      - DATABASE_URL=${MONGODB_URL_WITH_CREDS:-mongodb://admin:password@mongodb:27017/?authSource=admin}
+      - DATABASE_NAME=${TRAIT_TRACKER_DB_NAME:-tft_trait_tracker_db}
       - PORT=8003
+      - SERVICE_HOST=trait-tracker-service
+      - GATEWAY_URL=http://gateway-api:8080
     depends_on:
       - mongodb
     networks:
@@ -117,8 +130,8 @@ services:
     ports:
       - "27017:27017"
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=admin
-      - MONGO_INITDB_ROOT_PASSWORD=password
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USERNAME:-admin}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD:-password}
     volumes:
       - mongodb_data:/data/db
     networks:
@@ -144,9 +157,33 @@ services:
     ports:
       - "3000:80"
     environment:
-      - VITE_API_URL=http://api-gateway:8080
+      - VITE_API_URL=http://localhost:8080
     depends_on:
-      - api-gateway
+      - gateway-api
+    networks:
+      - tft-network
+    restart: unless-stopped
+
+  # etcd Service Discovery
+  etcd:
+    image: gcr.io/etcd-development/etcd:v3.5.15
+    container_name: etcd-server
+    command: >
+      /usr/local/bin/etcd
+      --name etcd-server
+      --data-dir /etcd-data
+      --advertise-client-urls http://0.0.0.0:2379
+      --listen-client-urls http://0.0.0.0:2379
+      --listen-peer-urls http://0.0.0.0:2380
+      --initial-advertise-peer-urls http://etcd-server:2380
+      --initial-cluster-token etcd-cluster-1
+      --initial-cluster etcd-server=http://etcd-server:2380
+      --initial-cluster-state new
+    ports:
+      - "2379:2379"
+      - "2380:2380"
+    volumes:
+      - etcd-data:/etcd-data
     networks:
       - tft-network
     restart: unless-stopped
@@ -158,3 +195,4 @@ networks:
 volumes:
   mongodb_data:
   redis_data:
+  etcd-data:

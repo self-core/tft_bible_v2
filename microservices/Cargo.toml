@@ -6,7 +6,6 @@ members = [
     "trait-service",
     "composition-service",
     "trait-tracker-service",
-    "gateway",
 ]
 
 [workspace.dependencies]

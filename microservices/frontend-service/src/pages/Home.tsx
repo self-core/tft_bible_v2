@@ -2,8 +2,8 @@ import { Link } from 'react-router-dom'
 import { Swords, Users, Package, Search, Star, Zap, Target, Cpu, TrendingUp, Eye, ThumbsUp, Sword, Shield } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useTheme } from '../contexts/ThemeContext'
+import { useCompositionsStore, useChampionsStore } from '../stores'
 import { CompositionSummary, ChampionSummary } from '../types'
-import { compositionsApi, championsApi } from '../lib/api'
 
 const Home = () => {
   const { theme } = useTheme();
@@ -18,14 +18,16 @@ const Home = () => {
   const [trendingChampionsLoading, setTrendingChampionsLoading] = useState(false);
   const [trendingChampionsError, setTrendingChampionsError] = useState<string | null>(null);
 
-  // Fetch trending compositions
+  // Fetch trending compositions using Zustand store
   useEffect(() => {
     const fetchTrendingCompositions = async () => {
       setTrendingCompositionsLoading(true);
       setTrendingCompositionsError(null);
       try {
-        const response = await compositionsApi.getCompositions({ limit: 4, offset: 0 }).then(res => res.data);
-        setTrendingCompositions(response.data || []);
+        // Use the compositions store to fetch data
+        await useCompositionsStore.getState().fetchCompositions({ limit: 4, offset: 0 });
+        const state = useCompositionsStore.getState();
+        setTrendingCompositions(state.compositions || []);
       } catch (error: any) {
         setTrendingCompositionsError(error.message || 'Failed to fetch trending compositions');
       } finally {
@@ -36,14 +38,16 @@ const Home = () => {
     fetchTrendingCompositions();
   }, []);
 
-  // Fetch trending champions
+  // Fetch trending champions using Zustand store
   useEffect(() => {
     const fetchTrendingChampions = async () => {
       setTrendingChampionsLoading(true);
       setTrendingChampionsError(null);
       try {
-        const response = await championsApi.getChampions({ limit: 4, offset: 0 }).then(res => res.data);
-        setTrendingChampions(response.data || []);
+        // Use the champions store to fetch data
+        await useChampionsStore.getState().fetchChampions({ limit: 4, offset: 0 });
+        const state = useChampionsStore.getState();
+        setTrendingChampions(state.champions || []);
       } catch (error: any) {
         setTrendingChampionsError(error.message || 'Failed to fetch trending champions');
       } finally {

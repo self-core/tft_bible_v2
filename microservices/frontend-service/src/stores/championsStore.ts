@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { ChampionSummary, ChampionQuery, PaginatedResponse } from '../lib/api';
-import { championsApi } from '../lib/api';
+import { graphQLApi } from '../lib/graphql-api';
 
 interface ChampionsState {
   champions: ChampionSummary[];
@@ -27,9 +27,35 @@ export const useChampionsStore = create<ChampionsState>((set, get) => ({
   fetchChampions: async (params?: ChampionQuery) => {
     set({ loading: true, error: null });
     try {
-      const response = await championsApi.getChampions(params);
-      const data: PaginatedResponse<ChampionSummary> = response.data;
-      
+      const response = await graphQLApi.getChampions({
+        limit: params?.limit || 50
+      });
+
+      // Transform GraphQL data to match expected format
+      const graphqlData = response.data.champions;
+      const data: PaginatedResponse<ChampionSummary> = {
+        data: graphqlData.map((champ: any) => ({
+          id: champ.id,
+          name: champ.name,
+          display_name: champ.displayName || champ.name,
+          cost: champ.cost,
+          traits: champ.traits,
+          health: champ.stats?.health || 800,
+          attack_damage: champ.stats?.attackDamage || 50,
+          ability_name: champ.ability?.name || '',
+          image_url: champ.image || '',
+          splash_url: '', // Placeholder
+          rarity: 'common', // Placeholder
+          release_version: '1.0', // Placeholder
+          set_id: 'tft-set-1', // Placeholder
+          is_enabled: true // Placeholder
+        })),
+        total: graphqlData.length,
+        page: 1, // Placeholder
+        per_page: params?.limit || 50,
+        total_pages: Math.ceil(graphqlData.length / (params?.limit || 50)) // Approximate
+      };
+
       set({
         champions: data.data,
         totalPages: data.total_pages,
@@ -44,18 +70,35 @@ export const useChampionsStore = create<ChampionsState>((set, get) => ({
       });
     }
   },
-  
+
   fetchChampionById: async (id: string) => {
     set({ loading: true, error: null });
     try {
-      const response = await championsApi.getChampionById(id);
-      const data = response.data;
-      
+      // Since we don't have a specific query for single champion by id in our GraphQL,
+      // we'll fetch all champions and find the specific one
+      const response = await graphQLApi.getChampions({});
+      const graphqlData = response.data.champions;
+
+      const champion = graphqlData.find((champ: any) => champ.id === id);
+
+      if (!champion) {
+        throw new Error('Champion not found');
+      }
+
       // Update the specific champion in the list if it exists
-      const updatedChampions = get().champions.map(champ => 
-        champ.id === id ? { ...champ, ...data } : champ
+      const updatedChampions = get().champions.map(champ =>
+        champ.id === id ? {
+          ...champ,
+          name: champion.name,
+          cost: champion.cost,
+          traits: champion.traits,
+          health: champion.stats?.health || 800,
+          attack_damage: champion.stats?.attackDamage || 50,
+          ability_name: champion.ability?.name || '',
+          image_url: champion.image || ''
+        } : champ
       );
-      
+
       set({
         champions: updatedChampions,
         loading: false

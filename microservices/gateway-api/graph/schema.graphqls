@@ -1,0 +1,259 @@
+# GraphQL Schema for TFT Bible Gateway API
+
+type Champion {
+  id: ID!
+  name: String!
+  displayName: String
+  cost: Int!
+  traits: [String!]!
+  stats: Stats
+  ability: Ability
+  imageUrl: String
+  splashUrl: String
+  iconUrl: String
+  releaseVersion: String
+  setId: String
+  isEnabled: Boolean!
+}
+
+type Stats {
+  health: Float!
+  attackDamage: Float!
+  armor: Float!
+  magicResist: Float!
+  initialMana: Float!
+  mana: Float!
+  damage: Float!
+  attackSpeed: Float!
+  range: Float!
+}
+
+type Ability {
+  name: String!
+  cost: Int
+  description: String!
+  icon: String
+  type: String
+}
+
+type Trait {
+  id: ID!
+  name: String!
+  description: String!
+  traitType: String
+  tiers: [Tier!]!
+  sets: [String!]!
+  isActive: Boolean!
+  isHidden: Boolean!
+  displayImage: String
+  iconUrl: String
+  units: [String!]!
+  updated: String
+}
+
+type Tier {
+  minUnits: Int!
+  maxUnits: Int!
+  bonus: String!
+  bonusType: String
+  bonusValueType: String
+  bonusValue: Float
+  style: String
+  statBonuses: [StatBonus!]!
+  percentIncreases: [Float!]!
+}
+
+type StatBonus {
+  statType: String!
+  value: Float!
+  isPercent: Boolean!
+}
+
+type Composition {
+  id: ID!
+  name: String!
+  description: String!
+  category: String
+  tags: [String!]!
+  champions: [ChampionInComposition!]!
+  augments: Augments!
+  meta: CompositionMeta!
+  votes: VoteInfo!
+  views: Int!
+  favorites: Int!
+  comments: [String!]!
+  isPublic: Boolean!
+  isVerified: Boolean!
+  isFeatured: Boolean!
+  createdAt: String!
+  updatedAt: String!
+  builderCode: String
+}
+
+type ChampionInComposition {
+  id: ID!
+  name: String!
+  starLevel: Int!
+  position: Position!
+  items: [String!]!
+  isCore: Boolean!
+  priority: String
+  cost: Int!
+  traits: [String!]!
+  health: Float!
+  attackDamage: Float!
+  abilityName: String!
+  iconUrl: String
+}
+
+type Position {
+  x: Int!
+  y: Int!
+}
+
+type Augments {
+  preferred: [String!]!
+  acceptable: [String!]
+  deprecated: [String!]
+}
+
+type CompositionMeta {
+  tier: String
+  difficulty: Int!
+  cost: String
+  patch: String
+  playstyle: String
+  winrate: Float
+  avgPlacement: Float
+  playrate: Float
+  contestRate: Float
+}
+
+type VoteInfo {
+  upvotes: Int!
+  downvotes: Int!
+}
+
+type Query {
+  # Champion queries
+  champions(limit: Int, offset: Int, cost: Int, trait: String): [Champion!]!
+  championById(id: ID!): Champion
+  championsByTrait(trait: String!, limit: Int, offset: Int): [Champion!]!
+  
+  # Trait queries
+  traits(type: String, limit: Int, offset: Int): [Trait!]!
+  traitByName(name: String!): Trait
+  
+  # Composition queries
+  compositions(limit: Int, offset: Int, category: String, tag: String): [Composition!]!
+  compositionById(id: ID!): Composition
+  compositionsByTrait(trait: String!, limit: Int, offset: Int): [Composition!]!
+  
+  # Health check
+  health: String!
+}
+
+type Mutation {
+  # Champion mutations
+  createChampion(input: ChampionInput!): Champion
+  updateChampion(id: ID!, input: ChampionInput!): Champion
+  deleteChampion(id: ID!): Boolean!
+  
+  # Trait mutations
+  createTrait(input: TraitInput!): Trait
+  updateTrait(id: ID!, input: TraitInput!): Trait
+  deleteTrait(id: ID!): Boolean!
+  
+  # Composition mutations
+  createComposition(input: CompositionInput!): Composition
+  updateComposition(id: ID!, input: CompositionInput!): Composition
+  deleteComposition(id: ID!): Boolean!
+}
+
+input ChampionInput {
+  name: String!
+  cost: Int!
+  traits: [String!]!
+  stats: StatsInput
+  ability: AbilityInput
+  imageUrl: String
+  splashUrl: String
+  iconUrl: String
+  releaseVersion: String
+  setId: String
+  isEnabled: Boolean = true
+}
+
+input StatsInput {
+  health: Float!
+  attackDamage: Float!
+  armor: Float!
+  magicResist: Float!
+  initialMana: Float!
+  mana: Float!
+  damage: Float!
+  attackSpeed: Float!
+  range: Float!
+}
+
+input AbilityInput {
+  name: String!
+  cost: Int
+  description: String!
+  icon: String
+  type: String
+}
+
+input TraitInput {
+  name: String!
+  description: String!
+  traitType: String
+  isActive: Boolean = true
+  isHidden: Boolean = false
+  displayImage: String
+  iconUrl: String
+  units: [String!]!
+}
+
+input CompositionInput {
+  name: String!
+  description: String!
+  category: String
+  tags: [String!]!
+  champions: [ChampionInCompositionInput!]!
+  augments: AugmentsInput
+  meta: CompositionMetaInput
+  isPublic: Boolean = true
+}
+
+input ChampionInCompositionInput {
+  id: ID!
+  starLevel: Int!
+  position: PositionInput!
+  items: [String!]!
+  isCore: Boolean!
+  priority: String
+}
+
+input PositionInput {
+  x: Int!
+  y: Int!
+}
+
+input AugmentsInput {
+  preferred: [String!]!
+  acceptable: [String!]
+  deprecated: [String!]
+}
+
+input CompositionMetaInput {
+  tier: String
+  difficulty: Int = 3
+  cost: String
+  patch: String
+  playstyle: String
+  winrate: Float
+  avgPlacement: Float
+  playrate: Float
+  contestRate: Float
+}

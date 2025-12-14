@@ -1,21 +1,52 @@
+version: '3.8'
+
 services:
-  # API Gateway
-  api-gateway:
+  # New Go API Gateway
+  gateway-api:
     build:
-      context: ../microservices/gateway
+      context: ../microservices/gateway-api
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
     environment:
-      - RUST_LOG=info
       - PORT=8080
+      - ETCD_ENDPOINT=etcd:2379
+      - SERVICE_NAME=gateway-api
+      - SERVICE_HOST=gateway-api
     depends_on:
-      - champion-service
-      - trait-service
-      - composition-service
-      - trait-tracker-service
+      - etcd
     networks:
       - tft-network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+
+  # etcd Service Discovery
+  etcd:
+    image: gcr.io/etcd-development/etcd:v3.5.15
+    container_name: etcd-server
+    command: >
+      /usr/local/bin/etcd
+      --name etcd-server
+      --data-dir /etcd-data
+      --advertise-client-urls http://0.0.0.0:2379
+      --listen-client-urls http://0.0.0.0:2379
+      --listen-peer-urls http://0.0.0.0:2380
+      --initial-advertise-peer-urls http://etcd-server:2380
+      --initial-cluster-token etcd-cluster-1
+      --initial-cluster etcd-server=http://etcd-server:2380
+      --initial-cluster-state new
+    ports:
+      - "2379:2379"
+      - "2380:2380"
+    volumes:
+      - etcd-data:/etcd-data
+    networks:
+      - tft-network
+    restart: unless-stopped
 
   # Champion Service
   champion-service:
@@ -29,6 +60,7 @@ services:
       - DATABASE_URL=mongodb://mongodb:27017
       - DATABASE_NAME=tft_champions_db
       - PORT=8000
+      - GATEWAY_URL=http://gateway-api:8080
     depends_on:
       - mongodb
     networks:
@@ -46,6 +78,7 @@ services:
       - DATABASE_URL=mongodb://mongodb:27017
       - DATABASE_NAME=tft_traits_db
       - PORT=8001
+      - GATEWAY_URL=http://gateway-api:8080
     depends_on:
       - mongodb
     networks:
@@ -63,6 +96,7 @@ services:
       - DATABASE_URL=mongodb://mongodb:27017
       - DATABASE_NAME=tft_compositions_db
       - PORT=8002
+      - GATEWAY_URL=http://gateway-api:8080
     depends_on:
       - mongodb
     networks:
@@ -80,6 +114,7 @@ services:
       - DATABASE_URL=mongodb://mongodb:27017
       - DATABASE_NAME=tft_trait_tracker_db
       - PORT=8003
+      - GATEWAY_URL=http://gateway-api:8080
     depends_on:
       - mongodb
     networks:
@@ -117,3 +152,4 @@ networks:
 volumes:
   mongodb_data:
   redis_data:
+  etcd-data:

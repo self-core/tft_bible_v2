@@ -214,11 +214,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let port: u16 = std::env::var("PORT").unwrap_or_else(|_| "8000".to_string()).parse()?;
 
     // Register service with discovery
-    let gateway_url = std::env::var("GATEWAY_URL").unwrap_or_else(|_| "http://localhost:8080".to_string());
+    let gateway_url = std::env::var("GATEWAY_URL").unwrap_or_else(|_| "http://gateway-api:8080".to_string());
+    let service_host = std::env::var("SERVICE_HOST").unwrap_or_else(|_| "champion-service".to_string());
     let service_instance = ServiceInstance {
         id: format!("champion-service-{}", port),
         name: "champion-service".to_string(),
-        host: "localhost".to_string(),
+        host: service_host,
         port,
         health: ServiceHealth::Healthy,
         metadata: std::collections::HashMap::new(),

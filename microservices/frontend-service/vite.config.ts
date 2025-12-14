@@ -5,21 +5,25 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 3000, // Changed back to default Vite port
+    port: 3000, // Frontend development port
     proxy: {
+      // Proxy API requests to the gateway API
       '/api': {
         target: 'http://localhost:8080',
         changeOrigin: true,
-        rewrite: (path) => {
-          // Remove the /api/v1/ prefix for json-server
-          return path.replace(/^\/api\/v1/, '');
-        }
+        // Use the original path as is for the gateway which has proper service discovery
       },
+      // Proxy GraphQL requests to the gateway API
       '/graphql': {
         target: 'http://localhost:8080',
         changeOrigin: true,
         secure: false,
       },
+      // Proxy other API endpoints as needed
+      '/health': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      }
     },
   },
 })
