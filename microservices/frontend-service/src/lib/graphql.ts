@@ -7,6 +7,7 @@ export const GET_CHAMPIONS = gql`
     champions(limit: $limit) {
       id
       name
+      displayName
       cost
       traits
       stats {
@@ -17,24 +18,42 @@ export const GET_CHAMPIONS = gql`
         name
         description
       }
-      image
+      imageUrl
+      iconUrl
     }
   }
 `;
 
 // Query to get all traits
 export const GET_TRAITS = gql`
-  query GetTraits {
-    traits {
+  query GetTraits($type: String, $limit: Int, $offset: Int) {
+    traits(type: $type, limit: $limit, offset: $offset) {
       id
       name
       description
       traitType
-      breakpoints {
-        count
-        description
-        bonuses
+      tiers {
+        minUnits
+        maxUnits
+        bonus
+        bonusType
+        bonusValueType
+        bonusValue
+        style
+        statBonuses {
+          statType
+          value
+          isPercent
+        }
+        percentIncreases
       }
+      sets
+      isActive
+      isHidden
+      displayImage
+      iconUrl
+      units
+      updated
     }
   }
 `;
@@ -84,49 +103,111 @@ export const GET_COMPOSITIONS = gql`
       description
       category
       champions {
-        champion {
-          id
-          name
-          cost
-          traits
-        }
+        id
+        name
         starLevel
-        items
         position {
           x
           y
         }
+        items
         isCore
+        priority
+        cost
+        traits
+        health
+        attackDamage
+        abilityName
+        iconUrl
       }
-      augments
+      augments {
+        preferred
+        acceptable
+        deprecated
+      }
+      meta {
+        tier
+        difficulty
+        cost
+        patch
+        playstyle
+        winrate
+        avgPlacement
+        playrate
+        contestRate
+      }
+      votes {
+        upvotes
+        downvotes
+      }
+      views
+      favorites
+      comments
+      isPublic
+      isVerified
+      isFeatured
+      createdAt
+      updatedAt
+      builderCode
     }
   }
 `;
 
 // Query to get a single composition by ID
 export const GET_COMPOSITION = gql`
-  query GetComposition($id: String!) {
-    composition(id: $id) {
+  query GetComposition($id: ID!) {
+    compositionById(id: $id) {
       id
       name
       description
       category
       champions {
-        champion {
-          id
-          name
-          cost
-          traits
-        }
+        id
+        name
         starLevel
-        items
         position {
           x
           y
         }
+        items
         isCore
+        priority
+        cost
+        traits
+        health
+        attackDamage
+        abilityName
+        iconUrl
       }
-      augments
+      augments {
+        preferred
+        acceptable
+        deprecated
+      }
+      meta {
+        tier
+        difficulty
+        cost
+        patch
+        playstyle
+        winrate
+        avgPlacement
+        playrate
+        contestRate
+      }
+      votes {
+        upvotes
+        downvotes
+      }
+      views
+      favorites
+      comments
+      isPublic
+      isVerified
+      isFeatured
+      createdAt
+      updatedAt
+      builderCode
     }
   }
 `;

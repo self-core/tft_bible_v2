@@ -43,12 +43,12 @@ export const useChampionsStore = create<ChampionsState>((set, get) => ({
           health: champ.stats?.health || 800,
           attack_damage: champ.stats?.attackDamage || 50,
           ability_name: champ.ability?.name || '',
-          image_url: champ.image || '',
-          splash_url: '', // Placeholder
+          image_url: champ.imageUrl || champ.iconUrl || '',
+          splash_url: champ.splashUrl || '',
           rarity: 'common', // Placeholder
-          release_version: '1.0', // Placeholder
-          set_id: 'tft-set-1', // Placeholder
-          is_enabled: true // Placeholder
+          release_version: champ.releaseVersion || '1.0', // Use actual field if exists
+          set_id: champ.setId || 'tft-set-1', // Use actual field if exists
+          is_enabled: champ.isEnabled ?? true // Use actual field if exists
         })),
         total: graphqlData.length,
         page: 1, // Placeholder
@@ -90,12 +90,17 @@ export const useChampionsStore = create<ChampionsState>((set, get) => ({
         champ.id === id ? {
           ...champ,
           name: champion.name,
+          display_name: champion.displayName || champion.name,
           cost: champion.cost,
           traits: champion.traits,
           health: champion.stats?.health || 800,
           attack_damage: champion.stats?.attackDamage || 50,
           ability_name: champion.ability?.name || '',
-          image_url: champion.image || ''
+          image_url: champion.imageUrl || champion.iconUrl || '',
+          splash_url: champion.splashUrl || '',
+          release_version: champion.releaseVersion || '1.0',
+          set_id: champion.setId || 'tft-set-1',
+          is_enabled: champion.isEnabled ?? true
         } : champ
       );
 

@@ -8,12 +8,14 @@ export interface Champion {
   traits: string[];
   stats: ChampionStats;
   ability: ChampionAbility;
-  image: string;
-  splash_url?: string;
+  imageUrl?: string;
+  splashUrl?: string;
+  iconUrl?: string;
+  releaseVersion?: string;
+  setId?: string;
+  isEnabled: boolean;
   rarity: string;
-  release_version?: string;
   set?: string; // Which set the champion belongs to
-  is_enabled: boolean;
 }
 
 export interface ChampionStats {
