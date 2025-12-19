@@ -1,0 +1,48 @@
+# Railway
+# Documentation: https://docs.railway.app
+# Environment variables: https://docs.railway.app/develop/variables
+
+# Service type
+service:
+  # Service name (optional)
+  name: "tft-bible-backend"
+  
+  # Build type (one of: docker, nixpacks, static)
+  buildType: "docker"
+
+# Source configuration
+source:
+  # Root directory of your application
+  rootDirectory: "."
+
+# Runtime configuration
+runtime:
+  # Maximum number of restarts (default: 5)
+  maxRestarts: 5
+
+# Environment variables
+variables:
+  - name: "PORT"
+    value: "4000"
+  - name: "MONGODB_URI"
+    value: "$MONGO_CONNECTION_STRING"
+    required: true
+
+# Health check
+healthcheck:
+  # Protocol (one of: HTTP, HTTPS, TCP, GRPC)
+  protocol: "HTTP"
+  # Port to send health check requests to
+  port: 4000
+  # Path for HTTP(S) health checks
+  path: "/health"
+  # Interval between health checks (in seconds)
+  interval: 30
+  # Number of consecutive failures before considering unhealthy
+  threshold: 2
+
+# Exposed port
+exposedPorts:
+  - port: 4000
+    protocol: "http"
+    public: true

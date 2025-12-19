@@ -7,21 +7,15 @@ export default defineConfig({
   server: {
     port: 3000, // Frontend development port
     proxy: {
-      // Proxy API requests to the gateway API
-      '/api': {
-        target: 'http://localhost:8080',
-        changeOrigin: true,
-        // Use the original path as is for the gateway which has proper service discovery
-      },
-      // Proxy GraphQL requests to the gateway API
+      // Proxy GraphQL requests to the new simplified backend
       '/graphql': {
-        target: 'http://localhost:8080',
+        target: 'http://localhost:4000',
         changeOrigin: true,
         secure: false,
       },
-      // Proxy other API endpoints as needed
+      // Proxy health check to the new simplified backend
       '/health': {
-        target: 'http://localhost:8080',
+        target: 'http://localhost:4000',
         changeOrigin: true,
       }
     },

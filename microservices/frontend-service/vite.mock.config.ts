@@ -14,8 +14,8 @@ export default defineConfig({
     host: 'localhost',
     proxy: {
       // Mock API endpoints
-      '/api': {
-        target: 'http://localhost:8080', // This will be where your mock API runs
+      '/graphql': {
+        target: 'http://localhost:4000', // New simplified backend
         changeOrigin: true,
         secure: false,
         ws: true,

@@ -3,152 +3,140 @@ import { gql } from 'graphql-tag';
 
 // Query to get all champions
 export const GET_CHAMPIONS = gql`
-  query GetChampions($limit: Int) {
-    champions(limit: $limit) {
+  query GetChampions {
+    champions {
       id
       name
-      displayName
       cost
       traits
-      stats {
-        health
-        attackDamage
-      }
-      ability {
-        name
-        description
-      }
       imageUrl
+      splashUrl
       iconUrl
+      abilityName
+      abilityDescription
+      abilityImageUrl
+    }
+  }
+`;
+
+// Query to get a champion by ID
+export const GET_CHAMPION = gql`
+  query GetChampion($id: ID!) {
+    champion(id: $id) {
+      id
+      name
+      cost
+      traits
+      imageUrl
+      splashUrl
+      iconUrl
+      abilityName
+      abilityDescription
+      abilityImageUrl
     }
   }
 `;
 
 // Query to get all traits
 export const GET_TRAITS = gql`
-  query GetTraits($type: String, $limit: Int, $offset: Int) {
-    traits(type: $type, limit: $limit, offset: $offset) {
+  query GetTraits {
+    traits {
       id
       name
       description
-      traitType
+      activeUnits
+      imageUrl
       tiers {
-        minUnits
-        maxUnits
-        bonus
-        bonusType
-        bonusValueType
-        bonusValue
-        style
-        statBonuses {
-          statType
-          value
-          isPercent
-        }
-        percentIncreases
+        units
+        effect
       }
-      sets
-      isActive
-      isHidden
-      displayImage
-      iconUrl
-      units
-      updated
     }
   }
 `;
 
-// Mutation to get trait tracker path
-export const GET_TRAIT_TRACKER = gql`
-  mutation GetTraitTracker($input: TraitTrackerInput!) {
-    traitTracker(input: $input) {
-      path {
-        champion {
-          id
-          name
-          cost
-          traits
-          stats {
-            health
-            attackDamage
-          }
-          ability {
-            name
-            description
-          }
-          image
-        }
-        traitsGained
-        cost
-        efficiency
+// Query to get a trait by ID
+export const GET_TRAIT = gql`
+  query GetTrait($id: ID!) {
+    trait(id: $id) {
+      id
+      name
+      description
+      activeUnits
+      imageUrl
+      tiers {
+        units
+        effect
       }
-      efficiency
     }
   }
 `;
 
-// Query for health check
-export const GET_HEALTH = gql`
-  query GetHealth {
-    health
+// Query to get all items
+export const GET_ITEMS = gql`
+  query GetItems {
+    items {
+      id
+      name
+      description
+      components
+      imageUrl
+      unique
+      trait
+    }
+  }
+`;
+
+// Query to get an item by ID
+export const GET_ITEM = gql`
+  query GetItem($id: ID!) {
+    item(id: $id) {
+      id
+      name
+      description
+      components
+      imageUrl
+      unique
+      trait
+    }
+  }
+`;
+
+// Query to get all augments
+export const GET_AUGMENTS = gql`
+  query GetAugments {
+    augments {
+      id
+      name
+      description
+      imageUrl
+    }
+  }
+`;
+
+// Query to get an augment by ID
+export const GET_AUGMENT = gql`
+  query GetAugment($id: ID!) {
+    augment(id: $id) {
+      id
+      name
+      description
+      imageUrl
+    }
   }
 `;
 
 // Query to get all compositions
 export const GET_COMPOSITIONS = gql`
-  query GetCompositions($limit: Int, $offset: Int) {
-    compositions(limit: $limit, offset: $offset) {
+  query GetCompositions {
+    compositions {
       id
-      name
+      title
       description
-      category
-      champions {
-        id
-        name
-        starLevel
-        position {
-          x
-          y
-        }
-        items
-        isCore
-        priority
-        cost
-        traits
-        health
-        attackDamage
-        abilityName
-        iconUrl
-      }
-      augments {
-        preferred
-        acceptable
-        deprecated
-      }
-      meta {
-        tier
-        difficulty
-        cost
-        patch
-        playstyle
-        winrate
-        avgPlacement
-        playrate
-        contestRate
-      }
-      votes {
-        upvotes
-        downvotes
-      }
-      views
-      favorites
-      comments
-      isPublic
-      isVerified
-      isFeatured
-      createdAt
-      updatedAt
-      builderCode
+      championIds
+      traitBonuses
+      augmentRecommendations
+      difficulty
+      region
     }
   }
 `;
@@ -156,121 +144,46 @@ export const GET_COMPOSITIONS = gql`
 // Query to get a single composition by ID
 export const GET_COMPOSITION = gql`
   query GetComposition($id: ID!) {
-    compositionById(id: $id) {
+    composition(id: $id) {
       id
-      name
+      title
       description
-      category
+      championIds
+      traitBonuses
+      augmentRecommendations
+      difficulty
+      region
+    }
+  }
+`;
+
+// Query to search all entities
+export const SEARCH_ENTITIES = gql`
+  query Search($searchTerm: String!) {
+    search(searchTerm: $searchTerm) {
       champions {
         id
         name
-        starLevel
-        position {
-          x
-          y
-        }
-        items
-        isCore
-        priority
         cost
         traits
-        health
-        attackDamage
+        imageUrl
         abilityName
-        iconUrl
       }
-      augments {
-        preferred
-        acceptable
-        deprecated
+      traits {
+        id
+        name
+        description
       }
-      meta {
-        tier
-        difficulty
-        cost
-        patch
-        playstyle
-        winrate
-        avgPlacement
-        playrate
-        contestRate
+      items {
+        id
+        name
+        description
       }
-      votes {
-        upvotes
-        downvotes
+      compositions {
+        id
+        title
+        description
       }
-      views
-      favorites
-      comments
-      isPublic
-      isVerified
-      isFeatured
-      createdAt
-      updatedAt
-      builderCode
     }
-  }
-`;
-
-// Mutation to create a composition
-export const CREATE_COMPOSITION = gql`
-  mutation CreateComposition($input: CreateCompositionInput!) {
-    createComposition(input: $input) {
-      id
-      name
-      description
-      category
-      champions {
-        champion {
-          id
-          name
-          cost
-          traits
-        }
-        starLevel
-        items
-        position {
-          x
-          y
-        }
-        isCore
-      }
-      augments
-    }
-  }
-`;
-
-// Mutation to update a composition
-export const UPDATE_COMPOSITION = gql`
-  mutation UpdateComposition($id: String!, $input: UpdateCompositionInput!) {
-    updateComposition(id: $id, input: $input) {
-      id
-      name
-      description
-      category
-      champions {
-        champion {
-          id
-          name
-          cost
-          traits
-        }
-        starLevel
-        items
-        position {
-          x
-          y
-        }
-        isCore
-      }
-      augments
-    }
-  }
-`;
-
-// Mutation to delete a composition
-export const DELETE_COMPOSITION = gql`
-  mutation DeleteComposition($id: String!) {
-    deleteComposition(id: $id)
   }
 `;

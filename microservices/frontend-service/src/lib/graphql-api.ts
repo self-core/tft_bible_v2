@@ -1,79 +1,79 @@
 import { apolloClient } from './apolloClient'; // Use the same instance as defined in App
-import { GET_CHAMPIONS, GET_COMPOSITIONS, GET_COMPOSITION, CREATE_COMPOSITION, UPDATE_COMPOSITION, DELETE_COMPOSITION } from './graphql';
-import { gql } from '@apollo/client';
+import {
+  GET_CHAMPIONS,
+  GET_CHAMPION,
+  GET_TRAITS,
+  GET_TRAIT,
+  GET_ITEMS,
+  GET_ITEM,
+  GET_AUGMENTS,
+  GET_AUGMENT,
+  GET_COMPOSITIONS,
+  GET_COMPOSITION,
+  SEARCH_ENTITIES
+} from './graphql';
 
 // Interface definitions matching GraphQL responses
 export interface GraphQLChampion {
   id: string;
   name: string;
-  displayName?: string;
   cost: number;
   traits: string[];
-  stats: {
-    health: number;
-    attackDamage: number;
-  };
-  ability: {
-    name: string;
-    description: string;
-  };
   imageUrl?: string;
   splashUrl?: string;
   iconUrl?: string;
+  abilityName?: string;
+  abilityDescription?: string;
+  abilityImageUrl?: string;
+}
+
+export interface GraphQLTraitTier {
+  units: number;
+  effect: string;
+}
+
+export interface GraphQLTrait {
+  id: string;
+  name: string;
+  description: string;
+  activeUnits: number[];
+  imageUrl?: string;
+  tiers: GraphQLTraitTier[];
+}
+
+export interface GraphQLItem {
+  id: string;
+  name: string;
+  description: string;
+  components: string[];
+  imageUrl?: string;
+  unique?: boolean;
+  trait?: string;
+}
+
+export interface GraphQLAugment {
+  id: string;
+  name: string;
+  description: string;
+  imageUrl?: string;
 }
 
 export interface GraphQLComposition {
   id: string;
-  name: string;
+  title: string;
   description: string;
-  category: string;
-  champions: Array<{
-    id: string;
-    name: string;
-    starLevel: number;
-    position: {
-      x: number;
-      y: number;
-    };
-    items: string[];
-    isCore: boolean;
-    priority?: string;
-    cost: number;
-    traits: string[];
-    health: number;
-    attackDamage: number;
-    abilityName: string;
-    iconUrl?: string;
-  }>;
-  augments: {
-    preferred: string[];
-    acceptable?: string[];
-    deprecated?: string[];
-  };
-  meta: {
-    tier?: string;
-    difficulty: number;
-    cost?: string;
-    patch?: string;
-    playstyle?: string;
-    winrate?: number;
-    avgPlacement?: number;
-    playrate?: number;
-    contestRate?: number;
-  };
-  votes: {
-    upvotes: number;
-    downvotes: number;
-  };
-  views: number;
-  favorites: number;
-  comments: string[];
-  isPublic: boolean;
-  isVerified: boolean;
-  isFeatured: boolean;
-  createdAt: string;
-  updatedAt: string;
-  builderCode?: string;
+  championIds: string[];
+  traitBonuses: string[];
+  augmentRecommendations: string[];
+  difficulty: string;
+  region: string;
+}
+
+export interface GraphQLEntitySearchResult {
+  champions: GraphQLChampion[];
+  traits: GraphQLTrait[];
+  items: GraphQLItem[];
+  compositions: GraphQLComposition[];
 }
 
 export interface GraphQLResponse<T> {
@@ -83,11 +83,10 @@ export interface GraphQLResponse<T> {
 // GraphQL API functions using Apollo Client directly
 export const graphQLApi = {
   // Champion-related functions
-  getChampions: async (variables?: { limit?: number }) => {
+  getChampions: async () => {
     try {
       const response = await apolloClient.query({
         query: GET_CHAMPIONS,
-        variables: variables || {},
         errorPolicy: 'all', // Include partial data even if some fields fail
       });
 
@@ -109,11 +108,35 @@ export const graphQLApi = {
     }
   },
 
-  getTraits: async (variables?: { type?: string; limit?: number; offset?: number }) => {
+  getChampionById: async (id: string) => {
+    try {
+      const response = await apolloClient.query({
+        query: GET_CHAMPION,
+        variables: { id },
+        errorPolicy: 'all',
+      });
+
+      if (response.errors && response.errors.length > 0) {
+        console.warn(`GraphQL warnings for getChampionById(${id}):`, response.errors);
+      }
+
+      return response;
+    } catch (error: any) {
+      console.error(`GraphQL Error - getChampionById(${id}):`, error.message || error);
+      const formattedError = {
+        message: error.message || 'Failed to fetch champion',
+        code: error.code || 'GRAPHQL_ERROR',
+        details: error
+      };
+      throw formattedError;
+    }
+  },
+
+  // Trait-related functions
+  getTraits: async () => {
     try {
       const response = await apolloClient.query({
         query: GET_TRAITS,
-        variables: variables || {},
         errorPolicy: 'all',
       });
 
@@ -133,15 +156,131 @@ export const graphQLApi = {
     }
   },
 
+  getTraitById: async (id: string) => {
+    try {
+      const response = await apolloClient.query({
+        query: GET_TRAIT,
+        variables: { id },
+        errorPolicy: 'all',
+      });
+
+      if (response.errors && response.errors.length > 0) {
+        console.warn(`GraphQL warnings for getTraitById(${id}):`, response.errors);
+      }
+
+      return response;
+    } catch (error: any) {
+      console.error(`GraphQL Error - getTraitById(${id}):`, error.message || error);
+      const formattedError = {
+        message: error.message || 'Failed to fetch trait',
+        code: error.code || 'GRAPHQL_ERROR',
+        details: error
+      };
+      throw formattedError;
+    }
+  },
+
+  // Item-related functions
+  getItems: async () => {
+    try {
+      const response = await apolloClient.query({
+        query: GET_ITEMS,
+        errorPolicy: 'all',
+      });
+
+      if (response.errors && response.errors.length > 0) {
+        console.warn('GraphQL warnings for getItems:', response.errors);
+      }
+
+      return response;
+    } catch (error: any) {
+      console.error('GraphQL Error - getItems:', error.message || error);
+      const formattedError = {
+        message: error.message || 'Failed to fetch items',
+        code: error.code || 'GRAPHQL_ERROR',
+        details: error
+      };
+      throw formattedError;
+    }
+  },
+
+  getItemById: async (id: string) => {
+    try {
+      const response = await apolloClient.query({
+        query: GET_ITEM,
+        variables: { id },
+        errorPolicy: 'all',
+      });
+
+      if (response.errors && response.errors.length > 0) {
+        console.warn(`GraphQL warnings for getItemById(${id}):`, response.errors);
+      }
+
+      return response;
+    } catch (error: any) {
+      console.error(`GraphQL Error - getItemById(${id}):`, error.message || error);
+      const formattedError = {
+        message: error.message || 'Failed to fetch item',
+        code: error.code || 'GRAPHQL_ERROR',
+        details: error
+      };
+      throw formattedError;
+    }
+  },
+
+  // Augment-related functions
+  getAugments: async () => {
+    try {
+      const response = await apolloClient.query({
+        query: GET_AUGMENTS,
+        errorPolicy: 'all',
+      });
+
+      if (response.errors && response.errors.length > 0) {
+        console.warn('GraphQL warnings for getAugments:', response.errors);
+      }
+
+      return response;
+    } catch (error: any) {
+      console.error('GraphQL Error - getAugments:', error.message || error);
+      const formattedError = {
+        message: error.message || 'Failed to fetch augments',
+        code: error.code || 'GRAPHQL_ERROR',
+        details: error
+      };
+      throw formattedError;
+    }
+  },
+
+  getAugmentById: async (id: string) => {
+    try {
+      const response = await apolloClient.query({
+        query: GET_AUGMENT,
+        variables: { id },
+        errorPolicy: 'all',
+      });
+
+      if (response.errors && response.errors.length > 0) {
+        console.warn(`GraphQL warnings for getAugmentById(${id}):`, response.errors);
+      }
+
+      return response;
+    } catch (error: any) {
+      console.error(`GraphQL Error - getAugmentById(${id}):`, error.message || error);
+      const formattedError = {
+        message: error.message || 'Failed to fetch augment',
+        code: error.code || 'GRAPHQL_ERROR',
+        details: error
+      };
+      throw formattedError;
+    }
+  },
+
   // Composition-related functions
-  getCompositions: async (variables?: { limit?: number; offset?: number }) => {
+  getCompositions: async () => {
     try {
       const response = await apolloClient.query({
         query: GET_COMPOSITIONS,
-        variables: {
-          limit: variables?.limit || 10,
-          offset: variables?.offset || 0,
-        },
         errorPolicy: 'all',
       });
 
@@ -185,76 +324,24 @@ export const graphQLApi = {
     }
   },
 
-  createComposition: async (input: any) => {
+  // Search function
+  searchEntities: async (searchTerm: string) => {
     try {
-      const response = await apolloClient.mutate({
-        mutation: CREATE_COMPOSITION,
-        variables: {
-          input
-        },
+      const response = await apolloClient.query({
+        query: SEARCH_ENTITIES,
+        variables: { searchTerm },
         errorPolicy: 'all',
       });
 
       if (response.errors && response.errors.length > 0) {
-        console.warn('GraphQL warnings for createComposition:', response.errors);
+        console.warn(`GraphQL warnings for searchEntities(${searchTerm}):`, response.errors);
       }
 
       return response;
     } catch (error: any) {
-      console.error('GraphQL Error - createComposition:', error.message || error);
+      console.error(`GraphQL Error - searchEntities(${searchTerm}):`, error.message || error);
       const formattedError = {
-        message: error.message || 'Failed to create composition',
-        code: error.code || 'GRAPHQL_ERROR',
-        details: error
-      };
-      throw formattedError;
-    }
-  },
-
-  updateComposition: async (id: string, input: any) => {
-    try {
-      const response = await apolloClient.mutate({
-        mutation: UPDATE_COMPOSITION,
-        variables: {
-          id,
-          input
-        },
-        errorPolicy: 'all',
-      });
-
-      if (response.errors && response.errors.length > 0) {
-        console.warn(`GraphQL warnings for updateComposition(${id}):`, response.errors);
-      }
-
-      return response;
-    } catch (error: any) {
-      console.error(`GraphQL Error - updateComposition(${id}):`, error.message || error);
-      const formattedError = {
-        message: error.message || 'Failed to update composition',
-        code: error.code || 'GRAPHQL_ERROR',
-        details: error
-      };
-      throw formattedError;
-    }
-  },
-
-  deleteComposition: async (id: string) => {
-    try {
-      const response = await apolloClient.mutate({
-        mutation: DELETE_COMPOSITION,
-        variables: { id },
-        errorPolicy: 'all',
-      });
-
-      if (response.errors && response.errors.length > 0) {
-        console.warn(`GraphQL warnings for deleteComposition(${id}):`, response.errors);
-      }
-
-      return response;
-    } catch (error: any) {
-      console.error(`GraphQL Error - deleteComposition(${id}):`, error.message || error);
-      const formattedError = {
-        message: error.message || 'Failed to delete composition',
+        message: error.message || 'Failed to search entities',
         code: error.code || 'GRAPHQL_ERROR',
         details: error
       };
