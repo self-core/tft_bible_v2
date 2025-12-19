@@ -1,6 +1,7 @@
 import { apolloClient } from './apolloClient'; // Use the same instance as defined in App
 import {
   GET_CHAMPIONS,
+  GET_CHAMPIONS_BY_SET,
   GET_CHAMPION,
   GET_TRAITS,
   GET_TRAIT,
@@ -8,37 +9,52 @@ import {
   GET_ITEM,
   GET_AUGMENTS,
   GET_AUGMENT,
+  GET_SETS,
+  GET_SET,
   GET_COMPOSITIONS,
   GET_COMPOSITION,
+  GET_COMPOSITIONS_BY_SET,
   SEARCH_ENTITIES
 } from './graphql';
 
 // Interface definitions matching GraphQL responses
+export interface GraphQLStat {
+  name: string;
+  value: number;
+}
+
+export interface GraphQLAbilityVariable {
+  name: string;
+  values: number[];
+}
+
+export interface GraphQLAbility {
+  name: string;
+  variables: GraphQLAbilityVariable[];
+}
+
 export interface GraphQLChampion {
   id: string;
   name: string;
   cost: number;
   traits: string[];
+  stats: GraphQLStat[];
+  ability: GraphQLAbility;
   imageUrl?: string;
   splashUrl?: string;
   iconUrl?: string;
-  abilityName?: string;
-  abilityDescription?: string;
-  abilityImageUrl?: string;
 }
 
-export interface GraphQLTraitTier {
-  units: number;
-  effect: string;
+export interface GraphQLTraitBreakpoint {
+  count: number;
+  bonus: string;
 }
 
 export interface GraphQLTrait {
-  id: string;
-  name: string;
-  description: string;
-  activeUnits: number[];
-  imageUrl?: string;
-  tiers: GraphQLTraitTier[];
+  key: string;
+  name?: string;
+  description?: string;
+  breakpoints: GraphQLTraitBreakpoint[];
 }
 
 export interface GraphQLItem {
@@ -49,6 +65,16 @@ export interface GraphQLItem {
   imageUrl?: string;
   unique?: boolean;
   trait?: string;
+}
+
+export interface GraphQLSetData {
+  setId: number;
+  setName: string;
+  champions: GraphQLChampion[];
+  traits: GraphQLTrait[];
+  items: GraphQLItem[];
+  augments: GraphQLAugment[];
+  mechanics?: string;
 }
 
 export interface GraphQLAugment {
@@ -62,6 +88,7 @@ export interface GraphQLComposition {
   id: string;
   title: string;
   description: string;
+  setId: number;
   championIds: string[];
   traitBonuses: string[];
   augmentRecommendations: string[];
@@ -73,6 +100,7 @@ export interface GraphQLEntitySearchResult {
   champions: GraphQLChampion[];
   traits: GraphQLTrait[];
   items: GraphQLItem[];
+  sets: GraphQLSetData[];
   compositions: GraphQLComposition[];
 }
 
@@ -101,6 +129,30 @@ export const graphQLApi = {
       // Format error for frontend consumption
       const formattedError = {
         message: error.message || 'Failed to fetch champions',
+        code: error.code || 'GRAPHQL_ERROR',
+        details: error
+      };
+      throw formattedError;
+    }
+  },
+
+  getChampionsBySet: async (setId: number) => {
+    try {
+      const response = await apolloClient.query({
+        query: GET_CHAMPIONS_BY_SET,
+        variables: { setId },
+        errorPolicy: 'all',
+      });
+
+      if (response.errors && response.errors.length > 0) {
+        console.warn(`GraphQL warnings for getChampionsBySet(${setId}):`, response.errors);
+      }
+
+      return response;
+    } catch (error: any) {
+      console.error(`GraphQL Error - getChampionsBySet(${setId}):`, error.message || error);
+      const formattedError = {
+        message: error.message || 'Failed to fetch champions by set',
         code: error.code || 'GRAPHQL_ERROR',
         details: error
       };
@@ -228,6 +280,54 @@ export const graphQLApi = {
     }
   },
 
+  // Set-related functions
+  getSets: async () => {
+    try {
+      const response = await apolloClient.query({
+        query: GET_SETS,
+        errorPolicy: 'all',
+      });
+
+      if (response.errors && response.errors.length > 0) {
+        console.warn('GraphQL warnings for getSets:', response.errors);
+      }
+
+      return response;
+    } catch (error: any) {
+      console.error('GraphQL Error - getSets:', error.message || error);
+      const formattedError = {
+        message: error.message || 'Failed to fetch sets',
+        code: error.code || 'GRAPHQL_ERROR',
+        details: error
+      };
+      throw formattedError;
+    }
+  },
+
+  getSet: async (setId: number) => {
+    try {
+      const response = await apolloClient.query({
+        query: GET_SET,
+        variables: { setId },
+        errorPolicy: 'all',
+      });
+
+      if (response.errors && response.errors.length > 0) {
+        console.warn(`GraphQL warnings for getSet(${setId}):`, response.errors);
+      }
+
+      return response;
+    } catch (error: any) {
+      console.error(`GraphQL Error - getSet(${setId}):`, error.message || error);
+      const formattedError = {
+        message: error.message || 'Failed to fetch set',
+        code: error.code || 'GRAPHQL_ERROR',
+        details: error
+      };
+      throw formattedError;
+    }
+  },
+
   // Augment-related functions
   getAugments: async () => {
     try {
@@ -293,6 +393,30 @@ export const graphQLApi = {
       console.error('GraphQL Error - getCompositions:', error.message || error);
       const formattedError = {
         message: error.message || 'Failed to fetch compositions',
+        code: error.code || 'GRAPHQL_ERROR',
+        details: error
+      };
+      throw formattedError;
+    }
+  },
+
+  getCompositionsBySet: async (setId: number) => {
+    try {
+      const response = await apolloClient.query({
+        query: GET_COMPOSITIONS_BY_SET,
+        variables: { setId },
+        errorPolicy: 'all',
+      });
+
+      if (response.errors && response.errors.length > 0) {
+        console.warn(`GraphQL warnings for getCompositionsBySet(${setId}):`, response.errors);
+      }
+
+      return response;
+    } catch (error: any) {
+      console.error(`GraphQL Error - getCompositionsBySet(${setId}):`, error.message || error);
+      const formattedError = {
+        message: error.message || 'Failed to fetch compositions by set',
         code: error.code || 'GRAPHQL_ERROR',
         details: error
       };

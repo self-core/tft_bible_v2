@@ -8,26 +8,38 @@ export const typeDefs = gql`
     name: String!
     cost: Int!
     traits: [String!]!
+    stats: [Stat!]!
+    ability: Ability!
     imageUrl: String
     splashUrl: String
     iconUrl: String
-    abilityName: String
-    abilityDescription: String
-    abilityImageUrl: String
+  }
+
+  type Stat {
+    name: String!
+    value: Float!
+  }
+
+  type Ability {
+    name: String!
+    variables: [AbilityVariable!]!
+  }
+
+  type AbilityVariable {
+    name: String!
+    values: [Float!]!
   }
 
   type Trait {
-    id: ID!
-    name: String!
-    description: String!
-    activeUnits: [Int!]!
-    imageUrl: String
-    tiers: [TraitTier!]!
+    key: String!
+    name: String
+    description: String
+    breakpoints: [TraitBreakpoint!]!
   }
 
-  type TraitTier {
-    units: Int!
-    effect: String!
+  type TraitBreakpoint {
+    count: Int!
+    bonus: String!
   }
 
   type Item {
@@ -38,6 +50,16 @@ export const typeDefs = gql`
     imageUrl: String
     unique: Boolean
     trait: String
+  }
+
+  type SetData {
+    setId: Int!
+    setName: String!
+    champions: [Champion!]!
+    traits: [Trait!]!
+    items: [Item!]!
+    augments: [Augment!]!
+    mechanics: String
   }
 
   type Augment {
@@ -51,6 +73,7 @@ export const typeDefs = gql`
     id: ID!
     title: String!
     description: String!
+    setId: Int!
     championIds: [String!]!
     traitBonuses: [String!]!
     augmentRecommendations: [String!]!
@@ -61,14 +84,18 @@ export const typeDefs = gql`
   type Query {
     champions: [Champion!]!
     champion(id: ID!): Champion
+    championsBySet(setId: Int!): [Champion!]!
     traits: [Trait!]!
-    trait(id: ID!): Trait
+    trait(id: String!): Trait
     items: [Item!]!
     item(id: ID!): Item
+    sets: [SetData!]!
+    set(setId: Int!): SetData
     augments: [Augment!]!
     augment(id: ID!): Augment
     compositions: [Composition!]!
     composition(id: ID!): Composition
+    compositionsBySet(setId: Int!): [Composition!]!
     search(searchTerm: String!): SearchResult!
   }
 
@@ -76,6 +103,7 @@ export const typeDefs = gql`
     champions: [Champion!]!
     traits: [Trait!]!
     items: [Item!]!
+    sets: [SetData!]!
     compositions: [Composition!]!
   }
 `;

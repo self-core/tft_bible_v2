@@ -12,9 +12,43 @@ export const GET_CHAMPIONS = gql`
       imageUrl
       splashUrl
       iconUrl
-      abilityName
-      abilityDescription
-      abilityImageUrl
+      stats {
+        name
+        value
+      }
+      ability {
+        name
+        variables {
+          name
+          values
+        }
+      }
+    }
+  }
+`;
+
+// Query to get champions by set ID
+export const GET_CHAMPIONS_BY_SET = gql`
+  query GetChampionsBySet($setId: Int!) {
+    championsBySet(setId: $setId) {
+      id
+      name
+      cost
+      traits
+      imageUrl
+      splashUrl
+      iconUrl
+      stats {
+        name
+        value
+      }
+      ability {
+        name
+        variables {
+          name
+          values
+        }
+      }
     }
   }
 `;
@@ -30,9 +64,17 @@ export const GET_CHAMPION = gql`
       imageUrl
       splashUrl
       iconUrl
-      abilityName
-      abilityDescription
-      abilityImageUrl
+      stats {
+        name
+        value
+      }
+      ability {
+        name
+        variables {
+          name
+          values
+        }
+      }
     }
   }
 `;
@@ -41,31 +83,27 @@ export const GET_CHAMPION = gql`
 export const GET_TRAITS = gql`
   query GetTraits {
     traits {
-      id
+      key
       name
       description
-      activeUnits
-      imageUrl
-      tiers {
-        units
-        effect
+      breakpoints {
+        count
+        bonus
       }
     }
   }
 `;
 
-// Query to get a trait by ID
+// Query to get a trait by key
 export const GET_TRAIT = gql`
-  query GetTrait($id: ID!) {
+  query GetTrait($id: String!) {
     trait(id: $id) {
-      id
+      key
       name
       description
-      activeUnits
-      imageUrl
-      tiers {
-        units
-        effect
+      breakpoints {
+        count
+        bonus
       }
     }
   }
@@ -101,6 +139,108 @@ export const GET_ITEM = gql`
   }
 `;
 
+// Query to get all sets
+export const GET_SETS = gql`
+  query GetSets {
+    sets {
+      setId
+      setName
+      champions {
+        id
+        name
+        cost
+        traits
+        stats {
+          name
+          value
+        }
+        ability {
+          name
+          variables {
+            name
+            values
+          }
+        }
+      }
+      traits {
+        key
+        name
+        description
+        breakpoints {
+          count
+          bonus
+        }
+      }
+      items {
+        id
+        name
+        description
+        components
+        imageUrl
+        unique
+        trait
+      }
+      augments {
+        id
+        name
+        description
+        imageUrl
+      }
+    }
+  }
+`;
+
+// Query to get a specific set
+export const GET_SET = gql`
+  query GetSet($setId: Int!) {
+    set(setId: $setId) {
+      setId
+      setName
+      champions {
+        id
+        name
+        cost
+        traits
+        stats {
+          name
+          value
+        }
+        ability {
+          name
+          variables {
+            name
+            values
+          }
+        }
+      }
+      traits {
+        key
+        name
+        description
+        breakpoints {
+          count
+          bonus
+        }
+      }
+      items {
+        id
+        name
+        description
+        components
+        imageUrl
+        unique
+        trait
+      }
+      augments {
+        id
+        name
+        description
+        imageUrl
+      }
+    }
+  }
+`;
+
 // Query to get all augments
 export const GET_AUGMENTS = gql`
   query GetAugments {
@@ -132,6 +272,24 @@ export const GET_COMPOSITIONS = gql`
       id
       title
       description
+      setId
+      championIds
+      traitBonuses
+      augmentRecommendations
+      difficulty
+      region
+    }
+  }
+`;
+
+// Query to get compositions by set ID
+export const GET_COMPOSITIONS_BY_SET = gql`
+  query GetCompositionsBySet($setId: Int!) {
+    compositionsBySet(setId: $setId) {
+      id
+      title
+      description
+      setId
       championIds
       traitBonuses
       augmentRecommendations
@@ -148,6 +306,7 @@ export const GET_COMPOSITION = gql`
       id
       title
       description
+      setId
       championIds
       traitBonuses
       augmentRecommendations
@@ -167,22 +326,41 @@ export const SEARCH_ENTITIES = gql`
         cost
         traits
         imageUrl
-        abilityName
+        stats {
+          name
+          value
+        }
+        ability {
+          name
+          variables {
+            name
+            values
+          }
+        }
       }
       traits {
-        id
+        key
         name
         description
+        breakpoints {
+          count
+          bonus
+        }
       }
       items {
         id
         name
         description
       }
+      sets {
+        setId
+        setName
+      }
       compositions {
         id
         title
         description
+        setId
       }
     }
   }

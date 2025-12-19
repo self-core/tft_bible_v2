@@ -1,16 +1,25 @@
-# TFT Bible - Simplified Architecture
+# TFT Bible - Scalable Set-Based Architecture
 
-A comprehensive Teamfight Tactics (TFT) companion application built with Node.js and GraphQL in a simplified single-backend architecture optimized for easy deployment on Vercel or Railway.
+A comprehensive Teamfight Tactics (TFT) companion application built with Node.js and GraphQL following a scalable set-based architecture designed to evolve with each new TFT set. Optimized for easy deployment on Vercel or Railway.
 
 ## 🏗️ Architecture
 
-- **Architecture**: Simplified single backend service with GraphQL API
+- **Architecture**: Set-based document architecture supporting multiple TFT sets
 - **Backend**: Node.js with TypeScript, Apollo Server, Express.js
 - **API**: Single GraphQL endpoint at `/graphql` with comprehensive schema
-- **Database**: MongoDB for data persistence (configurable)
+- **Data Model**: Flexible document-per-set structure for easy evolution
 - **Frontend**: React frontend with Apollo Client for GraphQL integration
 - **Deployment**: Optimized for Vercel Serverless Functions or Railway container
 - **Development**: Simple Node.js environment with npm/yarn
+
+## 🎯 Set-Based Design Philosophy
+
+The architecture follows a **document-per-set** approach ensuring that changes in future TFT sets do not break historical data:
+
+- **Set Documents**: Each TFT set (e.g., Set 12, Set 16) stored as a complete document
+- **Versioned IDs**: Champion IDs prefixed with set numbers (e.g. `TFT16_Ahri`)
+- **Flexible Traits**: Trait breakpoints defined per set with evolving mechanics
+- **Scalable Structure**: Easy to add new sets without affecting existing data
 
 ## 🚀 Quick Start
 
@@ -33,18 +42,12 @@ A comprehensive Teamfight Tactics (TFT) companion application built with Node.js
    npm install
    ```
 
-3. **Set up environment variables**
-   ```bash
-   cp .env.example .env
-   # Edit .env to include your MongoDB connection string
-   ```
-
-4. **Start the development server**
+3. **Start the development server**
    ```bash
    npm run dev
    ```
 
-5. **Access the API**
+4. **Access the API**
    - GraphQL Playground: http://localhost:4000/graphql
    - Health check: http://localhost:4000/health
 
@@ -65,26 +68,20 @@ docker run -p 4000:4000 tft-bible-backend
 ### Environment Variables
 
 ```bash
-# Database
-MONGODB_URI=mongodb://localhost:27017/tft_bible_simple
-
 # Server
 PORT=4000
-
-# For Railway deployment
-MONGO_CONNECTION_STRING=your-mongodb-connection-string
 ```
 
 ## 📁 Project Structure
 
 ```
 tft_bible_v2/
-├── backend-simple/             # Simplified Node.js backend
+├── backend-simple/             # Set-based Node.js backend
 │   ├── src/                   # Source code
 │   │   ├── server.ts          # Express + Apollo server
 │   │   ├── schema.ts          # GraphQL schema definition
-│   │   ├── resolvers.ts       # GraphQL resolvers
-│   │   ├── interfaces.ts      # TypeScript interfaces
+│   │   ├── resolvers.ts       # GraphQL resolvers with set-based data
+│   │   ├── interfaces.ts      # TypeScript interfaces for set architecture
 │   │   └── types/             # TypeScript types
 │   ├── package.json           # Dependencies and scripts
 │   ├── tsconfig.json          # TypeScript configuration
@@ -92,6 +89,9 @@ tft_bible_v2/
 │   └── .env.example           # Environment variables example
 ├── microservices/
 │   └── frontend-service/      # React frontend
+├── docs/                      # Documentation including schema design
+├── data/                      # TFT data files
+├── scripts/                   # Utility scripts
 ├── vercel.json               # Vercel deployment configuration
 ├── railway.config.yml        # Railway deployment configuration
 └── README.md                 # This file
@@ -109,6 +109,23 @@ tft_bible_v2/
 2. Railway will automatically build and deploy from the Dockerfile
 3. Add environment variables in Railway dashboard
 
+## 📊 API Endpoints
+
+### GraphQL Schema
+- `champions`: All champions in the current set
+- `championsBySet(setId: Int!)`: Champions for a specific set
+- `champion(id: ID!)`: Specific champion by ID
+- `traits`: All trait definitions
+- `trait(key: String!)`: Specific trait by key
+- `items`: All items in the current set
+- `item(id: ID!)`: Specific item by ID
+- `sets`: All TFT sets
+- `set(setId: Int!)`: Specific set by ID
+- `compositions`: All compositions
+- `compositionsBySet(setId: Int!)`: Compositions for a specific set
+- `composition(id: ID!)`: Specific composition by ID
+- `search(searchTerm: String!)`: Search across all entities
+
 ## 🤝 Contributing
 
 Please read the contributing guidelines in the main repository for details on our code of conduct and the process for submitting pull requests.
@@ -119,11 +136,12 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 🔄 Current Status
 
-- ✅ Simplified architecture implemented
-- ✅ Comprehensive GraphQL API with champions, traits, items, and compositions
+- ✅ Set-based architecture implemented
+- ✅ Flexible schema supporting multiple TFT sets
 - ✅ Realistic TFT data based on Set 16 and current meta
 - ✅ Optimized for Vercel and Railway deployment
 - ✅ Complete frontend integration with Apollo Client
-- ✅ Comprehensive data models with realistic TFT content
+- ✅ Comprehensive data models with set evolution capability
 - ✅ Ready for production deployment
 - ✅ Support for Lore & Legends (Set 16) content
+- ✅ Scalable for future TFT sets

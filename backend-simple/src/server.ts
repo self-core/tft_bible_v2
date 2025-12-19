@@ -14,21 +14,23 @@ const PORT = process.env.PORT || 4000;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/tft_bible_simple';
 
 async function startServer() {
-  const app = express();
+  const app: any = express();
 
   // Apply middleware
   app.use(helmet());
   app.use(cors());
   app.use(express.json());
 
-  // Connect to MongoDB
-  try {
-    await mongoose.connect(MONGODB_URI);
-    console.log('Connected to MongoDB');
-  } catch (error) {
-    console.error('MongoDB connection error:', error);
-    process.exit(1);
-  }
+  // Connect to MongoDB (optional for now, we're using in-memory data)
+  // Commenting out MongoDB connection to run without database dependency
+  // try {
+  //   await mongoose.connect(MONGODB_URI);
+  //   console.log('Connected to MongoDB');
+  // } catch (error) {
+  //   console.error('MongoDB connection error:', error);
+  //   // Continue running with in-memory data
+  // }
+  console.log('Running with in-memory data (no database connection required)');
 
   // Create Apollo Server
   const server = new ApolloServer({
@@ -46,7 +48,7 @@ async function startServer() {
   server.applyMiddleware({ app, path: '/graphql' });
 
   // Basic health check endpoint
-  app.get('/health', (_req, res) => {
+  app.get('/health', (_req: any, res: any) => {
     res.status(200).json({ status: 'OK', service: 'TFT Bible Backend' });
   });
 

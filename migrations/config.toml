@@ -1,1 +1,0 @@
-"migrations {backups {prefix \"tb_\" path ./data}} mapping {type PREFIX-1 file \"src/mappers/db.js\"}"  

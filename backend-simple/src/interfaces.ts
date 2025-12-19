@@ -1,30 +1,28 @@
-// src/interfaces/IChampion.ts
-export interface IChampion {
-  id: string;
+// src/interfaces/ISetChampion.ts
+export interface ISetChampion {
+  id: string;         // Unique ID (e.g., TFT12_Ahri)
   name: string;
   cost: number;
   traits: string[];
-  imageUrl?: string;
-  splashUrl?: string;
-  iconUrl?: string;
-  abilityName?: string;
-  abilityDescription?: string;
-  abilityImageUrl?: string;
+  stats: Record<string, number>;
+  ability: {
+    name: string;
+    variables: Record<string, number[]>; // Values for 1, 2, and 3 stars
+  };
+  imageUrl?: string | null;
+  splashUrl?: string | null;
+  iconUrl?: string | null;
 }
 
 // src/interfaces/ITrait.ts
 export interface ITrait {
-  id: string;
-  name: string;
-  description: string;
-  activeUnits: number[];
-  imageUrl?: string;
-  tiers: ITraitTier[];
-}
-
-export interface ITraitTier {
-  units: number;
-  effect: string;
+  key: string;
+  name?: string;
+  description?: string;
+  breakpoints: Array<{
+    count: number;
+    bonus: string;
+  }>;
 }
 
 // src/interfaces/IItem.ts
@@ -33,17 +31,20 @@ export interface IItem {
   name: string;
   description: string;
   components: string[];
-  imageUrl?: string;
+  imageUrl?: string | null;
   unique?: boolean;
-  trait?: string;
+  trait?: string | null;
 }
 
-// src/interfaces/IAugment.ts
-export interface IAugment {
-  id: string;
-  name: string;
-  description: string;
-  imageUrl?: string;
+// src/interfaces/ISetData.ts
+export interface ISetData {
+  setId: number;
+  setName: string;
+  champions: ISetChampion[];
+  traits: ITrait[];
+  items: IItem[];
+  augments: any[]; // Can be expanded later
+  mechanics: Record<string, any>;
 }
 
 // src/interfaces/IComposition.ts
@@ -51,6 +52,7 @@ export interface IComposition {
   id: string;
   title: string;
   description: string;
+  setId: number; // Reference to the set this composition is for
   championIds: string[];
   traitBonuses: string[];
   augmentRecommendations: string[];
