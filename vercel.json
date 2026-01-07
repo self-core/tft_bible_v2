@@ -1,23 +1,14 @@
 {
   "version": 2,
   "name": "tft-bible-backend",
-  "builds": [
+  "rewrites": [
     {
-      "src": "backend-simple/package.json",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/graphql",
-      "dest": "backend-simple/dist/server.js"
+      "source": "/graphql",
+      "destination": "/api/graphql"
     },
     {
-      "src": "/health",
-      "dest": "backend-simple/dist/server.js"
+      "source": "/health",
+      "destination": "/api/health"
     }
-  ],
-  "env": {
-    "MONGODB_URI": "$MONGODB_URI"
-  }
+  ]
 }

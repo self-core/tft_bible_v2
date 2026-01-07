@@ -18,6 +18,12 @@ import {
 } from './graphql';
 
 // Interface definitions matching GraphQL responses
+export interface GraphQLChampionStats {
+  hp: number;
+  mana: number;
+  damage: number;
+}
+
 export interface GraphQLStat {
   name: string;
   value: number;
@@ -38,7 +44,7 @@ export interface GraphQLChampion {
   name: string;
   cost: number;
   traits: string[];
-  stats: GraphQLStat[];
+  stats: GraphQLChampionStats;
   ability: GraphQLAbility;
   imageUrl?: string;
   splashUrl?: string;

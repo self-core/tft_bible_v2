@@ -13,6 +13,7 @@ interface CompositionsState {
   
   // Actions
   fetchCompositions: (params?: CompositionQuery) => Promise<void>;
+  fetchCompositionsBySet: (setId: number, params?: CompositionQuery) => Promise<void>;
   fetchCompositionById: (id: string) => Promise<void>;
   createComposition: (data: any) => Promise<void>;
   updateComposition: (id: string, data: any) => Promise<void>;
@@ -38,27 +39,65 @@ export const useCompositionsStore = create<CompositionsState>((set, get) => ({
         offset: params?.offset || 0
       });
 
+      // Get all champion IDs to fetch full champion data
+      const allChampionIds: string[] = [];
+      response.data.compositions.forEach((comp: any) => {
+        if (comp.championIds) {
+          allChampionIds.push(...comp.championIds);
+        }
+      });
+
+      // Fetch all champions at once to get their details
+      const championDetails: Record<string, any> = {};
+      if (allChampionIds.length > 0) {
+        const uniqueChampionIds = [...new Set(allChampionIds)];
+        // Since we don't have a batch champion query, we'll need to fetch all champions
+        // and create a lookup map
+        try {
+          const allChampionsResponse = await graphQLApi.getChampions();
+          allChampionsResponse.data.champions.forEach((champ: any) => {
+            championDetails[champ.id] = champ;
+          });
+        } catch (champError) {
+          console.warn('Could not fetch all champions for composition mapping:', champError);
+        }
+      }
+
       // Transform GraphQL data to match expected format
       const graphqlData = response.data.compositions;
       const data: PaginatedResponse<CompositionSummary> = {
-        data: graphqlData.map((comp: any) => ({
-          id: comp.id,
-          name: comp.name,
-          description: comp.description,
-          category: comp.category,
-          tier: 'S', // Placeholder - would come from GraphQL schema
-          difficulty: 3, // Placeholder
-          winrate: 50.0, // Placeholder
-          views: 100, // Placeholder
-          upvotes: 10, // Placeholder
-          champions: comp.champions?.map((champ: any) => ({
-            id: champ.champion.id,
-            name: champ.champion.name,
-            cost: champ.champion.cost,
-            traits: champ.champion.traits,
-            icon_url: '' // Placeholder
-          })) || []
-        })),
+        data: graphqlData.map((comp: any) => {
+          // Map champion IDs to actual champion objects
+          const champions = comp.championIds?.map((champId: string) => {
+            const champData = championDetails[champId];
+            return champData ? {
+              id: champData.id,
+              name: champData.name,
+              cost: champData.cost,
+              traits: champData.traits,
+              icon_url: champData.iconUrl || ''
+            } : {
+              id: champId,
+              name: champId, // Fallback to ID if champion not found
+              cost: 0, // Fallback
+              traits: [], // Fallback
+              icon_url: '' // Fallback
+            };
+          }) || [];
+
+          return {
+            id: comp.id,
+            name: comp.title, // Using title from GraphQL schema
+            description: comp.description,
+            category: 'General', // Placeholder - would come from GraphQL schema
+            tier: 'S', // Placeholder - would come from GraphQL schema
+            difficulty: 3, // Placeholder
+            winrate: 50.0, // Placeholder
+            views: 100, // Placeholder
+            upvotes: 10, // Placeholder
+            champions
+          };
+        }),
         total: graphqlData.length,
         page: params?.offset || 0,
         per_page: params?.limit || 12,
@@ -87,32 +126,62 @@ export const useCompositionsStore = create<CompositionsState>((set, get) => ({
       const response = await graphQLApi.getCompositionById(id);
       const graphqlData = response.data.composition;
 
+      // Fetch all champions to get their details
+      const championDetails: Record<string, any> = {};
+      if (graphqlData.championIds && graphqlData.championIds.length > 0) {
+        try {
+          const allChampionsResponse = await graphQLApi.getChampions();
+          allChampionsResponse.data.champions.forEach((champ: any) => {
+            championDetails[champ.id] = champ;
+          });
+        } catch (champError) {
+          console.warn('Could not fetch all champions for composition mapping:', champError);
+        }
+      }
+
       // Transform GraphQL data to match expected Composition format
       const data: Composition = {
         id: graphqlData.id,
-        set_id: 'tbd', // Would come from GraphQL schema
-        name: graphqlData.name,
+        set_id: `set_${graphqlData.setId}`, // Using setId from GraphQL schema
+        name: graphqlData.title, // Using title from GraphQL schema
         description: graphqlData.description,
-        category: graphqlData.category,
+        category: 'General', // Placeholder - would come from GraphQL schema
         tags: [], // Would come from GraphQL schema
-        champions: graphqlData.champions.map((champ: any) => ({
-          id: champ.champion.id,
-          name: champ.champion.name,
-          star_level: champ.starLevel,
-          position: champ.position,
-          items: champ.items,
-          is_core: champ.isCore,
-          priority: 'medium', // Placeholder
-          cost: champ.champion.cost,
-          traits: champ.champion.traits,
-          health: 800, // Placeholder
-          attack_damage: 50, // Placeholder
-          ability_name: 'TBD', // Placeholder
-          icon_url: '' // Placeholder
-        })),
+        champions: graphqlData.championIds?.map((champId: string) => {
+          const champData = championDetails[champId];
+          return champData ? {
+            id: champData.id,
+            name: champData.name,
+            star_level: 1, // Placeholder - would come from GraphQL schema
+            position: { x: 0, y: 0 }, // Placeholder - would come from GraphQL schema
+            items: [], // Placeholder - would come from GraphQL schema
+            is_core: false, // Placeholder - would come from GraphQL schema
+            priority: 'medium', // Placeholder
+            cost: champData.cost,
+            traits: champData.traits,
+            health: 800, // Placeholder
+            attack_damage: 50, // Placeholder
+            ability_name: champData.ability?.name || 'TBD', // Placeholder
+            icon_url: champData.iconUrl || '' // Placeholder
+          } : {
+            id: champId,
+            name: champId, // Fallback to ID if champion not found
+            star_level: 1, // Fallback
+            position: { x: 0, y: 0 }, // Fallback
+            items: [], // Fallback
+            is_core: false, // Fallback
+            priority: 'medium', // Fallback
+            cost: 0, // Fallback
+            traits: [], // Fallback
+            health: 800, // Fallback
+            attack_damage: 50, // Fallback
+            ability_name: 'TBD', // Fallback
+            icon_url: '' // Fallback
+          };
+        }) || [],
         augments: {
-          preferred: graphqlData.augments?.preferred || [],
-          acceptable: graphqlData.augments?.acceptable || []
+          preferred: graphqlData.augmentRecommendations || [], // Using augmentRecommendations from GraphQL schema
+          acceptable: [] // Placeholder - would come from GraphQL schema
         },
         meta: {
           tier: 'S', // Placeholder
@@ -202,6 +271,89 @@ export const useCompositionsStore = create<CompositionsState>((set, get) => ({
     set({ currentComposition: null });
   },
   
+  fetchCompositionsBySet: async (setId: number, params?: CompositionQuery) => {
+    set({ loading: true, error: null });
+    try {
+      const response = await graphQLApi.getCompositionsBySet(setId);
+
+      // Get all champion IDs to fetch full champion data
+      const allChampionIds: string[] = [];
+      response.data.compositionsBySet.forEach((comp: any) => {
+        if (comp.championIds) {
+          allChampionIds.push(...comp.championIds);
+        }
+      });
+
+      // Fetch all champions at once to get their details
+      const championDetails: Record<string, any> = {};
+      if (allChampionIds.length > 0) {
+        try {
+          const allChampionsResponse = await graphQLApi.getChampions();
+          allChampionsResponse.data.champions.forEach((champ: any) => {
+            championDetails[champ.id] = champ;
+          });
+        } catch (champError) {
+          console.warn('Could not fetch all champions for composition mapping:', champError);
+        }
+      }
+
+      // Transform GraphQL data to match expected format
+      const graphqlData = response.data.compositionsBySet;
+      const data: PaginatedResponse<CompositionSummary> = {
+        data: graphqlData.map((comp: any) => {
+          // Map champion IDs to actual champion objects
+          const champions = comp.championIds?.map((champId: string) => {
+            const champData = championDetails[champId];
+            return champData ? {
+              id: champData.id,
+              name: champData.name,
+              cost: champData.cost,
+              traits: champData.traits,
+              icon_url: champData.iconUrl || ''
+            } : {
+              id: champId,
+              name: champId, // Fallback to ID if champion not found
+              cost: 0, // Fallback
+              traits: [], // Fallback
+              icon_url: '' // Fallback
+            };
+          }) || [];
+
+          return {
+            id: comp.id,
+            name: comp.title, // Using title from GraphQL schema
+            description: comp.description,
+            category: 'General', // Placeholder - would come from GraphQL schema
+            tier: 'S', // Placeholder - would come from GraphQL schema
+            difficulty: 3, // Placeholder
+            winrate: 50.0, // Placeholder
+            views: 100, // Placeholder
+            upvotes: 10, // Placeholder
+            champions
+          };
+        }),
+        total: graphqlData.length,
+        page: params?.offset || 0,
+        per_page: params?.limit || 12,
+        total_pages: Math.ceil(100 / (params?.limit || 12)) // Placeholder calculation
+      };
+
+      set({
+        compositions: data.data,
+        totalPages: data.total_pages,
+        currentPage: data.page,
+        totalItems: data.total,
+        loading: false
+      });
+    } catch (error: any) {
+      console.error('Failed to fetch compositions by set:', error);
+      set({
+        loading: false,
+        error: error.message || 'Failed to fetch compositions by set'
+      });
+    }
+  },
+
   clearError: () => {
     set({ error: null });
   }

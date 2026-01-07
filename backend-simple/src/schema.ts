@@ -8,16 +8,17 @@ export const typeDefs = gql`
     name: String!
     cost: Int!
     traits: [String!]!
-    stats: [Stat!]!
+    stats: ChampionStats!
     ability: Ability!
     imageUrl: String
     splashUrl: String
     iconUrl: String
   }
 
-  type Stat {
-    name: String!
-    value: Float!
+  type ChampionStats {
+    hp: Int!
+    mana: Int!
+    damage: Int!
   }
 
   type Ability {
@@ -69,6 +70,28 @@ export const typeDefs = gql`
     imageUrl: String
   }
 
+  input CreateCompositionInput {
+    title: String!
+    description: String!
+    setId: Int!
+    championIds: [String!]!
+    traitBonuses: [String!]!
+    augmentRecommendations: [String!]!
+    difficulty: String
+    region: String
+  }
+
+  input UpdateCompositionInput {
+    title: String
+    description: String
+    setId: Int
+    championIds: [String!]
+    traitBonuses: [String!]
+    augmentRecommendations: [String!]
+    difficulty: String
+    region: String
+  }
+
   type Composition {
     id: ID!
     title: String!
@@ -97,6 +120,12 @@ export const typeDefs = gql`
     composition(id: ID!): Composition
     compositionsBySet(setId: Int!): [Composition!]!
     search(searchTerm: String!): SearchResult!
+  }
+
+  type Mutation {
+    createComposition(input: CreateCompositionInput!): Composition!
+    updateComposition(id: ID!, input: UpdateCompositionInput!): Composition!
+    deleteComposition(id: ID!): Boolean!
   }
 
   type SearchResult {

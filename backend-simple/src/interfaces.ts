@@ -4,7 +4,11 @@ export interface ISetChampion {
   name: string;
   cost: number;
   traits: string[];
-  stats: Record<string, number>;
+  stats: {
+    hp: number;
+    mana: number;
+    damage: number;
+  };
   ability: {
     name: string;
     variables: Record<string, number[]>; // Values for 1, 2, and 3 stars

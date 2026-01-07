@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:6.0
+    container_name: tft-bible-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend-simple
+      dockerfile: Dockerfile
+    container_name: tft-bible-backend
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - MONGODB_URI=mongodb://admin:password@mongo:27017/tft_bible_simple?authSource=admin
+    volumes:
+      # Mount the dragontail data directory to the container
+      - C:\Users\puppets\Documents\League of Legends\dragontail-15.24.1:/app/dragontail-data:ro
+    depends_on:
+      - mongo
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./microservices/frontend-service
+      dockerfile: Dockerfile
+    container_name: tft-bible-frontend
+    ports:
+      - "80:80"
+    environment:
+      - VITE_GRAPHQL_URL=http://backend:4000/graphql
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  mongo_data:

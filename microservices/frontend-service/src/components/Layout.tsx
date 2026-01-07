@@ -1,25 +1,46 @@
 import { Link, useLocation } from 'react-router-dom'
 import { Swords, Users, Package, Home, Search, Menu, X, Book, Target, Zap, Eye } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useQuery } from '@apollo/client'
+import { GET_SETS } from '../lib/graphql'
 import ThemeSwitcher from './ThemeSwitcher'
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { data: setsData, loading: setsLoading } = useQuery(GET_SETS, {
+    errorPolicy: 'all'
+  })
 
-  const navItems = [
+  // Base navigation items
+  const baseNavItems = [
     { path: '/', label: 'Home', icon: Home },
     { path: '/compositions', label: 'Compositions', icon: Swords },
     { path: '/builder', label: 'Custom Builder', icon: Swords },
+    { path: '/trait-tracker', label: 'Trait Tracker', icon: Target },
     { path: '/champions', label: 'Champions', icon: Users },
     { path: '/items', label: 'Items', icon: Package },
+    { path: '/sets-info', label: 'Sets & Patches', icon: Book },
     { path: '/summoner-search', label: 'Riot Data', icon: Search },
   ]
+
+  // Add sets to navigation if available
+  const navItems = [...baseNavItems]
+
+  if (setsData?.sets && setsData.sets.length > 0) {
+    // Add sets to navigation - even if there's just one set
+    const setNavItems = setsData.sets.map((set: any) => ({
+      path: `/sets/${set.setId}`,
+      label: set.setName,
+      icon: Book
+    }))
+    navItems.push(...setNavItems)
+  }
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--bg-primary)' }}>
       {/* Header - Cimplic-inspired dark mode with backdrop blur */}
-      <header className="backdrop-blur-md sticky top-0 z-50" style={{ 
+      <header className="backdrop-blur-md sticky top-0 z-50" style={{
         background: 'var(--bg-secondary)',
         borderBottom: '1px solid var(--bg-accent)'
       }}>
@@ -94,7 +115,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
         {/* Mobile Navigation - Cimplic-inspired slide-down menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden" style={{ 
+          <div className="md:hidden" style={{
             borderTop: '1px solid var(--bg-accent)',
             background: 'var(--bg-secondary)',
             backdropFilter: 'blur(20px)'
@@ -127,7 +148,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       </main>
 
       {/* Footer - Enhanced with Cimplic-inspired dark styling */}
-      <footer className="mt-16" style={{ 
+      <footer className="mt-16" style={{
         background: 'var(--bg-secondary)',
         borderTop: '1px solid var(--bg-accent)',
         backdropFilter: 'blur(20px)'

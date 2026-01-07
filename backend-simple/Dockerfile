@@ -33,6 +33,9 @@ RUN npm ci --only=production && npm cache clean --force
 # Copy the built application
 COPY --from=builder /app/dist ./dist
 
+# Create directory for dragontail data
+RUN mkdir -p /app/dragontail-data
+
 # Expose port
 EXPOSE 4000
 

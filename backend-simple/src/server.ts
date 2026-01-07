@@ -21,16 +21,14 @@ async function startServer() {
   app.use(cors());
   app.use(express.json());
 
-  // Connect to MongoDB (optional for now, we're using in-memory data)
-  // Commenting out MongoDB connection to run without database dependency
-  // try {
-  //   await mongoose.connect(MONGODB_URI);
-  //   console.log('Connected to MongoDB');
-  // } catch (error) {
-  //   console.error('MongoDB connection error:', error);
-  //   // Continue running with in-memory data
-  // }
-  console.log('Running with in-memory data (no database connection required)');
+  // Connect to MongoDB
+  try {
+    await mongoose.connect(MONGODB_URI);
+    console.log('Connected to MongoDB');
+  } catch (error) {
+    console.error('MongoDB connection error:', error);
+    process.exit(1); // Exit if database connection fails
+  }
 
   // Create Apollo Server
   const server = new ApolloServer({

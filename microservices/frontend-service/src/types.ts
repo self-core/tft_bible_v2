@@ -3,7 +3,6 @@
 export interface Champion {
   id: string;
   name: string;
-  display_name?: string;
   cost: number;
   traits: string[];
   stats: ChampionStats;
@@ -11,54 +10,34 @@ export interface Champion {
   imageUrl?: string;
   splashUrl?: string;
   iconUrl?: string;
-  releaseVersion?: string;
-  setId?: string;
-  isEnabled: boolean;
-  rarity: string;
-  set?: string; // Which set the champion belongs to
 }
 
 export interface ChampionStats {
-  health: number;
+  hp: number;
   mana: number;
-  starting_mana: number;
-  armor: number;
-  magic_resist: number;
-  attack_damage: number;
-  attack_speed: number;
-  attack_range: number;
-  crit_chance: number;
-  crit_multiplier: number;
+  damage: number;
 }
 
 export interface ChampionAbility {
   name: string;
-  description: string;
-  type: string; // "Active", "Passive", "Transform"
-  targeting: string; // "Enemies", "Allies", "Self"
-  damage_type: string; // "Physical", "Magic", "True"
-  scaling: AbilityScaling[];
+  variables: AbilityVariable[]; // Changed to match GraphQL schema
 }
 
-export interface AbilityScaling {
-  star_level: number;
-  damage: number;
-  additional_effects: Record<string, number>;
+export interface AbilityVariable {
+  name: string;
+  values: number[]; // Changed to match GraphQL schema
 }
 
 export interface Trait {
-  id: string;
-  name: string;
-  description: string;
-  trait_type: string; // "Region", "Story", "Class", etc.
-  set?: string; // Which set the trait belongs to
+  key: string; // Changed from id to key to match GraphQL schema
+  name?: string;
+  description?: string;
   breakpoints: TraitBreakpoint[];
 }
 
 export interface TraitBreakpoint {
   count: number;
-  description: string;
-  bonuses: Record<string, number>;
+  bonus: string; // Changed from description to bonus to match GraphQL schema
 }
 
 export interface Item {
@@ -78,13 +57,13 @@ export interface Unit {
 }
 
 export interface Set {
-  id: string;
-  name: string;
-  version: string;
-  releaseDate: string;
+  setId: number; // Changed to match GraphQL schema
+  setName: string; // Changed to match GraphQL schema
   champions: Champion[];
   traits: Trait[];
   items: Item[];
+  augments: any[]; // Added to match GraphQL schema
+  mechanics: any; // Added to match GraphQL schema
 }
 
 export interface TraitRequirement {

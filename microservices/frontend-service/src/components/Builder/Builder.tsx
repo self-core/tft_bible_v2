@@ -40,44 +40,28 @@ const Builder: React.FC = () => {
   const [selectedSet, setSelectedSet] = useState<Set | null>(null);
 
   // Fetch sets data
-  const { data: sets, isLoading: setsLoading } = useQuery<Set[]>({
-    queryKey: ['sets'],
-    queryFn: () => api.get('/api/v1/sets'),
-  });
+  const { data: sets, loading: setsLoading } = useQuery(GET_SETS);
 
   // Fetch champions data with set filter
-  const { data: champions, isLoading: championsLoading } = useQuery<Champion[]>({
-    queryKey: ['champions', selectedSet?.id],
-    queryFn: () => {
-      const params = selectedSet ? { set: selectedSet.name } : {};
-      return api.get('/api/v1/champions', { params });
-    },
-  });
+  const { data: championsData, loading: championsLoading } = useQuery(GET_CHAMPIONS);
+
+  // Extract champions from the response
+  const champions = championsData?.champions || [];
 
   // Fetch traits data with set filter
-  const { data: traits, isLoading: traitsLoading } = useQuery<Trait[]>({
-    queryKey: ['traits', selectedSet?.id],
-    queryFn: () => {
-      const params = selectedSet ? { set: selectedSet.name } : {};
-      return api.get('/api/v1/traits', { params });
-    },
-  });
+  const { data: traitsData, loading: traitsLoading } = useQuery(GET_TRAITS);
+
+  // Extract traits from the response
+  const traits = traitsData?.traits || [];
 
   // Load active set on component mount
   useEffect(() => {
-    const fetchActiveSet = async () => {
-      try {
-        const activeSetResponse = await api.get('/api/v1/sets/active');
-        if (activeSetResponse.data && activeSetResponse.data.length > 0) {
-          setSelectedSet(activeSetResponse.data[0]);
-        }
-      } catch (error) {
-        console.error('Error fetching active set:', error);
-      }
-    };
-
-    fetchActiveSet();
-  }, []);
+    // With GraphQL, we get all sets in the initial query
+    // We can set the first set as the selected set
+    if (sets?.sets && sets.sets.length > 0 && !selectedSet) {
+      setSelectedSet(sets.sets[0]);
+    }
+  }, [sets, selectedSet]);
 
   // Handle board slot click
   const handleBoardSlotClick = (row: number, col: number) => {
@@ -151,8 +135,9 @@ const Builder: React.FC = () => {
     if (!traits) return [];
 
     return traits.map(trait => {
-      const count = championTraits.get(trait.name) || 0;
-      const activeThreshold = trait.tiers?.find(tier => count >= tier.minUnits && count <= (tier.maxUnits || Infinity));
+      const count = championTraits.get(trait.key) || 0; // Changed from trait.name to trait.key
+      // For now, just check if the trait is active based on breakpoints
+      const activeThreshold = trait.breakpoints?.some(breakpoint => count >= breakpoint.count);
       return {
         trait,
         count,
@@ -178,11 +163,11 @@ const Builder: React.FC = () => {
           const slot = board[row][col];
           if (slot.champion) {
             compositionChampions.push({
-              champion_id: slot.champion.id,
-              star_level: 1, // Default star level
+              championId: slot.champion.id,
+              starLevel: 1, // Default star level
               items: [], // Default to no items
               position: { x: col, y: row },
-              is_core: false, // Default to non-core
+              isCore: false, // Default to non-core
             });
           }
         }
@@ -193,11 +178,11 @@ const Builder: React.FC = () => {
         if (champion) {
           // Add bench champions at positions beyond the board
           compositionChampions.push({
-            champion_id: champion.id,
-            star_level: 1, // Default star level
+            championId: champion.id,
+            starLevel: 1, // Default star level
             items: [], // Default to no items
             position: { x: index, y: 4 }, // Use y=4 for bench
-            is_core: false, // Default to non-core
+            isCore: false, // Default to non-core
           });
         }
       });
@@ -219,9 +204,9 @@ const Builder: React.FC = () => {
           patch: "16.0",
           playstyle: "Balanced",
           winrate: 0.5,
-          avg_placement: 4.0,
+          avgPlacement: 4.0,
           playrate: 0.1,
-          contest_rate: 0.1
+          contestRate: 0.1
         },
         matchups: null
       };
@@ -262,7 +247,7 @@ const Builder: React.FC = () => {
           >
             {slot.champion && (
               <img
-                src={slot.champion.image}
+                src={slot.champion.imageUrl}
                 alt={slot.champion.name}
                 className="w-12 h-12 rounded border border-gray-300"
                 style={{ transform: `rotate(${rotation}deg)` }}
@@ -289,7 +274,7 @@ const Builder: React.FC = () => {
       >
         {champion && (
           <img
-            src={champion.image}
+            src={champion.imageUrl}
             alt={champion.name}
             className="w-12 h-12 rounded border border-gray-300"
             style={{ transform: `rotate(${rotation}deg)` }}
@@ -309,7 +294,7 @@ const Builder: React.FC = () => {
           <h3 className="font-semibold text-gray-700">Champions</h3>
           {selectedSet && (
             <div className="mt-1 text-xs text-gray-500">
-              Set: {selectedSet.name}
+              Set: {selectedSet.setName}
             </div>
           )}
         </div>
@@ -326,7 +311,7 @@ const Builder: React.FC = () => {
                 onClick={() => setSelectedChampion(selectedChampion?.id === champion.id ? null : champion)}
               >
                 <img
-                  src={champion.image}
+                  src={champion.imageUrl}
                   alt={champion.name}
                   className="w-12 h-12 rounded border border-gray-300 mb-1"
                 />
@@ -365,12 +350,12 @@ const Builder: React.FC = () => {
               .filter(trait => trait.count > 0)
               .map(({ trait, count, active }, index) => (
                 <div
-                  key={`${trait.name}-${index}`}
+                  key={`${trait.key}-${index}`} // Changed from trait.name to trait.key
                   className={`p-2 rounded border text-center ${
                     active ? 'bg-green-50 border-green-300' : 'bg-gray-50 border-gray-300'
                   }`}
                 >
-                  <div className="font-medium text-sm truncate">{trait.name}</div>
+                  <div className="font-medium text-sm truncate">{trait.key}</div> {/* Changed from trait.name to trait.key */}
                   <div className={`text-xs ${
                     active ? 'text-green-700 font-medium' : 'text-gray-600'
                   }`}>
@@ -388,22 +373,25 @@ const Builder: React.FC = () => {
   const renderSetSelector = () => {
     if (!sets) return null;
 
+    const setsData = sets?.sets || [];
+
     return (
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700 mb-1">Select Set</label>
         <div className="relative">
           <select
-            value={selectedSet?.id || ''}
+            value={selectedSet?.setId || ''}
             onChange={(e) => {
-              const set = sets.find(s => s.id === e.target.value);
-              if (set) handleSetChange(set);
+              const setId = parseInt(e.target.value);
+              const set = setsData.find(s => s.setId === setId);
+              if (set) setSelectedSet(set);
             }}
             className="w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm"
           >
             <option value="">Select a set...</option>
-            {sets.map(set => (
-              <option key={set.id} value={set.id}>
-                {set.name} ({set.version})
+            {setsData.map(set => (
+              <option key={set.setId} value={set.setId}>
+                {set.setName}
               </option>
             ))}
           </select>
@@ -483,7 +471,7 @@ const Builder: React.FC = () => {
             <div className="w-full bg-white rounded-xl shadow-md p-4 border border-blue-200">
               <div className="flex items-start gap-4">
                 <img
-                  src={selectedChampion.image}
+                  src={selectedChampion.imageUrl}
                   alt={selectedChampion.name}
                   className="w-20 h-20 rounded-lg border border-gray-300"
                 />
@@ -512,7 +500,7 @@ const Builder: React.FC = () => {
                     </div>
                   </div>
                   <p className="text-sm text-gray-700 mt-2">
-                    {selectedChampion.description || 'No description available for this champion.'}
+                    {selectedChampion.ability?.name || 'No ability information available for this champion.'}
                   </p>
                 </div>
               </div>

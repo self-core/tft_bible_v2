@@ -1,48 +1,38 @@
-# Railway
+# Railway Configuration for TFT Bible
 # Documentation: https://docs.railway.app
-# Environment variables: https://docs.railway.app/develop/variables
 
-# Service type
+# Service configuration
 service:
-  # Service name (optional)
-  name: "tft-bible-backend"
-  
-  # Build type (one of: docker, nixpacks, static)
-  buildType: "docker"
+  name: "tft-bible-app"
+  type: "container"  # Using container as we have a Dockerfile
 
-# Source configuration
-source:
-  # Root directory of your application
-  rootDirectory: "."
-
-# Runtime configuration
-runtime:
-  # Maximum number of restarts (default: 5)
-  maxRestarts: 5
+# Build configuration
+build:
+  # Use the Dockerfile in the backend-simple directory
+  context: "."
+  dockerfilePath: "backend-simple/Dockerfile"
 
 # Environment variables
 variables:
   - name: "PORT"
     value: "4000"
-  - name: "MONGODB_URI"
-    value: "$MONGO_CONNECTION_STRING"
-    required: true
+  - name: "NODE_ENV"
+    value: "production"
+  - name: "MONGODB_URI"  # Keep for compatibility, though we use in-memory data
+    value: ""
+    required: false
 
-# Health check
+# Health check configuration
 healthcheck:
-  # Protocol (one of: HTTP, HTTPS, TCP, GRPC)
   protocol: "HTTP"
-  # Port to send health check requests to
   port: 4000
-  # Path for HTTP(S) health checks
   path: "/health"
-  # Interval between health checks (in seconds)
   interval: 30
-  # Number of consecutive failures before considering unhealthy
+  timeout: 10
   threshold: 2
 
-# Exposed port
-exposedPorts:
+# Expose port for the service
+expose:
   - port: 4000
-    protocol: "http"
+    name: "api"
     public: true

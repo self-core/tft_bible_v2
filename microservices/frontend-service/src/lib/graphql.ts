@@ -13,8 +13,9 @@ export const GET_CHAMPIONS = gql`
       splashUrl
       iconUrl
       stats {
-        name
-        value
+        hp
+        mana
+        damage
       }
       ability {
         name
@@ -39,8 +40,9 @@ export const GET_CHAMPIONS_BY_SET = gql`
       splashUrl
       iconUrl
       stats {
-        name
-        value
+        hp
+        mana
+        damage
       }
       ability {
         name
@@ -65,8 +67,9 @@ export const GET_CHAMPION = gql`
       splashUrl
       iconUrl
       stats {
-        name
-        value
+        hp
+        mana
+        damage
       }
       ability {
         name
@@ -151,8 +154,9 @@ export const GET_SETS = gql`
         cost
         traits
         stats {
-          name
-          value
+          hp
+          mana
+          damage
         }
         ability {
           name
@@ -202,8 +206,9 @@ export const GET_SET = gql`
         cost
         traits
         stats {
-          name
-          value
+          hp
+          mana
+          damage
         }
         ability {
           name
@@ -327,8 +332,9 @@ export const SEARCH_ENTITIES = gql`
         traits
         imageUrl
         stats {
-          name
-          value
+          hp
+          mana
+          damage
         }
         ability {
           name
@@ -362,6 +368,40 @@ export const SEARCH_ENTITIES = gql`
         description
         setId
       }
+    }
+  }
+`;
+
+// Mutation to create a composition
+export const CREATE_COMPOSITION = gql`
+  mutation CreateComposition($input: CreateCompositionInput!) {
+    createComposition(input: $input) {
+      id
+      title
+      description
+      setId
+      championIds
+      traitBonuses
+      augmentRecommendations
+      difficulty
+      region
+    }
+  }
+`;
+
+// Mutation to update a composition
+export const UPDATE_COMPOSITION = gql`
+  mutation UpdateComposition($id: ID!, $input: UpdateCompositionInput!) {
+    updateComposition(id: $id, input: $input) {
+      id
+      title
+      description
+      setId
+      championIds
+      traitBonuses
+      augmentRecommendations
+      difficulty
+      region
     }
   }
 `;

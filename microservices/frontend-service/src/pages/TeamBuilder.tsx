@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { compositionsApi } from '../lib/api';
+import { compositionsApi, championsApi } from '../lib/api';
 import { 
   Sword, 
   Heart, 
@@ -194,8 +194,8 @@ const TeamBuilder = () => {
             const loadChampionDetails = async () => {
               try {
                 // Get all champions to match by name
-                const championsResponse = await api.get('/api/v1/champions');
-                const allChampions = championsResponse.data;
+                const championsResponse = await championsApi.getChampions();
+                const allChampions = championsResponse.data.data;
 
                 // Load champions from composition with full details
                 const loadedTeam = composition.champions.map((compChampion: any) => {

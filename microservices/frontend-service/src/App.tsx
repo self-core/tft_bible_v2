@@ -16,6 +16,9 @@ import ThemeTestPage from './pages/ThemeTestPage'
 import BoardTestPage from './pages/BoardTestPage'
 import NotFound from './pages/NotFound'
 import CustomBuilder from './components/Builder/CustomBuilder'
+import SetDetail from './pages/SetDetail'
+import TraitTrackerPage from './pages/TraitTrackerPage'
+import SetPatchInfoPage from './pages/SetPatchInfoPage'
 
 function App() {
   return (
@@ -29,6 +32,9 @@ function App() {
             <Route path="/champions" element={<Champions />} />
             <Route path="/items" element={<Items />} />
             <Route path="/builder" element={<CustomBuilder />} />
+            <Route path="/trait-tracker" element={<TraitTrackerPage />} />
+            <Route path="/sets-info" element={<SetPatchInfoPage />} />
+            <Route path="/sets/:setId" element={<SetDetail />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Layout>
