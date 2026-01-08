@@ -16,7 +16,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   const baseNavItems = [
     { path: '/', label: 'Home', icon: Home },
     { path: '/compositions', label: 'Compositions', icon: Swords },
-    { path: '/builder', label: 'Custom Builder', icon: Swords },
+    { path: '/builder', label: 'Team Builder', icon: Swords },
     { path: '/trait-tracker', label: 'Trait Tracker', icon: Target },
     { path: '/champions', label: 'Champions', icon: Users },
     { path: '/items', label: 'Items', icon: Package },
@@ -53,35 +53,37 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
               </Link>
             </div>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex space-x-1">
-              {navItems.map(({ path, label, icon: Icon }) => (
-                <Link
-                  key={path}
-                  to={path}
-                  className="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-all duration-300 relative"
-                  style={{
-                    color: location.pathname === path ? 'var(--accent1)' : 'var(--text-secondary)',
-                    backgroundColor: location.pathname === path ? 'var(--bg-accent)' : 'transparent'
-                  }}
-                >
-                  <Icon className="h-4 w-4" style={{ color: location.pathname === path ? 'var(--accent1)' : 'var(--text-secondary)' }} />
-                  <span>{label}</span>
-                  {location.pathname === path && (
-                    <div className="absolute bottom-0 left-0 w-full h-0.5 rounded-full" style={{ background: 'var(--accent1)' }}></div>
-                  )}
-                </Link>
-              ))}
+            {/* Desktop Navigation - Centered with flex-grow */}
+            <nav className="hidden md:flex flex-grow justify-center">
+              <div className="flex space-x-1">
+                {navItems.map(({ path, label, icon: Icon }) => (
+                  <Link
+                    key={path}
+                    to={path}
+                    className="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-all duration-300 relative"
+                    style={{
+                      color: location.pathname === path ? 'var(--accent1)' : 'var(--text-secondary)',
+                      backgroundColor: location.pathname === path ? 'var(--bg-accent)' : 'transparent'
+                    }}
+                  >
+                    <Icon className="h-4 w-4" style={{ color: location.pathname === path ? 'var(--accent1)' : 'var(--text-secondary)' }} />
+                    <span>{label}</span>
+                    {location.pathname === path && (
+                      <div className="absolute bottom-0 left-0 w-full h-0.5 rounded-full" style={{ background: 'var(--accent1)' }}></div>
+                    )}
+                  </Link>
+                ))}
+              </div>
             </nav>
 
-            {/* Search and Theme Controls */}
+            {/* Search and Theme Controls - Moved to the right */}
             <div className="flex items-center space-x-4">
-              <div className="relative">
+              <div className="relative hidden md:block"> {/* Hide search on mobile */}
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4" style={{ color: 'var(--text-secondary)' }} />
                 <input
                   type="text"
                   placeholder="Search..."
-                  className="pl-10 pr-4 py-2 rounded-lg transition-all duration-300"
+                  className="pl-10 pr-4 py-2 rounded-lg transition-all duration-300 w-32 lg:w-48"
                   style={{
                     border: '1px solid var(--bg-accent)',
                     background: 'var(--bg-accent)',
@@ -143,8 +145,10 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {children}
+      <main className="w-full px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto w-full">
+          {children}
+        </div>
       </main>
 
       {/* Footer - Enhanced with Cimplic-inspired dark styling */}

@@ -25,12 +25,12 @@ const Champions = () => {
 
   const getCostColor = (cost: number) => {
     switch (cost) {
-      case 1: return 'text-gray-600 bg-gray-100'
-      case 2: return 'text-green-600 bg-green-100'
-      case 3: return 'text-blue-600 bg-blue-100'
-      case 4: return 'text-purple-600 bg-purple-100'
-      case 5: return 'text-tft-gold bg-tft-gold/10'
-      default: return 'text-gray-600 bg-gray-100'
+      case 1: return { textColor: 'var(--text-secondary)', bgColor: 'var(--bg-accent)' }
+      case 2: return { textColor: '#10B981', bgColor: 'rgba(16, 185, 129, 0.2)' }
+      case 3: return { textColor: '#3B82F6', bgColor: 'rgba(59, 130, 246, 0.2)' }
+      case 4: return { textColor: '#8B5CF6', bgColor: 'rgba(139, 92, 246, 0.2)' }
+      case 5: return { textColor: '#FBBF24', bgColor: 'rgba(251, 191, 36, 0.2)' }
+      default: return { textColor: 'var(--text-secondary)', bgColor: 'var(--bg-accent)' }
     }
   }
 
@@ -61,8 +61,8 @@ const Champions = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Champions</h1>
-          <p className="text-gray-600 mt-1">Explore all TFT champions and their abilities</p>
+          <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>Champions</h1>
+          <p className="mt-1" style={{ color: 'var(--text-secondary)' }}>Explore all TFT champions and their abilities</p>
         </div>
       </div>
 
@@ -72,8 +72,8 @@ const Champions = () => {
         border: '1px solid var(--bg-primary)' 
       }}>
         <div className="flex items-center gap-2 mb-4">
-          <Filter className="h-5 w-5 text-gray-500" />
-          <h3 className="font-semibold text-gray-900">Filters</h3>
+          <Filter className="h-5 w-5" style={{ color: 'var(--text-secondary)' }} />
+          <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>Filters</h3>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -140,7 +140,13 @@ const Champions = () => {
                 <h3 className="text-lg font-semibold group-hover:text-tft-gold transition-colors" style={{ color: 'var(--text-primary)' }}>
                   {champion.name}
                 </h3>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCostColor(champion.cost)}`}>
+                <span
+                  className="px-2 py-1 rounded-full text-xs font-medium"
+                  style={{
+                    color: getCostColor(champion.cost).textColor,
+                    backgroundColor: getCostColor(champion.cost).bgColor
+                  }}
+                >
                   {champion.cost} Cost
                 </span>
               </div>

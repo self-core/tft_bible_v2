@@ -9,13 +9,13 @@ import CompositionDetail from './pages/CompositionDetail'
 import Champions from './pages/Champions'
 import Items from './pages/Items'
 import PatchNotes from './pages/PatchNotes'
-import TeamBuilder from './pages/TeamBuilder'
+import TeamBuilderPage from './pages/TeamBuilder' // Keeping original TeamBuilder page
 import Augments from './pages/Augments'
 import AssetTestPage from './pages/AssetTestPage'
 import ThemeTestPage from './pages/ThemeTestPage'
 import BoardTestPage from './pages/BoardTestPage'
 import NotFound from './pages/NotFound'
-import CustomBuilder from './components/Builder/CustomBuilder'
+import ImprovedTeamBuilder from './pages/ImprovedTeamBuilder';
 import SetDetail from './pages/SetDetail'
 import TraitTrackerPage from './pages/TraitTrackerPage'
 import SetPatchInfoPage from './pages/SetPatchInfoPage'
@@ -31,7 +31,7 @@ function App() {
             <Route path="/compositions/:id" element={<CompositionDetail />} />
             <Route path="/champions" element={<Champions />} />
             <Route path="/items" element={<Items />} />
-            <Route path="/builder" element={<CustomBuilder />} />
+            <Route path="/builder" element={<ImprovedTeamBuilder />} />
             <Route path="/trait-tracker" element={<TraitTrackerPage />} />
             <Route path="/sets-info" element={<SetPatchInfoPage />} />
             <Route path="/sets/:setId" element={<SetDetail />} />

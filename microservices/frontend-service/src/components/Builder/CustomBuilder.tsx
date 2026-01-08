@@ -16,7 +16,7 @@ interface BoardSlot {
 const BOARD_ROWS = 4;
 const BOARD_COLS = 7;
 
-const CustomBuilder: React.FC = () => {
+const TeamBuilder: React.FC = () => {
   // Current board state
   const [board, setBoard] = useState<BoardSlot[][]>(() =>
     Array(BOARD_ROWS).fill(null).map(() =>
@@ -240,24 +240,32 @@ const CustomBuilder: React.FC = () => {
         {row.map((slot, colIndex) => (
           <div
             key={`${rowIndex}-${colIndex}`}
-            className={`w-16 h-16 rounded flex items-center justify-center cursor-pointer transition-all border-2 ${
+            className={`w-16 h-16 rounded-lg flex items-center justify-center cursor-pointer transition-all border-2 ${
               slot?.champion
-                ? 'bg-gradient-to-br from-blue-100 to-blue-200 border-blue-400 shadow-inner'
-                : 'bg-gradient-to-br from-gray-100 to-gray-200 border-gray-300 hover:from-gray-200 hover:to-gray-300'
+                ? 'bg-gradient-to-br from-blue-500 to-blue-600 border-blue-700 shadow-lg'
+                : 'bg-gradient-to-br from-gray-700 to-gray-800 border-gray-600 hover:from-gray-600 hover:to-gray-700'
             }`}
             onClick={() => handleBoardSlotClick(rowIndex, colIndex)}
             onDragOver={(e) => handleBoardSlotDragOver(e, rowIndex, colIndex)}
             onDrop={(e) => handleBoardSlotDrop(e, rowIndex, colIndex)}
+            style={{
+              boxShadow: slot?.champion ? '0 4px 6px rgba(0, 0, 0, 0.3)' : '0 2px 4px rgba(0, 0, 0, 0.2)',
+            }}
           >
             {slot?.champion && slot.champion.image && (
               <img
                 src={slot.champion.image}
                 alt={slot.champion.name}
-                className="w-12 h-12 rounded border border-gray-300"
+                className="w-12 h-12 rounded border-2 border-white shadow-md"
                 style={{ transform: `rotate(${rotation}deg)` }}
                 draggable
                 onDragStart={() => handleChampionDragStart(slot.champion!)}
               />
+            )}
+            {slot?.champion && !slot.champion.image && (
+              <div className="w-12 h-12 rounded border-2 border-white bg-gray-200 flex items-center justify-center text-xs font-bold shadow-md">
+                {slot.champion.name.substring(0, 2).toUpperCase()}
+              </div>
             )}
           </div>
         ))}
@@ -271,24 +279,32 @@ const CustomBuilder: React.FC = () => {
     return bench.map((champion, index) => (
       <div
         key={index}
-        className={`w-16 h-16 rounded flex items-center justify-center cursor-pointer transition-all border-2 ${
+        className={`w-16 h-16 rounded-lg flex items-center justify-center cursor-pointer transition-all border-2 ${
           champion
-            ? 'bg-gradient-to-br from-green-100 to-green-200 border-green-400 shadow-inner'
-            : 'bg-gradient-to-br from-gray-100 to-gray-200 border-gray-300 hover:from-gray-200 hover:to-gray-300'
+            ? 'bg-gradient-to-br from-green-500 to-green-600 border-green-700 shadow-lg'
+            : 'bg-gradient-to-br from-gray-700 to-gray-800 border-gray-600 hover:from-gray-600 hover:to-gray-700'
         }`}
         onClick={() => handleBenchSlotClick(index)}
         onDragOver={(e) => handleBenchSlotDragOver(e, index)}
         onDrop={(e) => handleBenchSlotDrop(e, index)}
+        style={{
+          boxShadow: champion ? '0 4px 6px rgba(0, 0, 0, 0.3)' : '0 2px 4px rgba(0, 0, 0, 0.2)',
+        }}
       >
         {champion && champion.image && (
           <img
             src={champion.image}
             alt={champion.name}
-            className="w-12 h-12 rounded border border-gray-300"
+            className="w-12 h-12 rounded border-2 border-white shadow-md"
             style={{ transform: `rotate(${rotation}deg)` }}
             draggable
             onDragStart={() => handleChampionDragStart(champion)}
           />
+        )}
+        {champion && !champion.image && (
+          <div className="w-12 h-12 rounded border-2 border-white bg-gray-200 flex items-center justify-center text-xs font-bold shadow-md">
+            {champion.name.substring(0, 2).toUpperCase()}
+          </div>
         )}
       </div>
     ));
@@ -308,11 +324,24 @@ const CustomBuilder: React.FC = () => {
     );
 
     return (
-      <div className="overflow-hidden rounded-lg border bg-white shadow-sm">
-        <div className="border-b bg-gray-50 px-4 py-2">
-          <h3 className="font-semibold text-gray-700">Champions</h3>
+      <div
+        className="overflow-hidden rounded-xl border shadow-sm"
+        style={{
+          background: 'var(--bg-secondary)',
+          borderColor: 'var(--bg-primary)',
+        }}
+      >
+        <div
+          className="border-b px-4 py-2"
+          style={{
+            background: 'var(--bg-accent)',
+            borderColor: 'var(--bg-primary)',
+            color: 'var(--text-primary)',
+          }}
+        >
+          <h3 className="font-semibold">Champions</h3>
           {selectedSet && (
-            <div className="mt-1 text-xs text-gray-500">
+            <div className="mt-1 text-xs" style={{ color: 'var(--text-secondary)' }}>
               Set: {selectedSet.name}
             </div>
           )}
@@ -322,11 +351,15 @@ const CustomBuilder: React.FC = () => {
             {champions.map(champion => (
               <div
                 key={champion.id}
-                className={`p-2 rounded-xl border cursor-pointer transition-all flex flex-col items-center shadow-sm ${
+                className={`p-2 rounded-lg cursor-pointer transition-all flex flex-col items-center ${
                   selectedChampion?.id === champion.id
-                    ? 'border-blue-500 bg-gradient-to-b from-blue-50 to-blue-100 ring-2 ring-blue-200 transform scale-[1.02]'
-                    : 'border-gray-200 bg-gradient-to-b from-white to-gray-50 hover:from-gray-50 hover:to-gray-100'
+                    ? 'border-2 bg-gradient-to-b from-blue-500/20 to-blue-600/20 ring-2 ring-blue-400 transform scale-[1.02]'
+                    : 'border border-gray-700 bg-gradient-to-b from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700'
                 }`}
+                style={{
+                  borderColor: selectedChampion?.id === champion.id ? 'var(--accent1)' : 'var(--bg-primary)',
+                  borderWidth: selectedChampion?.id === champion.id ? '2px' : '1px',
+                }}
                 onClick={() => setSelectedChampion(selectedChampion?.id === champion.id ? null : champion)}
                 draggable
                 onDragStart={() => handleChampionDragStart(champion)}
@@ -335,19 +368,40 @@ const CustomBuilder: React.FC = () => {
                   <img
                     src={champion.image}
                     alt={champion.name}
-                    className="w-12 h-12 rounded border border-gray-300 mb-1"
+                    className="w-12 h-12 rounded border-2 mb-1"
+                    style={{
+                      borderColor: 'var(--bg-primary)',
+                    }}
                   />
                 )}
-                <div className="text-xs font-medium text-center truncate w-full">
+                {!champion.image && (
+                  <div
+                    className="w-12 h-12 rounded border-2 mb-1 flex items-center justify-center text-xs font-bold"
+                    style={{
+                      borderColor: 'var(--bg-primary)',
+                      backgroundColor: 'var(--bg-accent)',
+                      color: 'var(--text-primary)',
+                    }}
+                  >
+                    {champion.name.substring(0, 2).toUpperCase()}
+                  </div>
+                )}
+                <div
+                  className="text-xs font-medium text-center truncate w-full"
+                  style={{ color: 'var(--text-primary)' }}
+                >
                   {champion.display_name || champion.name}
                 </div>
-                <div className={`text-xs px-1.5 py-0.5 rounded-full mt-1 ${
-                  champion.cost === 1 ? 'bg-blue-100 text-blue-800' :
-                  champion.cost === 2 ? 'bg-green-100 text-green-800' :
-                  champion.cost === 3 ? 'bg-purple-100 text-purple-800' :
-                  champion.cost === 4 ? 'bg-yellow-100 text-yellow-800' :
-                  'bg-red-100 text-red-800'
-                }`}>
+                <div
+                  className="text-xs px-1.5 py-0.5 rounded-full mt-1 font-bold"
+                  style={{
+                    backgroundColor: champion.cost === 1 ? '#9CA3AF' :
+                                    champion.cost === 2 ? '#10B981' :
+                                    champion.cost === 3 ? '#8B5CF6' :
+                                    champion.cost === 4 ? '#F59E0B' : '#EF4444',
+                    color: 'white'
+                  }}
+                >
                   {champion.cost || '?'}*
                 </div>
               </div>
@@ -363,9 +417,22 @@ const CustomBuilder: React.FC = () => {
     if (!activeTraits.length) return null;
 
     return (
-      <div className="overflow-hidden rounded-xl border bg-white shadow-md">
-        <div className="border-b bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-2">
-          <h3 className="font-semibold text-gray-800">Active Traits</h3>
+      <div
+        className="overflow-hidden rounded-xl border shadow-md"
+        style={{
+          background: 'var(--bg-secondary)',
+          borderColor: 'var(--bg-primary)',
+        }}
+      >
+        <div
+          className="border-b px-4 py-2"
+          style={{
+            background: 'var(--bg-accent)',
+            borderColor: 'var(--bg-primary)',
+            color: 'var(--text-primary)',
+          }}
+        >
+          <h3 className="font-semibold">Active Traits</h3>
         </div>
         <div className="p-2">
           <div className="grid grid-cols-2 gap-2">
@@ -381,21 +448,41 @@ const CustomBuilder: React.FC = () => {
                     key={`${trait.name}-${index}`}
                     className={`p-2 rounded-lg border text-center transition-all ${
                       active
-                        ? 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-300 shadow-sm'
-                        : 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200'
+                        ? 'bg-gradient-to-br from-green-500/20 to-emerald-600/20 border-green-500'
+                        : 'bg-gradient-to-br from-gray-700/50 to-gray-800/50 border-gray-700'
                     }`}
+                    style={{
+                      borderColor: active ? 'var(--accent1)' : 'var(--bg-primary)',
+                      borderWidth: active ? '2px' : '1px',
+                    }}
                   >
-                    <div className="font-medium text-sm truncate">{trait.name}</div>
-                    <div className={`text-xs ${
-                      active ? 'text-green-700 font-medium' : 'text-gray-600'
-                    }`}>
+                    <div
+                      className="font-medium text-sm truncate"
+                      style={{ color: 'var(--text-primary)' }}
+                    >
+                      {trait.name}
+                    </div>
+                    <div
+                      className={`text-xs ${
+                        active ? 'font-medium' : ''
+                      }`}
+                      style={{
+                        color: active ? 'var(--accent1)' : 'var(--text-secondary)'
+                      }}
+                    >
                       {count} {active ? (
-                        <span className="text-green-600 font-bold">✓</span>
+                        <span style={{ color: 'var(--accent1)' }} className="font-bold">✓</span>
                       ) : (
-                        <span className="text-red-500 font-bold">✗</span>
+                        <span style={{ color: 'var(--accent2)' }} className="font-bold">✗</span>
                       )}
                       {activeBreakpoint && (
-                        <div className="text-[10px] mt-1 bg-blue-50 text-blue-700 rounded px-1 inline-block">
+                        <div
+                          className="text-[10px] mt-1 rounded px-1 inline-block"
+                          style={{
+                            backgroundColor: 'var(--bg-accent)',
+                            color: 'var(--text-primary)',
+                          }}
+                        >
                           {activeBreakpoint.description}
                         </div>
                       )}
@@ -404,15 +491,24 @@ const CustomBuilder: React.FC = () => {
                     {/* Progress bar for next trait level */}
                     {nextBreakpoint && (
                       <div className="mt-1">
-                        <div className="w-full bg-gray-200 rounded-full h-1.5">
+                        <div
+                          className="rounded-full h-1.5"
+                          style={{
+                            backgroundColor: 'var(--bg-accent)',
+                          }}
+                        >
                           <div
-                            className="bg-blue-500 h-1.5 rounded-full"
+                            className="h-1.5 rounded-full"
                             style={{
+                              backgroundColor: 'var(--accent1)',
                               width: `${Math.min(100, (count / nextBreakpoint.count) * 100)}%`
                             }}
                           ></div>
                         </div>
-                        <div className="text-[8px] text-gray-500 mt-0.5">
+                        <div
+                          className="text-[8px] mt-0.5"
+                          style={{ color: 'var(--text-secondary)' }}
+                        >
                           {count}/{nextBreakpoint.count} for +1
                         </div>
                       </div>
@@ -574,7 +670,7 @@ const CustomBuilder: React.FC = () => {
   return (
     <div className="container mx-auto p-4 bg-gray-50 min-h-screen">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">TFT Custom Builder</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">TFT Team Builder</h1>
         <p className="text-gray-600">Create and customize your own TFT compositions</p>
       </div>
 
@@ -700,7 +796,13 @@ const CustomBuilder: React.FC = () => {
             </div>
 
             <div className="flex flex-col items-center">
-              <div className="p-4 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300">
+              <div
+                className="p-4 rounded-xl border-2 border-dashed"
+                style={{
+                  background: 'var(--bg-accent)',
+                  borderColor: 'var(--bg-primary)',
+                }}
+              >
                 <div className="flex flex-col gap-1 mb-4">
                   {renderBoard()}
                 </div>
@@ -710,7 +812,7 @@ const CustomBuilder: React.FC = () => {
                 </div>
               </div>
 
-              <div className="mt-4 text-sm text-gray-600">
+              <div className="mt-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
                 Drag champions from the left to place them on the board
               </div>
             </div>
@@ -718,40 +820,80 @@ const CustomBuilder: React.FC = () => {
 
           {/* Selected champion info */}
           {selectedChampion && (
-            <div className="w-full bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl shadow-lg p-4 border border-blue-200">
+            <div
+              className="w-full rounded-xl shadow-lg p-4 border"
+              style={{
+                background: 'var(--bg-accent)',
+                borderColor: 'var(--bg-primary)',
+              }}
+            >
               <div className="flex items-start gap-4">
-                <img
-                  src={selectedChampion.image}
-                  alt={selectedChampion.name}
-                  className="w-20 h-20 rounded-xl border-2 border-white shadow-md"
-                />
+                {selectedChampion.image ? (
+                  <img
+                    src={selectedChampion.image}
+                    alt={selectedChampion.name}
+                    className="w-20 h-20 rounded-xl border-2 shadow-md"
+                    style={{
+                      borderColor: 'var(--bg-primary)',
+                    }}
+                  />
+                ) : (
+                  <div
+                    className="w-20 h-20 rounded-xl border-2 flex items-center justify-center text-lg font-bold"
+                    style={{
+                      borderColor: 'var(--bg-primary)',
+                      backgroundColor: 'var(--bg-secondary)',
+                      color: 'var(--text-primary)',
+                    }}
+                  >
+                    {selectedChampion.name.substring(0, 2).toUpperCase()}
+                  </div>
+                )}
                 <div className="flex-1">
                   <div className="flex justify-between">
                     <div>
-                      <h3 className="font-bold text-lg text-gray-900">{selectedChampion.display_name || selectedChampion.name}</h3>
+                      <h3
+                        className="font-bold text-lg"
+                        style={{ color: 'var(--text-primary)' }}
+                      >
+                        {selectedChampion.display_name || selectedChampion.name}
+                      </h3>
                       <div className="flex items-center gap-2 mt-1">
-                        <div className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                          selectedChampion.cost === 1 ? 'bg-blue-200 text-blue-800' :
-                          selectedChampion.cost === 2 ? 'bg-green-200 text-green-800' :
-                          selectedChampion.cost === 3 ? 'bg-purple-200 text-purple-800' :
-                          selectedChampion.cost === 4 ? 'bg-yellow-200 text-yellow-800' :
-                          'bg-red-200 text-red-800'
-                        }`}>
+                        <div
+                          className="px-2 py-0.5 rounded-full text-xs font-medium"
+                          style={{
+                            backgroundColor: selectedChampion.cost === 1 ? '#9CA3AF' :
+                                              selectedChampion.cost === 2 ? '#10B981' :
+                                              selectedChampion.cost === 3 ? '#8B5CF6' :
+                                              selectedChampion.cost === 4 ? '#F59E0B' : '#EF4444',
+                            color: 'white'
+                          }}
+                        >
                           {selectedChampion.cost || '?'} Star
                         </div>
-                        <div className="text-sm text-gray-600">
+                        <div
+                          className="text-sm"
+                          style={{ color: 'var(--text-secondary)' }}
+                        >
                           Traits: {selectedChampion.traits?.join(', ') || 'None'}
                         </div>
                       </div>
                     </div>
                     <button
-                      className="text-gray-500 hover:text-gray-700 bg-white rounded-full p-1 shadow-sm"
+                      className="text-gray-500 hover:text-gray-300 rounded-full p-1 shadow-sm"
+                      style={{
+                        backgroundColor: 'var(--bg-secondary)',
+                        color: 'var(--text-secondary)',
+                      }}
                       onClick={() => setSelectedChampion(null)}
                     >
                       <X className="w-4 h-4" />
                     </button>
                   </div>
-                  <p className="text-sm text-gray-700 mt-3">
+                  <p
+                    className="text-sm mt-3"
+                    style={{ color: 'var(--text-secondary)' }}
+                  >
                     {selectedChampion.description || 'No description available for this champion.'}
                   </p>
                 </div>
@@ -943,4 +1085,4 @@ const CustomBuilder: React.FC = () => {
   );
 };
 
-export default CustomBuilder;
+export default TeamBuilder;

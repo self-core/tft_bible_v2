@@ -64,6 +64,8 @@ export interface Set {
   items: Item[];
   augments: any[]; // Added to match GraphQL schema
   mechanics: any; // Added to match GraphQL schema
+  patch_notes?: any[]; // Added for patch notes display
+  compositions?: any[]; // Added for meta compositions display
 }
 
 export interface TraitRequirement {

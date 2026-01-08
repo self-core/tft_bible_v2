@@ -33,23 +33,23 @@ const CompositionDetail = () => {
 
   const getTierColor = (tier: string) => {
     switch (tier.toUpperCase()) {
-      case 'S': return 'text-tft-gold bg-tft-gold/10'
-      case 'A': return 'text-tft-blue bg-tft-blue/10'
-      case 'B': return 'text-tft-green bg-tft-green/10'
-      case 'C': return 'text-gray-600 bg-gray-100'
-      case 'D': return 'text-tft-red bg-tft-red/10'
-      default: return 'text-gray-600 bg-gray-100'
+      case 'S': return { textColor: 'var(--accent1)', bgColor: 'rgba(45, 214, 182, 0.2)' }
+      case 'A': return { textColor: 'var(--accent2)', bgColor: 'rgba(55, 111, 180, 0.2)' }
+      case 'B': return { textColor: 'var(--accent3)', bgColor: 'rgba(127, 102, 240, 0.2)' }
+      case 'C': return { textColor: 'var(--text-secondary)', bgColor: 'var(--bg-accent)' }
+      case 'D': return { textColor: 'var(--accent2)', bgColor: 'rgba(239, 68, 68, 0.2)' }
+      default: return { textColor: 'var(--text-secondary)', bgColor: 'var(--bg-accent)' }
     }
   }
 
   const getCostColor = (cost: number) => {
     switch (cost) {
-      case 1: return 'text-gray-400'
-      case 2: return 'text-green-500'
-      case 3: return 'text-blue-500'
-      case 4: return 'text-purple-500'
-      case 5: return 'text-yellow-500'
-      default: return 'text-gray-400'
+      case 1: return { color: 'var(--text-secondary)' }
+      case 2: return { color: '#10B981' }
+      case 3: return { color: '#3B82F6' }
+      case 4: return { color: '#8B5CF6' }
+      case 5: return { color: '#FBBF24' }
+      default: return { color: 'var(--text-secondary)' }
     }
   }
 
@@ -81,9 +81,16 @@ const CompositionDetail = () => {
     })
 
     return (
-      <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700/50">
-        <h2 className="text-xl font-semibold text-gray-100 mb-4 flex items-center">
-          <Sword className="h-5 w-5 mr-2 text-tft-gold" />
+      <div
+        className="rounded-xl p-6 border"
+        style={{
+          background: 'var(--bg-accent)',
+          border: '1px solid var(--bg-primary)',
+          color: 'var(--text-primary)'
+        }}
+      >
+        <h2 className="text-xl font-semibold mb-4 flex items-center" style={{ color: 'var(--text-primary)' }}>
+          <Sword className="h-5 w-5 mr-2" style={{ color: 'var(--accent1)' }} />
           Composition Board
         </h2>
         
@@ -91,16 +98,20 @@ const CompositionDetail = () => {
           {board.map((row, rowIndex) => (
             <div key={rowIndex} className="flex gap-2">
               {row.map((champion, colIndex) => (
-                <div 
-                  key={`${rowIndex}-${colIndex}`} 
-                  className="w-16 h-16 rounded-lg border-2 border-gray-700 flex items-center justify-center relative"
+                <div
+                  key={`${rowIndex}-${colIndex}`}
+                  className="w-16 h-16 rounded-lg border-2 flex items-center justify-center relative"
+                  style={{
+                    borderColor: 'var(--bg-primary)',
+                    backgroundColor: champion ? 'var(--bg-secondary)' : 'transparent'
+                  }}
                 >
                   {champion ? (
                     <div className="relative w-full h-full flex items-center justify-center">
                       {/* Champion avatar with icon */}
                       {champion.icon_url ? (
-                        <img 
-                          src={champion.icon_url} 
+                        <img
+                          src={champion.icon_url}
                           alt={champion.name}
                           className="w-12 h-12 rounded-lg object-cover border border-gray-600"
                           onError={(e) => {
@@ -113,7 +124,12 @@ const CompositionDetail = () => {
                           }}
                         />
                       ) : (
-                        <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${getCostColor(champion.cost)} bg-gray-700/50 border border-gray-600 fallback`}>
+                        <div
+                          className="w-12 h-12 rounded-lg flex items-center justify-center bg-gray-700/50 border border-gray-600 fallback"
+                          style={{
+                            color: getCostColor(champion.cost).color
+                          }}
+                        >
                           <span className="text-xs font-bold">{champion.name.charAt(0)}</span>
                         </div>
                       )}
@@ -158,18 +174,18 @@ const CompositionDetail = () => {
         </div>
         
         {/* Board legend */}
-        <div className="mt-4 flex flex-wrap gap-4 text-sm">
+        <div className="mt-4 flex flex-wrap gap-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-tft-gold"></div>
-            <span className="text-gray-400">Core Champion</span>
+            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: 'var(--accent1)' }}></div>
+            <span>Core Champion</span>
           </div>
           <div className="flex items-center gap-2">
-            <Star className="h-4 w-4 text-tft-gold fill-current" />
-            <span className="text-gray-400">Star Level</span>
+            <Star className="h-4 w-4 fill-current" style={{ color: 'var(--accent1)' }} />
+            <span>Star Level</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-tft-blue"></div>
-            <span className="text-gray-400">Items</span>
+            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: 'var(--accent2)' }}></div>
+            <span>Items</span>
           </div>
         </div>
       </div>
@@ -187,15 +203,26 @@ const CompositionDetail = () => {
   if (error || !composition) {
     return (
       <div className="text-center py-12">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
-          <h3 className="text-lg font-semibold text-red-800 mb-2">Failed to Load Composition</h3>
-          <p className="text-red-600 mb-4">{error || 'Composition not found'}</p>
-          <p className="text-sm text-gray-600 mb-4">
+        <div
+          className="border rounded-lg p-6 max-w-md mx-auto"
+          style={{
+            background: 'var(--bg-accent)',
+            border: '1px solid var(--bg-primary)',
+            color: 'var(--text-primary)'
+          }}
+        >
+          <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--accent2)' }}>Failed to Load Composition</h3>
+          <p className="mb-4" style={{ color: 'var(--accent2)' }}>{error || 'Composition not found'}</p>
+          <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
             This composition may not exist or there might be a connection issue with the backend.
           </p>
           <Link
             to="/compositions"
-            className="inline-block px-4 py-2 bg-tft-gold text-white rounded-lg hover:bg-yellow-600 transition-colors"
+            className="inline-block px-4 py-2 rounded-lg transition-colors"
+            style={{
+              backgroundColor: 'var(--accent1)',
+              color: 'var(--bg-primary)'
+            }}
           >
             ← Back to Compositions
           </Link>
@@ -211,21 +238,37 @@ const CompositionDetail = () => {
       <div className="flex items-center gap-4">
         <Link
           to="/compositions"
-          className="flex items-center gap-2 text-gray-400 hover:text-tft-gold transition-colors"
+          className="flex items-center gap-2 transition-colors"
+          style={{
+            color: 'var(--text-secondary)'
+          }}
         >
-          <ArrowLeft className="h-5 w-5" />
+          <ArrowLeft className="h-5 w-5" style={{ color: 'var(--text-secondary)' }} />
           Back to Compositions
         </Link>
       </div>
 
       {/* Title and Meta */}
-      <div className="bg-gray-800/50 rounded-xl shadow-sm border p-6">
+      <div
+        className="rounded-xl shadow-sm border p-6"
+        style={{
+          background: 'var(--bg-accent)',
+          border: '1px solid var(--bg-primary)',
+          color: 'var(--text-primary)'
+        }}
+      >
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-3">
-              <h1 className="text-3xl font-bold text-gray-900">{composition.name}</h1>
+              <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>{composition.name}</h1>
               {composition.meta?.tier && (
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${getTierColor(composition.meta.tier)}`}>
+                <span
+                  className="px-3 py-1 rounded-full text-sm font-medium"
+                  style={{
+                    color: getTierColor(composition.meta.tier).textColor,
+                    backgroundColor: getTierColor(composition.meta.tier).bgColor
+                  }}
+                >
                   {composition.meta.tier} Tier
                 </span>
               )}
@@ -269,16 +312,16 @@ const CompositionDetail = () => {
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-4">
               <div className="text-center">
-                <div className="text-2xl font-bold text-tft-gold">{composition.views || 0}</div>
-                <div className="text-sm text-gray-600">Views</div>
+                <div className="text-2xl font-bold" style={{ color: 'var(--accent1)' }}>{composition.views || 0}</div>
+                <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>Views</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">{composition.votes?.upvotes || 0}</div>
-                <div className="text-sm text-gray-600">Upvotes</div>
+                <div className="text-2xl font-bold" style={{ color: 'var(--accent2)' }}>{composition.votes?.upvotes || 0}</div>
+                <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>Upvotes</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-red-600">{composition.votes?.downvotes || 0}</div>
-                <div className="text-sm text-gray-600">Downvotes</div>
+                <div className="text-2xl font-bold" style={{ color: 'var(--accent3)' }}>{composition.votes?.downvotes || 0}</div>
+                <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>Downvotes</div>
               </div>
             </div>
 
@@ -287,17 +330,27 @@ const CompositionDetail = () => {
               <button
                 onClick={() => handleVote('upvote')}
                 disabled={isVoting}
-                className="flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 disabled:opacity-50"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg disabled:opacity-50"
+                style={{
+                  backgroundColor: 'var(--bg-secondary)',
+                  color: 'var(--text-primary)',
+                  border: '1px solid var(--bg-primary)'
+                }}
               >
-                <ThumbsUp className="h-4 w-4" />
+                <ThumbsUp className="h-4 w-4" style={{ color: 'var(--accent1)' }} />
                 Upvote
               </button>
               <button
                 onClick={() => handleVote('downvote')}
                 disabled={isVoting}
-                className="flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 disabled:opacity-50"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg disabled:opacity-50"
+                style={{
+                  backgroundColor: 'var(--bg-secondary)',
+                  color: 'var(--text-primary)',
+                  border: '1px solid var(--bg-primary)'
+                }}
               >
-                <ThumbsUp className="h-4 w-4 rotate-180" />
+                <ThumbsUp className="h-4 w-4 rotate-180" style={{ color: 'var(--accent2)' }} />
                 Downvote
               </button>
             </div>
@@ -309,9 +362,16 @@ const CompositionDetail = () => {
       {renderTFTBoard()}
 
       {/* Champions */}
-      <div className="bg-gray-800/50 rounded-xl shadow-sm border p-6">
-        <h2 className="text-xl font-semibold text-gray-100 mb-4 flex items-center">
-          <Users className="h-5 w-5 mr-2 text-tft-gold" />
+      <div
+        className="rounded-xl shadow-sm border p-6"
+        style={{
+          background: 'var(--bg-accent)',
+          border: '1px solid var(--bg-primary)',
+          color: 'var(--text-primary)'
+        }}
+      >
+        <h2 className="text-xl font-semibold mb-4 flex items-center" style={{ color: 'var(--text-primary)' }}>
+          <Users className="h-5 w-5 mr-2" style={{ color: 'var(--accent1)' }} />
           Champions
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -322,7 +382,10 @@ const CompositionDetail = () => {
                   <img
                     src={champion.icon_url}
                     alt={champion.name}
-                    className="w-12 h-12 rounded-lg object-cover border border-gray-200"
+                    className="w-12 h-12 rounded-lg object-cover"
+                    style={{
+                      border: '1px solid var(--bg-primary)'
+                    }}
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.onerror = null; // Prevent infinite loop
@@ -333,17 +396,30 @@ const CompositionDetail = () => {
                     }}
                   />
                 ) : (
-                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${getCostColor(champion.cost || 1)} bg-gray-100 border border-gray-200 fallback-champion`}>
+                  <div
+                    className="w-12 h-12 rounded-lg flex items-center justify-center border fallback-champion"
+                    style={{
+                      color: getCostColor(champion.cost || 1).color,
+                      backgroundColor: 'var(--bg-secondary)',
+                      borderColor: 'var(--bg-primary)'
+                    }}
+                  >
                     <span className="text-sm font-medium">{champion.star_level}★</span>
                   </div>
                 )}
                 <div>
-                  <h3 className="font-semibold text-gray-900">{champion.name || 'Unknown Champion'}</h3>
-                  <p className="text-sm text-gray-600">Priority: {champion.priority || 'N/A'}</p>
+                  <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>{champion.name || 'Unknown Champion'}</h3>
+                  <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Priority: {champion.priority || 'N/A'}</p>
                 </div>
                 {champion.is_core && (
                   <div className="ml-auto">
-                    <span className="px-2 py-1 bg-tft-gold/20 text-tft-gold rounded-full text-xs font-medium">
+                    <span
+                      className="px-2 py-1 rounded-full text-xs font-medium"
+                      style={{
+                        backgroundColor: 'rgba(45, 214, 182, 0.2)',
+                        color: 'var(--accent1)'
+                      }}
+                    >
                       Core
                     </span>
                   </div>
@@ -355,7 +431,12 @@ const CompositionDetail = () => {
                 {champion.traits?.map((trait: string, traitIndex: number) => (
                   <span
                     key={traitIndex}
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${getTraitColor(trait)}`}
+                    className="px-2 py-1 rounded-full text-xs font-medium"
+                    style={{
+                      backgroundColor: 'var(--bg-secondary)',
+                      color: 'var(--text-primary)',
+                      border: '1px solid var(--bg-accent)'
+                    }}
                   >
                     {trait}
                   </span>
@@ -363,17 +444,17 @@ const CompositionDetail = () => {
               </div>
 
               {/* Champion Stats */}
-              <div className="grid grid-cols-2 gap-2 mb-3 text-sm">
-                <div className="flex items-center gap-1 text-gray-600">
-                  <Heart className="h-4 w-4 text-red-500" />
+              <div className="grid grid-cols-2 gap-2 mb-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                <div className="flex items-center gap-1">
+                  <Heart className="h-4 w-4" style={{ color: 'var(--accent2)' }} />
                   <span>{champion.health || 'N/A'} HP</span>
                 </div>
-                <div className="flex items-center gap-1 text-gray-600">
-                  <Sword className="h-4 w-4 text-blue-500" />
+                <div className="flex items-center gap-1">
+                  <Sword className="h-4 w-4" style={{ color: 'var(--accent1)' }} />
                   <span>{champion.attack_damage || 'N/A'} AD</span>
                 </div>
-                <div className="flex items-center gap-1 text-gray-600">
-                  <Zap className="h-4 w-4 text-yellow-500" />
+                <div className="flex items-center gap-1">
+                  <Zap className="h-4 w-4" style={{ color: 'var(--accent3)' }} />
                   <span>{champion.ability_name || 'N/A'}</span>
                 </div>
               </div>
@@ -381,12 +462,16 @@ const CompositionDetail = () => {
               {/* Items */}
               {champion.items && champion.items.length > 0 && (
                 <div className="mb-3">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">Items</h4>
+                  <h4 className="text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>Items</h4>
                   <div className="flex flex-wrap gap-1">
                     {champion.items.map((item: string, itemIndex: number) => (
                       <span
                         key={itemIndex}
-                        className="px-2 py-1 bg-tft-gold/10 text-tft-gold rounded text-xs"
+                        className="px-2 py-1 rounded text-xs"
+                        style={{
+                          backgroundColor: 'rgba(45, 214, 182, 0.2)',
+                          color: 'var(--accent1)'
+                        }}
                       >
                         {typeof item === 'string' ? item : (item as any).name || 'Unknown Item'}
                       </span>
@@ -395,9 +480,9 @@ const CompositionDetail = () => {
                 </div>
               )}
 
-              <div className="text-xs text-gray-500">
+              <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
                 Position: ({champion.position?.x || 0}, {champion.position?.y || 0})
-                {champion.is_core && <span className="ml-2 text-tft-gold">★ Core</span>}
+                {champion.is_core && <span className="ml-2" style={{ color: 'var(--accent1)' }}>★ Core</span>}
               </div>
             </div>
           ))}
@@ -406,25 +491,40 @@ const CompositionDetail = () => {
 
       {/* Augments */}
       {composition.augments && composition.augments.preferred && composition.augments.preferred.length > 0 && (
-        <div className="bg-gray-800/50 rounded-xl shadow-sm border p-6">
-          <h2 className="text-xl font-semibold text-gray-100 mb-4 flex items-center">
-            <Zap className="h-5 w-5 mr-2 text-tft-gold" />
+        <div
+          className="rounded-xl shadow-sm border p-6"
+          style={{
+            background: 'var(--bg-accent)',
+            border: '1px solid var(--bg-primary)',
+            color: 'var(--text-primary)'
+          }}
+        >
+          <h2 className="text-xl font-semibold mb-4 flex items-center" style={{ color: 'var(--text-primary)' }}>
+            <Zap className="h-5 w-5 mr-2" style={{ color: 'var(--accent1)' }} />
             Recommended Augments
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <h3 className="font-semibold text-gray-100 mb-3 flex items-center">
-                <Star className="h-4 w-4 mr-2 text-tft-gold" />
+              <h3 className="font-semibold mb-3 flex items-center" style={{ color: 'var(--text-primary)' }}>
+                <Star className="h-4 w-4 mr-2" style={{ color: 'var(--accent1)' }} />
                 Preferred
               </h3>
               <ul className="space-y-2">
                 {composition.augments.preferred?.map((augment: string | any, index: number) => (
-                  <li key={index} className="p-3 bg-white rounded-lg border border-gray-200">
-                    <div className="font-medium text-gray-900">
+                  <li
+                    key={index}
+                    className="p-3 rounded-lg border"
+                    style={{
+                      background: 'var(--bg-secondary)',
+                      border: '1px solid var(--bg-primary)',
+                      color: 'var(--text-primary)'
+                    }}
+                  >
+                    <div className="font-medium" style={{ color: 'var(--text-primary)' }}>
                       {typeof augment === 'string' ? augment : augment.name || 'Unknown Augment'}
                     </div>
                     {typeof augment !== 'string' && augment.description && (
-                      <p className="text-sm text-gray-600 mt-1">
+                      <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
                         {augment.description}
                       </p>
                     )}
@@ -435,18 +535,26 @@ const CompositionDetail = () => {
 
             {composition.augments?.acceptable && composition.augments.acceptable.length > 0 && (
               <div>
-                <h3 className="font-semibold text-gray-100 mb-3 flex items-center">
-                  <Shield className="h-4 w-4 mr-2 text-tft-blue" />
+                <h3 className="font-semibold mb-3 flex items-center" style={{ color: 'var(--text-primary)' }}>
+                  <Shield className="h-4 w-4 mr-2" style={{ color: 'var(--accent2)' }} />
                   Acceptable
                 </h3>
                 <ul className="space-y-2">
                   {composition.augments.acceptable.map((augment: string | any, index: number) => (
-                    <li key={index} className="p-3 bg-white rounded-lg border border-gray-200">
-                      <div className="font-medium text-gray-900">
+                    <li
+                      key={index}
+                      className="p-3 rounded-lg border"
+                      style={{
+                        background: 'var(--bg-secondary)',
+                        border: '1px solid var(--bg-primary)',
+                        color: 'var(--text-primary)'
+                      }}
+                    >
+                      <div className="font-medium" style={{ color: 'var(--text-primary)' }}>
                         {typeof augment === 'string' ? augment : augment.name || 'Unknown Augment'}
                       </div>
                       {typeof augment !== 'string' && augment.description && (
-                        <p className="text-sm text-gray-600 mt-1">
+                        <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
                           {augment.description}
                         </p>
                       )}
@@ -460,12 +568,19 @@ const CompositionDetail = () => {
       )}
 
       {/* Strategy Details */}
-      <div className="bg-gray-800/50 rounded-xl shadow-sm border p-6">
-        <h2 className="text-xl font-semibold text-gray-100 mb-4 flex items-center">
-          <Target className="h-5 w-5 mr-2 text-tft-gold" />
+      <div
+        className="rounded-xl shadow-sm border p-6"
+        style={{
+          background: 'var(--bg-accent)',
+          border: '1px solid var(--bg-primary)',
+          color: 'var(--text-primary)'
+        }}
+      >
+        <h2 className="text-xl font-semibold mb-4 flex items-center" style={{ color: 'var(--text-primary)' }}>
+          <Target className="h-5 w-5 mr-2" style={{ color: 'var(--accent1)' }} />
           Strategy Details
         </h2>
-        <div className="text-gray-600">
+        <div style={{ color: 'var(--text-secondary)' }}>
           <p className="mb-4">
             This composition features a {composition.category.toLowerCase()} strategy with {composition.champions.length} champions.
             It has a {composition.meta?.difficulty && composition.meta.difficulty <= 2 ? 'low' : composition.meta?.difficulty && composition.meta.difficulty <= 3 ? 'medium' : 'high'} difficulty rating
@@ -474,51 +589,51 @@ const CompositionDetail = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
             <div>
-              <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
-                <Zap className="h-4 w-4 mr-2 text-tft-gold" />
+              <h3 className="font-semibold mb-3 flex items-center" style={{ color: 'var(--text-primary)' }}>
+                <Zap className="h-4 w-4 mr-2" style={{ color: 'var(--accent1)' }} />
                 Performance Metrics
               </h3>
               <ul className="space-y-2 text-sm">
                 <li className="flex justify-between">
-                  <span className="text-gray-600">Win Rate:</span>
-                  <span className="text-gray-900 font-medium">{composition.meta?.winrate ? composition.meta.winrate.toFixed(1) : 'N/A'}%</span>
+                  <span style={{ color: 'var(--text-secondary)' }}>Win Rate:</span>
+                  <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{composition.meta?.winrate ? composition.meta.winrate.toFixed(1) : 'N/A'}%</span>
                 </li>
                 <li className="flex justify-between">
-                  <span className="text-gray-600">Average Placement:</span>
-                  <span className="text-gray-900 font-medium">{composition.meta?.avg_placement ? composition.meta.avg_placement.toFixed(1) : 'N/A'}</span>
+                  <span style={{ color: 'var(--text-secondary)' }}>Average Placement:</span>
+                  <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{composition.meta?.avg_placement ? composition.meta.avg_placement.toFixed(1) : 'N/A'}</span>
                 </li>
                 <li className="flex justify-between">
-                  <span className="text-gray-600">Play Rate:</span>
-                  <span className="text-gray-900 font-medium">{composition.meta?.playrate ? (composition.meta.playrate * 100).toFixed(1) : 'N/A'}%</span>
+                  <span style={{ color: 'var(--text-secondary)' }}>Play Rate:</span>
+                  <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{composition.meta?.playrate ? (composition.meta.playrate * 100).toFixed(1) : 'N/A'}%</span>
                 </li>
                 <li className="flex justify-between">
-                  <span className="text-gray-600">Contest Rate:</span>
-                  <span className="text-gray-900 font-medium">{composition.meta?.contest_rate ? (composition.meta.contest_rate * 100).toFixed(1) : 'N/A'}%</span>
+                  <span style={{ color: 'var(--text-secondary)' }}>Contest Rate:</span>
+                  <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{composition.meta?.contest_rate ? (composition.meta.contest_rate * 100).toFixed(1) : 'N/A'}%</span>
                 </li>
               </ul>
             </div>
 
             <div>
-              <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
-                <Sword className="h-4 w-4 mr-2 text-tft-gold" />
+              <h3 className="font-semibold mb-3 flex items-center" style={{ color: 'var(--text-primary)' }}>
+                <Sword className="h-4 w-4 mr-2" style={{ color: 'var(--accent1)' }} />
                 Strategy Info
               </h3>
               <ul className="space-y-2 text-sm">
                 <li className="flex justify-between">
-                  <span className="text-gray-600">Cost:</span>
-                  <span className="text-gray-900 font-medium">{composition.meta?.cost || 'N/A'}</span>
+                  <span style={{ color: 'var(--text-secondary)' }}>Cost:</span>
+                  <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{composition.meta?.cost || 'N/A'}</span>
                 </li>
                 <li className="flex justify-between">
-                  <span className="text-gray-600">Playstyle:</span>
-                  <span className="text-gray-900 font-medium">{composition.meta?.playstyle || 'N/A'}</span>
+                  <span style={{ color: 'var(--text-secondary)' }}>Playstyle:</span>
+                  <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{composition.meta?.playstyle || 'N/A'}</span>
                 </li>
                 <li className="flex justify-between">
-                  <span className="text-gray-600">Patch:</span>
-                  <span className="text-gray-900 font-medium">{composition.meta?.patch || 'N/A'}</span>
+                  <span style={{ color: 'var(--text-secondary)' }}>Patch:</span>
+                  <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{composition.meta?.patch || 'N/A'}</span>
                 </li>
                 <li className="flex justify-between">
-                  <span className="text-gray-600">Category:</span>
-                  <span className="text-gray-900 font-medium">{composition.category || 'N/A'}</span>
+                  <span style={{ color: 'var(--text-secondary)' }}>Category:</span>
+                  <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{composition.category || 'N/A'}</span>
                 </li>
               </ul>
             </div>
@@ -528,16 +643,28 @@ const CompositionDetail = () => {
 
       {/* Tags */}
       {composition.tags && composition.tags.length > 0 && (
-        <div className="bg-gray-800/50 rounded-xl shadow-sm border p-6">
-          <h2 className="text-xl font-semibold text-gray-100 mb-4 flex items-center">
-            <Target className="h-5 w-5 mr-2 text-tft-gold" />
+        <div
+          className="rounded-xl shadow-sm border p-6"
+          style={{
+            background: 'var(--bg-accent)',
+            border: '1px solid var(--bg-primary)',
+            color: 'var(--text-primary)'
+          }}
+        >
+          <h2 className="text-xl font-semibold mb-4 flex items-center" style={{ color: 'var(--text-primary)' }}>
+            <Target className="h-5 w-5 mr-2" style={{ color: 'var(--accent1)' }} />
             Tags
           </h2>
           <div className="flex flex-wrap gap-2">
             {composition.tags.map((tag: string, index: number) => (
               <span
                 key={index}
-                className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
+                className="px-3 py-1 rounded-full text-sm"
+                style={{
+                  backgroundColor: 'var(--bg-secondary)',
+                  color: 'var(--text-primary)',
+                  border: '1px solid var(--bg-accent)'
+                }}
               >
                 {tag}
               </span>
