@@ -189,9 +189,10 @@ class DragontailService {
       const rawTFTData = await this.loadRawTFTData();
 
       // Persist champions to database
-      await ChampionModel.deleteMany({ id: { $in: rawTFTData.champions.map(c => `TFT16_${c.name.trim().replace(/\s+/g, '')}`) } });
-      const championDocs = rawTFTData.champions.map(champ => ({
-        id: `TFT16_${champ.name.trim().replace(/\s+/g, '')}`, // Generate a unique ID
+      const champIds = rawTFTData.champions.map((c: TFTChampion) => `TFT16_${c.name.trim().replace(/\s+/g, '')}`);
+      await ChampionModel.deleteMany({ id: { $in: champIds } });
+      const championDocs = rawTFTData.champions.map((champ: TFTChampion) => ({
+        id: `TFT16_${champ.name.trim().replace(/\s+/g, '')}`, // Construct ID from name like embedded data
         name: champ.name,
         cost: champ.cost,
         traits: champ.traits,
@@ -201,11 +202,8 @@ class DragontailService {
         splashUrl: champ.splashUrl,
         iconUrl: champ.iconUrl
       }));
-      await ChampionModel.insertMany(championDocs, { ordered: false }).catch(err => {
-        // Ignore duplicate key errors, just means they already exist
-        if (err.code !== 11000) {
-          throw err;
-        }
+      await ChampionModel.insertMany(championDocs, { ordered: false }).catch((err: any) => {
+        if (err.code !== 11000) throw err;
       });
 
       // Persist traits to database
@@ -331,50 +329,84 @@ class DragontailService {
       throw new Error('TFT data files not found in dragontail directory');
     }
 
-    // Read the files
-    const championsRaw = fs.readFileSync(championsPath, 'utf8');
-    const traitsRaw = fs.readFileSync(traitsPath, 'utf8');
-    const itemsRaw = fs.readFileSync(itemsPath, 'utf8');
+    // Read and parse the JSON files
+    const championsFile = fs.readFileSync(championsPath, 'utf8');
+    const traitsFile = fs.readFileSync(traitsPath, 'utf8');
+    const itemsFile = fs.readFileSync(itemsPath, 'utf8');
+    const championsJson: Record<string, any> = JSON.parse(championsFile);
+    const traitsJson: Record<string, any> = JSON.parse(traitsFile);
+    const itemsJson: Record<string, any> = JSON.parse(itemsFile);
 
-    // Parse the JSON
-    const champions: Record<string, any> = JSON.parse(championsRaw);
-    const traits: Record<string, any> = JSON.parse(traitsRaw);
-    const items: Record<string, any> = JSON.parse(itemsRaw);
+    // Handle nested structure where data is under a 'data' key
+    const championsData = championsJson.data || {};
+    const traitsData = traitsJson.data || {};
+    const itemsData = itemsJson.data || {};
+
+    // Build a trait lookup from traits data for champion trait assignment
+    // Traits have format: { id: "TFT16_Arcane", key: "Arcane", name: "Arcane", description: "..." }
+    const traitKeyMap: Record<string, { key: string; name: string; desc: string }> = {};
+    Object.entries(traitsData).forEach(([key, trait]: [string, any]) => {
+      if (trait.key || trait.name) {
+        const k = trait.key || key;
+        traitKeyMap[k] = {
+          key: k,
+          name: trait.name || k,
+          desc: trait.description || ''
+        };
+      }
+    });
 
     // Process all entries in the dragontail data that look like champions
-    // The dragontail data has the format: { "Maps/Shipping/Map22/Sets/TFTSet16/Shop/TFT16_Aatrox": { id: "TFT16_Aatrox", ... } }
-    const tftChampions: TFTChampion[] = Object.entries(champions)
+    // Filter for TFTSet16 specifically and ensure proper structure
+    const tftChampions: TFTChampion[] = Object.entries(championsData)
       .filter(([key, champ]: [string, any]) => {
-        // Only include entries that are not top-level metadata fields
-        // and are actual object entries
-        return !['data', 'type', 'version'].includes(key) &&
+        return key.includes('TFTSet16') &&
                champ &&
-               typeof champ === 'object';
+               typeof champ === 'object' &&
+               champ.id &&
+               champ.name;
       })
       .map(([key, champ]: [string, any]) => {
-        // Extract champion data from the dragontail format
-        const name = (champ.name || key.split('/').pop()?.replace('TFT16_', '') || '').trim();
-        const cost = champ.tier || 1; // Use tier as cost in dragontail data
-        const traits: string[] = []; // Traits are not directly available in this format
+        const name = champ.name || '';
+        const champId = champ.id || key.split('/').pop() || '';
+        const cost = champ.tier || champ.cost || 1;
 
-        // Extract stats - they might be in different formats
+        // Champion may have traits listed in its data
+        const traits: string[] = champ.traits || [];
+
+        // Extract stats
         const stats = {
-          hp: 600, // Default value since not available in this format
-          mana: 40, // Default value since not available in this format
-          damage: 50 // Default value since not available in this format
+          hp: champ.stats?.hp || 600,
+          mana: champ.stats?.mana || 40,
+          damage: champ.stats?.damage || 50
         };
 
-        // Extract ability information - not available in this format
+        // Extract ability information
         const ability = {
-          name: 'Unknown Ability',
-          variables: {}
+          name: champ.ability?.name || champ.spellName || 'Unknown Ability',
+          variables: champ.ability?.variables || champ.spellVariables || {}
         };
 
-        // Construct image URLs using CommunityDragon from the image path
+        // Build image URLs using CommunityDragon CDN
         const imageFullPath = champ.image?.full || '';
-        const imageUrl = imageFullPath ? `https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-splashes/tft-set16/${imageFullPath}`.replace('//', '/') : undefined;
-        const iconUrl = imageFullPath ? `https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/tft/champion-portraits/${champ.image?.full}`.replace('//', '/') : undefined;
-        const splashUrl = undefined; // Not available in this format
+        const baseUrl = 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1';
+
+        // Champion portrait icon (TFT style) - strip splash suffix from filename
+        // e.g. "TFT16_Jinx_splash_centered_0.TFT_Set16.png" -> "TFT16_Jinx.png"
+        const portraitName = imageFullPath
+          ? imageFullPath.replace(/_splash_centered_\d+\.TFT_Set\d+\.png$/i, '.png')
+          : '';
+        const iconUrl = portraitName
+          ? `${baseUrl}/tft/champion-portraits/${portraitName.toLowerCase()}`
+          : undefined;
+
+        // Champion splash (centered art)
+        const splashUrl = imageFullPath
+          ? `${baseUrl}/champion-splashes/tft-set16/${imageFullPath}`
+          : undefined;
+
+        // Full-size image (same as splash)
+        const imageUrl = splashUrl;
 
         return {
           name,
@@ -391,40 +423,63 @@ class DragontailService {
       .filter(champ => champ.name && champ.name.trim().length > 0);
 
     // Process traits to match expected format
-    const tftTraits = Object.entries(traits).map(([key, trait]: [string, any]) => {
-      return {
-        id: trait.id || trait.key || key || '',
-        key: trait.key || key || trait.id || '',
-        name: trait.name || trait.displayName || trait.key || key || '',
-        description: trait.description || trait.desc || '',
-        breakpoints: trait.breakpoints || trait.tiers || []
-      };
-    });
+    const tftTraits = Object.entries(traitsData)
+      .filter(([key, trait]: [string, any]) => {
+        // Filter for Set 16 traits
+        return key.includes('TFTSet16') || key.includes('TFT16');
+      })
+      .map(([key, trait]: [string, any]) => {
+        return {
+          id: trait.id || trait.key || key || '',
+          key: trait.key || key || trait.id || '',
+          name: trait.name || trait.displayName || trait.key || key || '',
+          description: trait.description || trait.desc || '',
+          breakpoints: trait.breakpoints || trait.tiers || []
+        };
+      });
+
+    // If no Set16 traits found, use embedded traits
+    if (tftTraits.length === 0) {
+      tftTraits.push(...this.getEmbeddedTraits().map(t => ({
+        id: t.key,
+        key: t.key,
+        name: t.name || t.key,
+        description: t.description || '',
+        breakpoints: t.breakpoints
+      })));
+    }
 
     // Process items to match expected format
-    const tftItems = Object.entries(items).map(([key, item]: [string, any]) => {
-      // Handle the dragontail data structure for items
-      const itemId = item.id || key.split('/').pop() || '';
-      const itemName = item.name || key.split('/').pop()?.replace('TFT_Item_', '').replace(/_/g, ' ') || 'Unknown Item';
-      const itemDesc = item.description || item.desc || 'No description available';
+    const tftItems = Object.entries(itemsData)
+      .filter(([key, item]: [string, any]) => {
+        // Filter for Set 16 items
+        return key.includes('Set16') || key.includes('Item');
+      })
+      .map(([key, item]: [string, any]) => {
+        const itemId = item.id || key.split('/').pop() || '';
+        const itemName = item.name || key.split('/').pop()?.replace(/TFT\d*_?Item_?/i, '').replace(/_/g, ' ') || 'Unknown Item';
+        const itemDesc = item.description || item.desc || 'No description available';
 
-      // Construct image URLs using CommunityDragon from the image path
-      const imageFullPath = item.image?.full || '';
-      const imageUrl = imageFullPath ? `https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/tft/item-icons/${imageFullPath}`.replace('//', '/') : undefined;
+        // Construct image URLs using CommunityDragon from the image path
+        const imageFullPath = item.image?.full || '';
+        const baseUrl = 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1';
+        const imageUrl = imageFullPath
+          ? `${baseUrl}/tft/item-icons/${imageFullPath.toLowerCase()}`
+          : undefined;
 
-      return {
-        id: itemId,
-        name: itemName,
-        desc: itemDesc,
-        icon: imageUrl || '',
-        from: [], // Not available in this format
-        to: [], // Not available in this format
-        components: [], // Not available in this format
-        imageUrl: imageUrl,
-        unique: false, // Not available in this format
-        trait: undefined // Not available in this format
-      };
-    });
+        return {
+          id: itemId,
+          name: itemName,
+          desc: itemDesc,
+          icon: imageUrl || '',
+          from: item.from || [],
+          to: item.to || [],
+          components: item.components || [],
+          imageUrl: imageUrl,
+          unique: item.unique || false,
+          trait: item.trait
+        };
+      });
 
     return {
       champions: tftChampions,
