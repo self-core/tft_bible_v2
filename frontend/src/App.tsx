@@ -8,8 +8,9 @@ import Compositions from './pages/Compositions'
 import CompositionDetail from './pages/CompositionDetail'
 import Champions from './pages/Champions'
 import Items from './pages/Items'
+import Traits from './pages/Traits'
 import PatchNotes from './pages/PatchNotes'
-import TeamBuilderPage from './pages/TeamBuilder' // Keeping original TeamBuilder page
+import TeamBuilderPage from './pages/TeamBuilder'
 import Augments from './pages/Augments'
 import AssetTestPage from './pages/AssetTestPage'
 import ThemeTestPage from './pages/ThemeTestPage'
@@ -31,6 +32,8 @@ function App() {
             <Route path="/compositions/:id" element={<CompositionDetail />} />
             <Route path="/champions" element={<Champions />} />
             <Route path="/items" element={<Items />} />
+            <Route path="/traits" element={<Traits />} />
+            <Route path="/augments" element={<Augments />} />
             <Route path="/builder" element={<ImprovedTeamBuilder />} />
             <Route path="/trait-tracker" element={<TraitTrackerPage />} />
             <Route path="/sets-info" element={<SetPatchInfoPage />} />

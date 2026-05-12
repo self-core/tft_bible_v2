@@ -19,9 +19,10 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     { path: '/builder', label: 'Team Builder', icon: Swords },
     { path: '/trait-tracker', label: 'Trait Tracker', icon: Target },
     { path: '/champions', label: 'Champions', icon: Users },
+    { path: '/traits', label: 'Traits', icon: Book },
     { path: '/items', label: 'Items', icon: Package },
-    { path: '/sets-info', label: 'Sets & Patches', icon: Book },
-    { path: '/summoner-search', label: 'Riot Data', icon: Search },
+    { path: '/augments', label: 'Augments', icon: Zap },
+    { path: '/sets-info', label: 'Sets & Patches', icon: Eye },
   ]
 
   // Add sets to navigation if available

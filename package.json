@@ -4,10 +4,10 @@
   "description": "Simplified backend for TFT Bible with GraphQL following scalable set-based architecture",
   "main": "dist/server.js",
   "scripts": {
-    "start": "node dist/server.js",
-    "dev": "cd backend-simple && ts-node src/server.ts",
-    "build": "cd backend-simple && tsc",
-    "lint": "eslint src --ext .ts"
+    "start": "node backend/dist/server.js",
+    "dev": "cd backend && ts-node src/server.ts",
+    "build": "cd backend && tsc",
+    "lint": "cd backend && eslint src --ext .ts"
   },
   "keywords": [
     "tft",
@@ -27,6 +27,7 @@
     "express": "^4.18.2",
     "graphql": "^16.8.1",
     "helmet": "^7.0.0",
+    "mongoose": "^8.0.0",
     "tslib": "^2.6.2"
   },
   "devDependencies": {

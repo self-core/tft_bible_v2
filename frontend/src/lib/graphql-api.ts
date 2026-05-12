@@ -14,7 +14,10 @@ import {
   GET_COMPOSITIONS,
   GET_COMPOSITION,
   GET_COMPOSITIONS_BY_SET,
-  SEARCH_ENTITIES
+  SEARCH_ENTITIES,
+  CREATE_COMPOSITION,
+  UPDATE_COMPOSITION,
+  DELETE_COMPOSITION
 } from './graphql';
 
 // Interface definitions matching GraphQL responses
@@ -451,6 +454,46 @@ export const graphQLApi = {
         details: error
       };
       throw formattedError;
+    }
+  },
+
+  // Composition mutations
+  createComposition: async (input: any) => {
+    try {
+      const response = await apolloClient.mutate({
+        mutation: CREATE_COMPOSITION,
+        variables: { input },
+      });
+      return response;
+    } catch (error: any) {
+      console.error('GraphQL Error - createComposition:', error.message || error);
+      throw error;
+    }
+  },
+
+  updateComposition: async (id: string, input: any) => {
+    try {
+      const response = await apolloClient.mutate({
+        mutation: UPDATE_COMPOSITION,
+        variables: { id, input },
+      });
+      return response;
+    } catch (error: any) {
+      console.error('GraphQL Error - updateComposition:', error.message || error);
+      throw error;
+    }
+  },
+
+  deleteComposition: async (id: string) => {
+    try {
+      const response = await apolloClient.mutate({
+        mutation: DELETE_COMPOSITION,
+        variables: { id },
+      });
+      return response;
+    } catch (error: any) {
+      console.error('GraphQL Error - deleteComposition:', error.message || error);
+      throw error;
     }
   },
 

@@ -5,6 +5,7 @@ import { graphQLApi, GraphQLComposition } from '../lib/graphql-api';
 interface CompositionsState {
   compositions: CompositionSummary[];
   currentComposition: Composition | null;
+  currentCompositionId: string | null;
   loading: boolean;
   error: string | null;
   totalPages: number;
@@ -22,9 +23,68 @@ interface CompositionsState {
   clearError: () => void;
 }
 
+const BOARD_COLS = 7;
+
+function autoAssignPositions(championIds: string[], championDetails: Record<string, any>): { x: number; y: number }[] {
+  const occupied = new Set<string>();
+  const positions: { x: number; y: number }[] = [];
+
+  const getPos = (row: number, col: number) => `${row},${col}`;
+
+  for (const champId of championIds) {
+    const champ = championDetails[champId];
+    const cost = champ?.cost || 1;
+
+    let placed = false;
+    let row: number;
+
+    if (cost >= 4) {
+      row = 3;
+    } else if (cost >= 3) {
+      row = 1;
+    } else if (cost === 1) {
+      row = 0;
+    } else {
+      row = 2;
+    }
+
+    for (let c = 0; c < BOARD_COLS; c++) {
+      const key = getPos(row, c);
+      if (!occupied.has(key)) {
+        occupied.add(key);
+        positions.push({ x: c, y: row });
+        placed = true;
+        break;
+      }
+    }
+
+    if (!placed) {
+      for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < BOARD_COLS; c++) {
+          const key = getPos(r, c);
+          if (!occupied.has(key)) {
+            occupied.add(key);
+            positions.push({ x: c, y: r });
+            placed = true;
+            break;
+          }
+        }
+        if (placed) break;
+      }
+    }
+
+    if (!placed) {
+      positions.push({ x: -1, y: -1 });
+    }
+  }
+
+  return positions;
+}
+
 export const useCompositionsStore = create<CompositionsState>((set, get) => ({
   compositions: [],
   currentComposition: null,
+  currentCompositionId: null,
   loading: false,
   error: null,
   totalPages: 0,
@@ -34,10 +94,7 @@ export const useCompositionsStore = create<CompositionsState>((set, get) => ({
   fetchCompositions: async (params?: CompositionQuery) => {
     set({ loading: true, error: null });
     try {
-      const response = await graphQLApi.getCompositions({
-        limit: params?.limit || 12,
-        offset: params?.offset || 0
-      });
+      const response = await graphQLApi.getCompositions();
 
       // Get all champion IDs to fetch full champion data
       const allChampionIds: string[] = [];
@@ -121,12 +178,15 @@ export const useCompositionsStore = create<CompositionsState>((set, get) => ({
   },
   
   fetchCompositionById: async (id: string) => {
-    set({ loading: true, error: null });
+    const prevId = get().currentCompositionId;
+    if (prevId === id && get().currentComposition) {
+      return;
+    }
+    set({ loading: true, error: null, currentComposition: null, currentCompositionId: id });
     try {
       const response = await graphQLApi.getCompositionById(id);
       const graphqlData = response.data.composition;
 
-      // Fetch all champions to get their details
       const championDetails: Record<string, any> = {};
       if (graphqlData.championIds && graphqlData.championIds.length > 0) {
         try {
@@ -139,86 +199,80 @@ export const useCompositionsStore = create<CompositionsState>((set, get) => ({
         }
       }
 
-      // Transform GraphQL data to match expected Composition format
+      const champIds: string[] = graphqlData.championIds || [];
+      const positions = autoAssignPositions(champIds, championDetails);
+
       const data: Composition = {
         id: graphqlData.id,
-        set_id: `set_${graphqlData.setId}`, // Using setId from GraphQL schema
-        name: graphqlData.title, // Using title from GraphQL schema
+        set_id: `set_${graphqlData.setId}`,
+        name: graphqlData.title,
         description: graphqlData.description,
-        category: 'General', // Placeholder - would come from GraphQL schema
-        tags: [], // Would come from GraphQL schema
-        champions: graphqlData.championIds?.map((champId: string) => {
+        category: 'General',
+        tags: [],
+        champions: champIds.map((champId: string, idx: number) => {
           const champData = championDetails[champId];
+          const pos = positions[idx] || { x: -1, y: -1 };
           return champData ? {
             id: champData.id,
             name: champData.name,
-            star_level: 1, // Placeholder - would come from GraphQL schema
-            position: { x: 0, y: 0 }, // Placeholder - would come from GraphQL schema
-            items: [], // Placeholder - would come from GraphQL schema
-            is_core: false, // Placeholder - would come from GraphQL schema
-            priority: 'medium', // Placeholder
+            star_level: 1,
+            position: pos,
+            items: [],
+            is_core: idx < 3,
+            priority: idx < 3 ? 'high' : 'medium',
             cost: champData.cost,
             traits: champData.traits,
-            health: 800, // Placeholder
-            attack_damage: 50, // Placeholder
-            ability_name: champData.ability?.name || 'TBD', // Placeholder
-            icon_url: champData.iconUrl || '' // Placeholder
+            health: champData.stats?.hp || 800,
+            attack_damage: champData.stats?.damage || 50,
+            ability_name: champData.ability?.name || 'TBD',
+            icon_url: champData.iconUrl || ''
           } : {
             id: champId,
-            name: champId, // Fallback to ID if champion not found
-            star_level: 1, // Fallback
-            position: { x: 0, y: 0 }, // Fallback
-            items: [], // Fallback
-            is_core: false, // Fallback
-            priority: 'medium', // Fallback
-            cost: 0, // Fallback
-            traits: [], // Fallback
-            health: 800, // Fallback
-            attack_damage: 50, // Fallback
-            ability_name: 'TBD', // Fallback
-            icon_url: '' // Fallback
+            name: champId,
+            star_level: 1,
+            position: pos,
+            items: [],
+            is_core: false,
+            priority: 'medium',
+            cost: 0,
+            traits: [],
+            health: 800,
+            attack_damage: 50,
+            ability_name: 'TBD',
+            icon_url: ''
           };
         }) || [],
         augments: {
-          preferred: graphqlData.augmentRecommendations || [], // Using augmentRecommendations from GraphQL schema
-          acceptable: [] // Placeholder - would come from GraphQL schema
+          preferred: graphqlData.augmentRecommendations || [],
+          acceptable: []
         },
         meta: {
-          tier: 'S', // Placeholder
-          difficulty: 3, // Placeholder
-          cost: 'mid', // Placeholder
-          patch: '14.5', // Placeholder
-          playstyle: 'aggro', // Placeholder
-          winrate: 50.0, // Placeholder
-          avg_placement: 2.5, // Placeholder
-          playrate: 10.0, // Placeholder
-          contest_rate: 5.0, // Placeholder
+          tier: 'S',
+          difficulty: 3,
+          cost: 'mid',
+          patch: '14.5',
+          playstyle: 'aggro',
+          winrate: 50.0,
+          avg_placement: 2.5,
+          playrate: 10.0,
+          contest_rate: 5.0,
         },
-        votes: {
-          upvotes: 10, // Placeholder
-          downvotes: 0 // Placeholder
-        },
-        views: 100, // Placeholder
-        favorites: 5, // Placeholder
-        comments: [], // Placeholder
-        is_public: true, // Placeholder
-        is_verified: false, // Placeholder
-        is_featured: false, // Placeholder
-        created_at: new Date().toISOString(), // Placeholder
-        updated_at: new Date().toISOString(), // Placeholder
-        builder_code: '', // Placeholder
+        votes: { upvotes: 10, downvotes: 0 },
+        views: 100,
+        favorites: 5,
+        comments: [],
+        is_public: true,
+        is_verified: false,
+        is_featured: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        builder_code: '',
       };
 
-      set({
-        currentComposition: data,
-        loading: false
-      });
+      set({ currentComposition: data, loading: false });
     } catch (error: any) {
       console.error('Failed to fetch composition by ID:', error);
-      set({
-        loading: false,
-        error: error.message || 'Failed to fetch composition'
-      });
+      set({ loading: false, error: error.message || 'Failed to fetch composition', currentCompositionId: null });
     }
   },
   
@@ -268,7 +322,7 @@ export const useCompositionsStore = create<CompositionsState>((set, get) => ({
   },
   
   clearCurrentComposition: () => {
-    set({ currentComposition: null });
+    set({ currentComposition: null, currentCompositionId: null });
   },
   
   fetchCompositionsBySet: async (setId: number, params?: CompositionQuery) => {

@@ -27,33 +27,31 @@ export const useChampionsStore = create<ChampionsState>((set, get) => ({
   fetchChampions: async (params?: ChampionQuery) => {
     set({ loading: true, error: null });
     try {
-      const response = await graphQLApi.getChampions({
-        limit: params?.limit || 50
-      });
-
-      // Transform GraphQL data to match expected format
+      const response = await graphQLApi.getChampions();
       const graphqlData = response.data.champions;
+      const limit = params?.limit || 50;
+
       const data: PaginatedResponse<ChampionSummary> = {
-        data: graphqlData.map((champ: any) => ({
+        data: graphqlData.slice(0, limit).map((champ: any) => ({
           id: champ.id,
           name: champ.name,
           display_name: champ.displayName || champ.name,
           cost: champ.cost,
           traits: champ.traits,
-          health: champ.stats?.health || 800,
-          attack_damage: champ.stats?.attackDamage || 50,
+          health: champ.stats?.hp || 800,
+          attack_damage: champ.stats?.damage || 50,
           ability_name: champ.ability?.name || '',
           image_url: champ.imageUrl || champ.iconUrl || '',
           splash_url: champ.splashUrl || '',
-          rarity: 'common', // Placeholder
-          release_version: champ.releaseVersion || '1.0', // Use actual field if exists
-          set_id: champ.setId || 'tft-set-1', // Use actual field if exists
-          is_enabled: champ.isEnabled ?? true // Use actual field if exists
+          rarity: 'common',
+          release_version: '1.0',
+          set_id: 'tft-set-1',
+          is_enabled: true
         })),
         total: graphqlData.length,
-        page: 1, // Placeholder
-        per_page: params?.limit || 50,
-        total_pages: Math.ceil(graphqlData.length / (params?.limit || 50)) // Approximate
+        page: 1,
+        per_page: limit,
+        total_pages: Math.ceil(graphqlData.length / limit)
       };
 
       set({
@@ -74,9 +72,7 @@ export const useChampionsStore = create<ChampionsState>((set, get) => ({
   fetchChampionById: async (id: string) => {
     set({ loading: true, error: null });
     try {
-      // Since we don't have a specific query for single champion by id in our GraphQL,
-      // we'll fetch all champions and find the specific one
-      const response = await graphQLApi.getChampions({});
+      const response = await graphQLApi.getChampions();
       const graphqlData = response.data.champions;
 
       const champion = graphqlData.find((champ: any) => champ.id === id);

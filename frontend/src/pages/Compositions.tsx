@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useCompositionsStore } from '../stores'
 import { Link } from 'react-router-dom'
 import { Filter, Star, Eye, ThumbsUp, ExternalLink, Target } from 'lucide-react'
-import { compositionsApi, CompositionSummary, CompositionQuery } from '../lib/api'
+import { CompositionSummary, CompositionQuery } from '../lib/api'
 
 const Compositions = () => {
   const [filters, setFilters] = useState<CompositionQuery>({

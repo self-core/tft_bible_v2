@@ -3,7 +3,7 @@ import { Swords, Users, Package, Search, Star, Zap, Target, Cpu, TrendingUp, Eye
 import { useState, useEffect } from 'react'
 import { useTheme } from '../contexts/ThemeContext'
 import { useCompositionsStore, useChampionsStore } from '../stores'
-import { CompositionSummary, ChampionSummary } from '../types'
+import { CompositionSummary, ChampionSummary } from '../lib/api'
 
 const Home = () => {
   const { theme } = useTheme();

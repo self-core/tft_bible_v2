@@ -405,3 +405,10 @@ export const UPDATE_COMPOSITION = gql`
     }
   }
 `;
+
+// Mutation to delete a composition
+export const DELETE_COMPOSITION = gql`
+  mutation DeleteComposition($id: ID!) {
+    deleteComposition(id: $id)
+  }
+`;
