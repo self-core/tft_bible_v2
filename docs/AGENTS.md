@@ -3,6 +3,13 @@
 ## Current Goal
 Fix and complete the custom Builder (read/edit) and Composition pages so they display correctly without breaking when switching comps.
 
+## Obsidian Vault
+- Vault root: `../vault/` (relative to project root)
+- Notes: `../vault/notes/` — research, ideas, meeting notes
+- Specs: `../vault/specs/` — design documents (read/write)
+- OpenCode reads notes from `../vault/notes/` for project context
+- OpenCode writes design specs to `../vault/specs/`
+
 ## Key Decisions
 - Store champion positions as `(row, col)` instead of `(x, y)` for grid indexing
 - `TFTBoard` is a single reusable component with `editMode` boolean — eliminates three divergent board implementations
