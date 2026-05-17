@@ -9,6 +9,8 @@ Fix and complete the custom Builder (read/edit) and Composition pages so they di
 - Specs: `../vault/specs/` — design documents (read/write)
 - OpenCode reads notes from `../vault/notes/` for project context
 - OpenCode writes design specs to `../vault/specs/`
+- Windows binary path for Obsidian plugin: `C:\nvm4w\nodejs\opencode.cmd`
+- Plugin port: 14099
 
 ## Key Decisions
 - Store champion positions as `(row, col)` instead of `(x, y)` for grid indexing
@@ -20,7 +22,7 @@ Fix and complete the custom Builder (read/edit) and Composition pages so they di
 - **Empty board grid**: all champions had `position: { x: 0, y: 0 }` stacking onto cell (0,0). Auto-assignment fixed this.
 - **Switching comps broke**: no `currentCompositionId` dedup and no immediate clear of stale `currentComposition`. Added both.
 - **Multiple board implementations**: consolidated into single `TFTBoard.tsx` with hex SVG layout.
-- **Backend champion data not loading**: `dragontailService.ts` was parsing JSON at root level, but dragontail files use nested `{ type, version, data: {...} }` structure. Fixed to read `data` key. Now 100 Set16 champions load into MongoDB.
+- **Backend champion data not loading**: `dragontailService.ts` (now refactored into `SetDataService` + `ImportService` + 6 internal modules) was parsing JSON at root level, but dragontail files use nested `{ type, version, data: {...} }` structure. Fixed to read `data` key. Now 100 Set16 champions load into MongoDB.
 - **Champion icons not showing**: CommunityDragon CDN URLs corrected to use `tft/champion-portraits/{name}.png` format (strip `_splash_centered_X.TFT_Set16.png` suffix).
 
 ## Files Changed (all sessions)
@@ -31,11 +33,12 @@ Fix and complete the custom Builder (read/edit) and Composition pages so they di
 - `frontend/src/lib/graphql-api.ts` — added `deleteComposition` mutation
 - `frontend/src/stores/traitsStore.ts` — newly created GraphQL-based traits store
 - `frontend/src/pages/Traits.tsx` — newly created traits browse page
-- `backend/src/services/dragontailService.ts` — fixed JSON parsing, Set16 filtering, image URL construction
+- `backend/src/services/dragontailService.ts` → split into `SetDataService.ts`, `ImportService.ts`, + 6 `_internal/` modules (EmbeddedFallback, ResultCache, PathResolver, DataTransformer, FileParser, Repository)
 
 ## Data Architecture
 - GraphQL schema stores only `championIds: [String!]!` — no positions, star levels, or items
-- Backend loads Set16 data from dragontail JSON files (mounted at `/app/dragontail-data`)
+- Backend loads Set16 data via `SetDataService.getSetData()` (cache → DB → `ImportService.importSet()` → embedded fallback)
+- `ImportService` reads dragontail JSON files (mounted at `/app/dragontail-data`) via `FileParser` + `PathResolver`, transforms via `DataTransformer`, persists via `Repository`
 - Image URLs from CommunityDragon CDN: `https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/tft/champion-portraits/`
 - `compositionsStore.fetchCompositionById()` auto-assigns positions by cost tier
 
@@ -48,7 +51,7 @@ Fix and complete the custom Builder (read/edit) and Composition pages so they di
 ## Backlog
 1. **Champion images not loading on composition board** — SVG `image` element for champion portrait may not render due to CORS, missing file, or CSS/z-index issue. Need to inspect network tab and verify CommunityDragon URL format for Set16 TFT portraits. Fix path or add fallback placeholder.
 2. **Navbar alignment and spacing irregularities** — Layout nav has alignment/spacing issues between elements. Needs CSS audit: Flexbox/grid gaps, text truncation, responsive breakpoints.
-3. **Upgrade from Set 16 to Set 17** — Dragontail data version needs to change from `15.24.1` to Set 17 version. Update docker-compose mount path, `dragontailService.ts` data paths, and any hardcoded set references. Set 17 version number TBD (check Riot API or dragontail folder).
+3. **Upgrade from Set 16 to Set 17** — Dragontail data version needs to change from `15.24.1` to Set 17 version. Update docker-compose mount path, `PathResolver.ts` base paths, and any hardcoded set references. Set 17 version number TBD (check Riot API or dragontail folder).
 
 ## Next Steps
 1. Fix champion image rendering (CORS, URL format, or SVG `<image>` element issue)

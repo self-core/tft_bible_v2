@@ -1,20 +1,13 @@
 import { ISetChampion, ITrait, IItem, IComposition, ISetData } from './interfaces';
-import dragontailService from './services/dragontailService';
+import { SetDataService } from './services/SetDataService';
 
-// Initialize the dragontail service
-dragontailService.initialize();
-
-// Realistic data based on actual TFT data sources following the new Set-based architecture
-let set16Data: ISetData;
-
-// Function to get the current set data (either from dragontail or fallback)
-const getCurrentSetData = (): ISetData => {
-  return dragontailService.getSetData();
-};
+// Initialize the set data service
+const setDataService = new SetDataService();
+setDataService.initialize();
 
 // Async function to get the current set data from database
 const getCurrentSetDataFromDB = async (): Promise<ISetData> => {
-  return await dragontailService.getSetDataFromDB();
+  return await setDataService.getSetData();
 };
 
 const compositions: IComposition[] = [

@@ -9,7 +9,7 @@ export class EmbeddedFallback {
       traits: EmbeddedFallback.getEmbeddedTraits(),
       items: EmbeddedFallback.getEmbeddedItems(),
       augments: EmbeddedFallback.getAugmentsForSet16(),
-      mechanics: '',
+      mechanics: {},
     };
 
     const sets: Record<number, ISetData> = { 16: SET16_DATA };

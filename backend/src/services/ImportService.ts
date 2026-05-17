@@ -3,58 +3,87 @@ import { PathResolver } from './_internal/PathResolver';
 import { FileParser } from './_internal/FileParser';
 import { DataTransformer } from './_internal/DataTransformer';
 
+const CDN_BASE = 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1';
+
 export class ImportService {
   private repository: Repository;
+  private pathResolver: PathResolver;
 
   constructor() {
     this.repository = new Repository();
+    this.pathResolver = new PathResolver();
   }
 
-  async importSet(setId: number): Promise<void> {
-    const pathResolver = new PathResolver(setId);
-    const fileParser = new FileParser(pathResolver);
-
-    let champions: any[] | null = null;
-    let traits: any[] | null = null;
-    let items: any[] | null = null;
-
-    try {
-      champions = await fileParser.parseChampions();
-    } catch { }
-
-    try {
-      traits = await fileParser.parseTraits();
-    } catch { }
-
-    try {
-      items = await fileParser.parseItems();
-    } catch { }
-
-    if (!champions && !traits && !items) {
-      throw new Error(`No dragontail files found for set ${setId}`);
+  async importSet(setId: number): Promise<{ champions: number; traits: number; items: number }> {
+    const dragontailDir = this.pathResolver.findDragontailDir();
+    if (!dragontailDir) {
+      throw new Error(`No dragontail data directory found for set ${setId}`);
     }
 
-    const transformer = new DataTransformer();
+    const championJson = FileParser.readJsonFile(this.pathResolver.getChampionSetPath(dragontailDir, setId))
+      ?? FileParser.readJsonFile(this.pathResolver.getChampionPath(dragontailDir));
+    const traitJson = FileParser.readJsonFile(this.pathResolver.getTraitSetPath(dragontailDir, setId))
+      ?? FileParser.readJsonFile(this.pathResolver.getTraitPath(dragontailDir));
+    const itemJson = FileParser.readJsonFile(this.pathResolver.getItemSetPath(dragontailDir, setId))
+      ?? FileParser.readJsonFile(this.pathResolver.getItemPath(dragontailDir));
 
-    if (champions) {
-      const transformedChampions = transformer.transformChampions(champions, setId);
-      await this.repository.saveChampions(transformedChampions);
+    if (!championJson || !traitJson || !itemJson) {
+      throw new Error(`One or more dragontail data files not found for set ${setId}`);
     }
 
-    if (traits) {
-      const transformedTraits = transformer.transformTraits(traits, setId);
-      await this.repository.saveTraits(transformedTraits);
-    }
+    const rawChampions = FileParser.parseChampionFile(championJson, setId);
+    const rawTraits = FileParser.parseTraitFile(traitJson, setId);
+    const rawItems = FileParser.parseItemFile(itemJson, setId);
 
-    if (items) {
-      const transformedItems = transformer.transformItems(items, setId);
-      await this.repository.saveItems(transformedItems);
-    }
+    const champions = rawChampions.map((c: any) => {
+      const portraitName = c.imageFullPath
+        ? c.imageFullPath.replace(/_splash_centered_\d+\.TFT_Set\d+\.png$/i, '.png')
+        : '';
+      return {
+        id: `TFT${setId}_${c.name.trim().replace(/\s+/g, '')}`,
+        name: c.name,
+        cost: c.cost,
+        traits: c.traits,
+        stats: c.stats,
+        ability: c.ability,
+        imageUrl: portraitName
+          ? `${CDN_BASE}/tft/champion-portraits/${portraitName.toLowerCase()}`
+          : DataTransformer.buildChampionPortraitUrl(c.name),
+        splashUrl: c.imageFullPath
+          ? `${CDN_BASE}/champion-splashes/tft-set${setId}/${c.imageFullPath}`
+          : DataTransformer.buildSplashUrl(c.name),
+        iconUrl: portraitName
+          ? `${CDN_BASE}/tft/champion-portraits/${portraitName.toLowerCase()}`
+          : null,
+      };
+    });
 
-    const championIds = transformedChampions?.map((c: any) => c.id) ?? [];
-    const traitKeys = transformedTraits?.map((t: any) => t.key) ?? [];
-    const itemIds = transformedItems?.map((i: any) => i.id) ?? [];
+    const traits = rawTraits.map(DataTransformer.parseTrait);
+    const items = rawItems.map((i: any) => ({
+      id: i.id,
+      name: i.name,
+      description: i.description,
+      components: i.components,
+      imageUrl: i.imageFullPath
+        ? `${CDN_BASE}/tft/item-icons/${i.imageFullPath.toLowerCase()}`
+        : null,
+      unique: i.unique ?? false,
+      trait: i.trait ?? null,
+    }));
 
-    await this.repository.saveSetData(setId, `Set ${setId}`, championIds, traitKeys, itemIds, []);
+    await this.repository.saveChampions(champions);
+    await this.repository.saveTraits(traits);
+    await this.repository.saveItems(items);
+
+    await this.repository.saveSetData(
+      setId,
+      `Set ${setId}`,
+      champions.map((c: any) => c.id),
+      traits.map((t: any) => t.key),
+      items.map((i: any) => i.id),
+      []
+    );
+
+    return { champions: champions.length, traits: traits.length, items: items.length };
   }
 }
