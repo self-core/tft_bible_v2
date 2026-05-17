@@ -1,11 +1,13 @@
 import { ISetChampion, ITrait, IItem, IComposition, ISetData } from './interfaces';
 import { SetDataService } from './services/SetDataService';
 import { CompositionService } from './services/CompositionService';
+import { MetaService } from './services/MetaService';
 
 // Initialize services
 const setDataService = new SetDataService();
 setDataService.initialize();
 const compositionService = new CompositionService();
+const metaService = new MetaService();
 
 // Async function to get the current set data from database
 const getCurrentSetDataFromDB = async (): Promise<ISetData> => {
@@ -102,7 +104,13 @@ export const resolvers = {
         sets: filteredSets,
         compositions: filteredCompositions
       };
-    }
+    },
+    metaCompositions: async (_: any, { setId, patchVersion }: { setId?: number; patchVersion?: string }) => {
+      return metaService.getMetaCompositions(setId, patchVersion);
+    },
+    metaComposition: async (_: any, { id }: { id: string }) => {
+      return metaService.getMetaCompositionById(id);
+    },
   },
   Mutation: {
     createComposition: async (_: any, { input }: { input: any }) => {
@@ -115,6 +123,10 @@ export const resolvers = {
     },
     deleteComposition: async (_: any, { id }: { id: string }) => {
       return compositionService.delete(id);
-    }
+    },
+    refreshMetaData: async (_: any, { setId }: { setId: number }) => {
+      await metaService.refreshMetaData(setId);
+      return true;
+    },
   }
 };

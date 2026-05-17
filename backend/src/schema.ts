@@ -164,4 +164,50 @@ export const typeDefs = gql`
     sets: [SetData!]!
     compositions: [Composition!]!
   }
+
+  type MetaItem {
+    itemId: String!
+    count: Int!
+  }
+
+  type MetaChampion {
+    championId: String!
+    count: Int!
+    pickRate: Float!
+    items: [MetaItem!]!
+  }
+
+  type MetaTrait {
+    key: String!
+    breakpoint: Int!
+    count: Int!
+  }
+
+  type MetaStats {
+    matchesAnalyzed: Int!
+    winRate: Float!
+    top4Rate: Float!
+    avgPlacement: Float!
+    pickRate: Float!
+  }
+
+  type MetaComposition {
+    id: ID!
+    setId: Int!
+    patchVersion: String!
+    champions: [MetaChampion!]!
+    traits: [MetaTrait!]!
+    stats: MetaStats!
+    playstyle: String!
+    lastUpdated: String!
+  }
+
+  extend type Query {
+    metaCompositions(setId: Int, patchVersion: String): [MetaComposition!]!
+    metaComposition(id: ID!): MetaComposition
+  }
+
+  extend type Mutation {
+    refreshMetaData(setId: Int!): Boolean!
+  }
 `;
