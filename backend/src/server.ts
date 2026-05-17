@@ -6,6 +6,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import helmet from 'helmet';
+import { MetaService } from './services/MetaService';
 
 // Load environment variables
 dotenv.config();
@@ -44,6 +45,19 @@ async function startServer() {
 
   // Apply Apollo GraphQL middleware
   server.applyMiddleware({ app, path: '/graphql' });
+
+  // Schedule meta data refresh
+  const metaService = new MetaService();
+
+  // Initial meta refresh on startup (non-blocking)
+  if (process.env.RIOT_API_KEY) {
+    metaService.refreshMetaData(17).catch(err => console.warn('Initial meta refresh failed:', err.message));
+
+    // Refresh every 6 hours
+    setInterval(() => {
+      metaService.refreshMetaData(17).catch(err => console.warn('Scheduled meta refresh failed:', err.message));
+    }, 6 * 60 * 60 * 1000);
+  }
 
   // Basic health check endpoint
   app.get('/health', (_req: any, res: any) => {
