@@ -1,50 +1,16 @@
 import { ISetChampion, ITrait, IItem, IComposition, ISetData } from './interfaces';
 import { SetDataService } from './services/SetDataService';
+import { CompositionService } from './services/CompositionService';
 
-// Initialize the set data service
+// Initialize services
 const setDataService = new SetDataService();
 setDataService.initialize();
+const compositionService = new CompositionService();
 
 // Async function to get the current set data from database
 const getCurrentSetDataFromDB = async (): Promise<ISetData> => {
   return await setDataService.getSetData();
 };
-
-const compositions: IComposition[] = [
-  {
-    id: 'hyper-carry',
-    title: 'Hyper Carry',
-    description: 'A popular hyper carry composition focused on dealing massive damage with multiple carries.',
-    setId: 16, // Set ID for this composition
-    championIds: ['TFT16_Jinx', 'TFT16_Ashe'],
-    traitBonuses: ['Gunner: 4 units', 'Ranger: 2 units'],
-    augmentRecommendations: ['arcane-nullifier', 'balanced-diet'],
-    difficulty: 'Advanced',
-    region: 'Runeterra'
-  },
-  {
-    id: 'sorcerer-control',
-    title: 'Sorcerer Control',
-    description: 'A control composition utilizing sorcerer units for mana manipulation and crowd control.',
-    setId: 16, // Set ID for this composition
-    championIds: ['TFT16_Ahri', 'TFT16_Lux'],
-    traitBonuses: ['Sorcerer: 4 units', 'Arcane: 2 units'],
-    augmentRecommendations: ['backfoot', 'big-spear'],
-    difficulty: 'Intermediate',
-    region: 'Runeterra'
-  },
-  {
-    id: 'ninja-assassin',
-    title: 'Ninja Assassin',
-    description: 'A burst damage composition combining Ninja and Assassin units for high damage and mobility.',
-    setId: 16, // Set ID for this composition
-    championIds: ['TFT16_Akali'],
-    traitBonuses: ['Ninja: 1 unit', 'Assassin: 4 units'],
-    augmentRecommendations: ['arcane-nullifier', 'backfoot'],
-    difficulty: 'Intermediate',
-    region: 'Runeterra'
-  }
-];
 
 // Define the resolvers following the new Set-based architecture
 export const resolvers = {
@@ -98,11 +64,11 @@ export const resolvers = {
       const currentSet = await getCurrentSetDataFromDB();
       return currentSet.augments.find((augment: any) => augment.id === id);
     },
-    compositions: () => compositions,
+    compositions: () => compositionService.getAll(),
     compositionsBySet: (_: any, { setId }: { setId: number }) => {
-      return compositions.filter((comp: IComposition) => comp.setId === setId);
+      return compositionService.getBySet(setId);
     },
-    composition: (_: any, { id }: { id: string }) => compositions.find((comp: IComposition) => comp.id === id),
+    composition: (_: any, { id }: { id: string }) => compositionService.getById(id),
     search: async (_: any, { searchTerm }: { searchTerm: string }) => {
       const currentSet = await getCurrentSetDataFromDB();
       const term = searchTerm.toLowerCase();
@@ -127,11 +93,7 @@ export const resolvers = {
         set.setName.toLowerCase().includes(term)
       );
 
-      const filteredCompositions = compositions.filter((comp: IComposition) =>
-        comp.title.toLowerCase().includes(term) ||
-        comp.description.toLowerCase().includes(term) ||
-        comp.traitBonuses.some((bonus: string) => bonus.toLowerCase().includes(term))
-      );
+      const filteredCompositions = await compositionService.search(term);
 
       return {
         champions: filteredChampions,
@@ -143,34 +105,16 @@ export const resolvers = {
     }
   },
   Mutation: {
-    createComposition: (_: any, { input }: { input: IComposition }) => {
-      // Generate a unique ID for the new composition
-      const newId = input.title.toLowerCase().replace(/\s+/g, '-');
-
-      const newComposition: IComposition = {
-        ...input,
-        id: newId
-      };
-
-      compositions.push(newComposition);
-      return newComposition;
+    createComposition: async (_: any, { input }: { input: any }) => {
+      return compositionService.create(input);
     },
-    updateComposition: (_: any, { id, input }: { id: string, input: Partial<IComposition> }) => {
-      const index = compositions.findIndex(comp => comp.id === id);
-      if (index === -1) {
-        throw new Error(`Composition with id ${id} not found`);
-      }
-
-      compositions[index] = { ...compositions[index], ...input } as IComposition;
-      return compositions[index];
+    updateComposition: async (_: any, { id, input }: { id: string, input: any }) => {
+      const result = await compositionService.update(id, input);
+      if (!result) throw new Error(`Composition with id ${id} not found`);
+      return result;
     },
-    deleteComposition: (_: any, { id }: { id: string }) => {
-      const initialLength = compositions.length;
-      const index = compositions.findIndex(comp => comp.id === id);
-      if (index !== -1) {
-        compositions.splice(index, 1);
-      }
-      return compositions.length < initialLength; // Return true if deletion occurred
+    deleteComposition: async (_: any, { id }: { id: string }) => {
+      return compositionService.delete(id);
     }
   }
 };
