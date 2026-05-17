@@ -39,10 +39,10 @@ describe('CompositionService', () => {
       difficulty: 'Beginner',
       region: 'Runeterra',
     });
-    expect(created.id).toBe('my-comp');
+    expect(created.id).toMatch(/^my-comp-/);
     expect(created.title).toBe('My Comp');
 
-    const found = await service.getById('my-comp');
+    const found = await service.getById(created.id);
     expect(found).not.toBeNull();
     expect(found!.title).toBe('My Comp');
   });
@@ -68,16 +68,16 @@ describe('CompositionService', () => {
   });
 
   it('should update a composition', async () => {
-    await service.create({ title: 'Original', description: '', setId: 16, championIds: [], traitBonuses: [], augmentRecommendations: [], difficulty: '', region: '' });
-    const updated = await service.update('original', { title: 'Updated' });
+    const created = await service.create({ title: 'Original', description: '', setId: 16, championIds: [], traitBonuses: [], augmentRecommendations: [], difficulty: '', region: '' });
+    const updated = await service.update(created.id, { title: 'Updated' });
     expect(updated!.title).toBe('Updated');
   });
 
   it('should delete a composition', async () => {
-    await service.create({ title: 'To Delete', description: '', setId: 16, championIds: [], traitBonuses: [], augmentRecommendations: [], difficulty: '', region: '' });
-    const deleted = await service.delete('to-delete');
+    const created = await service.create({ title: 'To Delete', description: '', setId: 16, championIds: [], traitBonuses: [], augmentRecommendations: [], difficulty: '', region: '' });
+    const deleted = await service.delete(created.id);
     expect(deleted).toBe(true);
-    const found = await service.getById('to-delete');
+    const found = await service.getById(created.id);
     expect(found).toBeNull();
   });
 

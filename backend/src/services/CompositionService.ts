@@ -32,7 +32,7 @@ export class CompositionService {
   }
 
   async create(input: CreateCompositionInput): Promise<IComposition> {
-    const id = input.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    const id = input.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '-' + Date.now().toString(36);
     const doc = await CompositionModel.create({ ...input, id });
     return this.toInterface(doc.toObject());
   }
@@ -52,7 +52,8 @@ export class CompositionService {
   }
 
   async search(term: string): Promise<IComposition[]> {
-    const regex = new RegExp(term, 'i');
+    const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(escaped, 'i');
     const docs = await CompositionModel.find({
       $or: [
         { title: regex },
@@ -63,7 +64,7 @@ export class CompositionService {
     return docs.map(this.toInterface);
   }
 
-  private toInterface(doc: any): IComposition {
+  private toInterface(doc: Record<string, any>): IComposition {
     return {
       id: doc.id,
       title: doc.title,
@@ -75,8 +76,8 @@ export class CompositionService {
       augmentRecommendations: doc.augmentRecommendations || [],
       difficulty: doc.difficulty,
       region: doc.region,
-      createdAt: doc.createdAt?.toISOString?.(),
-      updatedAt: doc.updatedAt?.toISOString?.(),
+      createdAt: doc.createdAt?.toISOString(),
+      updatedAt: doc.updatedAt?.toISOString(),
     };
   }
 }
