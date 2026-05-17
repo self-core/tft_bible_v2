@@ -70,11 +70,36 @@ export const typeDefs = gql`
     imageUrl: String
   }
 
+  type Position {
+    row: Int!
+    col: Int!
+  }
+
+  type BoardUnit {
+    championId: String!
+    position: Position!
+    starLevel: Int!
+    items: [String!]!
+  }
+
+  input PositionInput {
+    row: Int!
+    col: Int!
+  }
+
+  input BoardUnitInput {
+    championId: String!
+    position: PositionInput!
+    starLevel: Int!
+    items: [String!]!
+  }
+
   input CreateCompositionInput {
     title: String!
     description: String!
     setId: Int!
     championIds: [String!]!
+    units: [BoardUnitInput!]
     traitBonuses: [String!]!
     augmentRecommendations: [String!]!
     difficulty: String
@@ -86,6 +111,7 @@ export const typeDefs = gql`
     description: String
     setId: Int
     championIds: [String!]
+    units: [BoardUnitInput!]
     traitBonuses: [String!]
     augmentRecommendations: [String!]
     difficulty: String
@@ -98,10 +124,13 @@ export const typeDefs = gql`
     description: String!
     setId: Int!
     championIds: [String!]!
+    units: [BoardUnit!]
     traitBonuses: [String!]!
     augmentRecommendations: [String!]!
     difficulty: String
     region: String
+    createdAt: String
+    updatedAt: String
   }
 
   type Query {

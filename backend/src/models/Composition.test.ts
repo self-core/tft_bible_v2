@@ -3,23 +3,29 @@ import mongoose from 'mongoose';
 import { CompositionModel } from './Composition';
 
 describe('CompositionModel', () => {
+  let isConnected = false;
+
   beforeAll(async () => {
     const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/tft_bible_test';
     try {
-      await mongoose.connect(MONGO_URI);
+      await mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 2000 });
+      isConnected = true;
     } catch {
       console.warn('MongoDB not available, skipping model tests');
     }
   });
 
   afterAll(async () => {
-    try {
-      await mongoose.connection.dropDatabase();
-      await mongoose.disconnect();
-    } catch {}
+    if (isConnected) {
+      try {
+        await mongoose.connection.dropDatabase();
+        await mongoose.disconnect();
+      } catch {}
+    }
   });
 
   it('should create and retrieve a composition', async () => {
+    if (!isConnected) return;
     const doc = await CompositionModel.create({
       id: 'test-comp',
       title: 'Test Comp',
@@ -37,6 +43,7 @@ describe('CompositionModel', () => {
   });
 
   it('should save units with position, starLevel, and items', async () => {
+    if (!isConnected) return;
     const doc = await CompositionModel.create({
       id: 'comp-with-units',
       title: 'Comp With Units',
@@ -57,15 +64,9 @@ describe('CompositionModel', () => {
   });
 
   it('should enforce unique id', async () => {
-    await CompositionModel.create({
-      id: 'dup-id', title: 'First', description: '', setId: 16,
-      championIds: [], traitBonuses: [], augmentRecommendations: [],
-      difficulty: '', region: '',
-    });
-    await expect(CompositionModel.create({
-      id: 'dup-id', title: 'Second', description: '', setId: 16,
-      championIds: [], traitBonuses: [], augmentRecommendations: [],
-      difficulty: '', region: '',
-    })).rejects.toThrow();
+    if (!isConnected) return;
+    const base = { description: 'x', difficulty: 'x', region: 'x', setId: 16, championIds: [], traitBonuses: [], augmentRecommendations: [] };
+    await CompositionModel.create({ id: 'dup-id', title: 'First', ...base });
+    await expect(CompositionModel.create({ id: 'dup-id', title: 'Second', ...base })).rejects.toThrow();
   });
 });
