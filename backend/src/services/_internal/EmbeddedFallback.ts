@@ -41,10 +41,10 @@ export class EmbeddedFallback {
         stats: { hp: 650, mana: 40, damage: 50 },
         ability: {
           name: 'Orb of Deception',
-          variables: {
-            Damage: [150, 225, 335],
-            Mana: [30, 30, 30]
-          }
+          variables: [
+            { name: 'Damage', values: [150, 225, 335] },
+            { name: 'Mana', values: [30, 30, 30] }
+          ]
         },
         imageUrl: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/103.png',
         splashUrl: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-splashes/103/103000.jpg',
@@ -58,10 +58,10 @@ export class EmbeddedFallback {
         stats: { hp: 700, mana: 60, damage: 70 },
         ability: {
           name: 'Five Point Strike',
-          variables: {
-            Damage: [300, 450, 675],
-            Mana: [60, 60, 60]
-          }
+          variables: [
+            { name: 'Damage', values: [300, 450, 675] },
+            { name: 'Mana', values: [60, 60, 60] }
+          ]
         },
         imageUrl: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/84.png',
         splashUrl: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-splashes/84/84000.jpg',
@@ -75,10 +75,10 @@ export class EmbeddedFallback {
         stats: { hp: 650, mana: 70, damage: 65 },
         ability: {
           name: 'Enchanted Crystal Arrow',
-          variables: {
-            Damage: [500, 750, 1125],
-            Mana: [70, 70, 70]
-          }
+          variables: [
+            { name: 'Damage', values: [500, 750, 1125] },
+            { name: 'Mana', values: [70, 70, 70] }
+          ]
         },
         imageUrl: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/22.png',
         splashUrl: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-splashes/22/22000.jpg',
@@ -92,10 +92,10 @@ export class EmbeddedFallback {
         stats: { hp: 750, mana: 80, damage: 75 },
         ability: {
           name: 'Super Mega Death Rocket!',
-          variables: {
-            Damage: [400, 600, 900],
-            Mana: [80, 80, 80]
-          }
+          variables: [
+            { name: 'Damage', values: [400, 600, 900] },
+            { name: 'Mana', values: [80, 80, 80] }
+          ]
         },
         imageUrl: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/222.png',
         splashUrl: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-splashes/222/222000.jpg',
@@ -109,10 +109,10 @@ export class EmbeddedFallback {
         stats: { hp: 650, mana: 60, damage: 45 },
         ability: {
           name: 'Final Spark',
-          variables: {
-            Damage: [350, 525, 788],
-            Mana: [60, 60, 60]
-          }
+          variables: [
+            { name: 'Damage', values: [350, 525, 788] },
+            { name: 'Mana', values: [60, 60, 60] }
+          ]
         },
         imageUrl: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/99.png',
         splashUrl: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-splashes/99/99000.jpg',

@@ -11,12 +11,22 @@ export class FileParser {
     }
   }
 
+  static detectAvailableSets(json: any): number[] {
+    if (!json?.data) return [];
+    const sets = new Set<number>();
+    for (const entry of Object.values(json.data) as any[]) {
+      const m = entry?.id?.match(/TFT(\d+)_/);
+      if (m) sets.add(parseInt(m[1], 10));
+    }
+    return [...sets].sort((a, b) => b - a);
+  }
+
   static parseChampionFile(json: any, setId: number): any[] {
     if (!json?.data) return [];
-    const prefix = `TFTSet${setId}_`;
-    return Object.entries(json.data)
-      .filter(([key]: [string, any]) => key.startsWith(prefix))
-      .map(([, champ]: [string, any]) => ({
+    const idPrefix = `TFT${setId}_`;
+    return Object.values(json.data)
+      .filter((champ: any) => champ?.id?.startsWith(idPrefix))
+      .map((champ: any) => ({
         id: champ.id || '',
         name: champ.name || '',
         cost: champ.tier ?? champ.cost ?? 1,
@@ -37,10 +47,10 @@ export class FileParser {
 
   static parseTraitFile(json: any, setId: number): any[] {
     if (!json?.data) return [];
-    const prefix = `TFTSet${setId}_`;
-    return Object.entries(json.data)
-      .filter(([key]: [string, any]) => key.startsWith(prefix) || key.includes(`TFT${setId}`))
-      .map(([, trait]: [string, any]) => ({
+    const idPrefix = `TFT${setId}_`;
+    return Object.values(json.data)
+      .filter((trait: any) => trait?.id?.startsWith(idPrefix))
+      .map((trait: any) => ({
         key: trait.key || trait.id || '',
         name: trait.name || trait.displayName || trait.key || '',
         description: trait.description || trait.desc || '',
@@ -53,9 +63,10 @@ export class FileParser {
 
   static parseItemFile(json: any, setId: number): any[] {
     if (!json?.data) return [];
-    return Object.entries(json.data)
-      .filter(([key]: [string, any]) => key.includes(`Set${setId}`) || key.includes('Item'))
-      .map(([, item]: [string, any]) => ({
+    const idPrefix = `TFT${setId}_`;
+    return Object.values(json.data)
+      .filter((item: any) => item?.id?.startsWith(idPrefix))
+      .map((item: any) => ({
         id: item.id || '',
         name: item.name || '',
         description: item.description || item.desc || '',

@@ -21,10 +21,14 @@ export class DataTransformer {
         mana: raw.stats?.mana ?? 40,
         damage: raw.stats?.damage ?? 50,
       },
-      ability: raw.ability ? {
-        name: raw.ability.name || '',
-        variables: raw.ability.variables || {},
-      } : { name: '', variables: {} },
+      ability: {
+        name: raw.ability?.name || '',
+        variables: raw.ability?.variables
+          ? (Array.isArray(raw.ability.variables)
+            ? raw.ability.variables
+            : Object.entries(raw.ability.variables).map(([name, values]) => ({ name, values: values as number[] })))
+          : [],
+      },
       imageUrl: raw.imageUrl || this.buildChampionPortraitUrl(raw.name),
       splashUrl: raw.splashUrl || this.buildSplashUrl(raw.name),
       iconUrl: raw.iconUrl || null,

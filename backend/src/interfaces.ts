@@ -11,7 +11,7 @@ export interface ISetChampion {
   };
   ability: {
     name: string;
-    variables: Record<string, number[]>; // Values for 1, 2, and 3 stars
+    variables: Array<{ name: string; values: number[] }>; // GraphQL shape
   };
   imageUrl?: string | null;
   splashUrl?: string | null;

@@ -22,7 +22,14 @@ export class Repository {
         cost: doc.cost,
         traits: doc.traits,
         stats: doc.stats,
-        ability: doc.ability,
+        ability: {
+          name: doc.ability?.name || '',
+          variables: doc.ability?.variables
+            ? (Array.isArray(doc.ability.variables)
+              ? doc.ability.variables
+              : Object.entries(doc.ability.variables).map(([name, values]) => ({ name, values: values as number[] })))
+            : [],
+        },
         imageUrl: doc.imageUrl,
         splashUrl: doc.splashUrl,
         iconUrl: doc.iconUrl,
