@@ -51,6 +51,14 @@ export interface ISetData {
   mechanics: Record<string, any>;
 }
 
+// src/interfaces/IBoardUnit.ts
+export interface IBoardUnit {
+  championId: string;
+  position: { row: number; col: number };
+  starLevel: number;
+  items: string[];
+}
+
 // src/interfaces/IComposition.ts
 export interface IComposition {
   id: string;
@@ -58,8 +66,11 @@ export interface IComposition {
   description: string;
   setId: number; // Reference to the set this composition is for
   championIds: string[];
+  units?: IBoardUnit[];
   traitBonuses: string[];
   augmentRecommendations: string[];
   difficulty: string;
   region: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
