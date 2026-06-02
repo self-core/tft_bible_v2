@@ -23,15 +23,27 @@ export class SetDataService {
   }
 
   private detectLatestSet(): number {
+    if (process.env.TFT_CURRENT_SET) {
+      return parseInt(process.env.TFT_CURRENT_SET, 10);
+    }
     try {
-      const dir = new PathResolver().findDragontailDir();
+      const resolver = new PathResolver();
+      const dir = resolver.findDragontailDir();
       if (!dir) return 17;
-      const championJson = FileParser.readJsonFile(new PathResolver().getChampionPath(dir)) || FileParser.readJsonFile(new PathResolver().getChampionSetPath(dir, 17));
+      const championJson = FileParser.readJsonFile(resolver.getChampionPath(dir)) || this.loadHighestSetFile(resolver, dir);
       const sets = FileParser.detectAvailableSets(championJson);
       return sets.length > 0 ? sets[0] : 17;
     } catch {
       return 17;
     }
+  }
+
+  private loadHighestSetFile(resolver: PathResolver, dir: string): any {
+    for (let s = 20; s >= 1; s--) {
+      const json = FileParser.readJsonFile(resolver.getChampionSetPath(dir, s));
+      if (json) return json;
+    }
+    return null;
   }
 
   async initialize(): Promise<void> {

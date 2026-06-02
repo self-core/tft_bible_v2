@@ -48,15 +48,24 @@ async function startServer() {
 
   // Schedule meta data refresh
   const metaService = new MetaService();
+  const currentSetId = parseInt(process.env.TFT_CURRENT_SET || '17', 10);
 
   // Initial meta refresh on startup (non-blocking)
   if (process.env.RIOT_API_KEY) {
-    metaService.refreshMetaData(17).catch(err => console.warn('Initial meta refresh failed:', err.message));
+    metaService.refreshMetaData(currentSetId).catch(err => console.warn('Initial meta refresh failed:', err instanceof Error ? err.message : String(err)));
 
-    // Refresh every 6 hours
-    setInterval(() => {
-      metaService.refreshMetaData(17).catch(err => console.warn('Scheduled meta refresh failed:', err.message));
-    }, 6 * 60 * 60 * 1000);
+    // Schedule refresh — wait for completion before scheduling next cycle
+    const scheduleNext = () => {
+      setTimeout(async () => {
+        try {
+          await metaService.refreshMetaData(currentSetId);
+        } catch (err) {
+          console.warn('Scheduled meta refresh failed:', err instanceof Error ? err.message : String(err));
+        }
+        scheduleNext();
+      }, 6 * 60 * 60 * 1000);
+    };
+    scheduleNext();
   }
 
   // Basic health check endpoint

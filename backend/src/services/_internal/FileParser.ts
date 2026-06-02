@@ -38,8 +38,12 @@ export class FileParser {
         },
         ability: champ.ability ? {
           name: champ.ability.name || champ.spellName || '',
-          variables: champ.ability.variables || champ.spellVariables || {},
-        } : { name: '', variables: {} },
+          variables: (() => {
+            const raw = champ.ability.variables || champ.spellVariables || {};
+            if (Array.isArray(raw)) return raw;
+            return Object.entries(raw).map(([name, values]) => ({ name, values: values as number[] }));
+          })(),
+        } : { name: '', variables: [] },
         imageFullPath: champ.image?.full || '',
       }))
       .filter(c => c.name && c.name.trim().length > 0);

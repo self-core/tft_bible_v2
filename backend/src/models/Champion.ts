@@ -12,7 +12,7 @@ export interface IChampionDocument extends mongoose.Document {
   };
   ability: {
     name: string;
-    variables: Record<string, number[]>;
+    variables: Array<{ name: string; values: number[] }>;
   };
   imageUrl?: string;
   splashUrl?: string;
@@ -31,7 +31,7 @@ const championSchema = new mongoose.Schema<IChampionDocument>({
   },
   ability: {
     name: { type: String, required: true },
-    variables: { type: mongoose.Schema.Types.Mixed, required: true } // Record<string, number[]>
+    variables: { type: [{ name: String, values: [Number] }], default: [] }
   },
   imageUrl: String,
   splashUrl: String,
