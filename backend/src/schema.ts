@@ -210,4 +210,73 @@ export const typeDefs = gql`
   extend type Mutation {
     refreshMetaData(setId: Int!): Boolean!
   }
+
+  # ── Riot API types ──────────────────────────────────────────
+
+  type RiotSummoner {
+    id: String!
+    accountId: String!
+    puuid: String!
+    name: String!
+    profileIconId: Int!
+    revisionDate: Int!
+    summonerLevel: Int!
+  }
+
+  type RiotMatchTrait {
+    name: String!
+    numUnits: Int!
+    style: Int
+  }
+
+  type RiotMatchUnit {
+    characterId: String!
+    itemNames: [String!]!
+    name: String!
+    rarity: Int!
+    tier: Int!
+  }
+
+  type RiotMatchParticipant {
+    companion: String
+    goldLeft: Int!
+    lastRound: Int!
+    level: Int!
+    placement: Int!
+    playersEliminated: Int!
+    puuid: String!
+    timeEliminated: String!
+    totalDamageToPlayers: Int!
+    traits: [RiotMatchTrait!]!
+    units: [RiotMatchUnit!]!
+  }
+
+  type RiotMatchMetadata {
+    dataVersion: String!
+    matchId: String!
+    participants: [String!]!
+  }
+
+  type RiotMatch {
+    metadata: RiotMatchMetadata!
+    info: RiotMatchInfo!
+    participants: [RiotMatchParticipant!]!
+  }
+
+  type RiotMatchInfo {
+    gameDatetime: Int!
+    gameLength: Int!
+    gameVersion: String!
+    queueId: Int!
+    tftGameType: String!
+    tftSetCoreName: String!
+    tftSetNumber: Int!
+  }
+
+  extend type Query {
+    riotSummonerByPuuid(puuid: String!): RiotSummoner
+    riotSummonerByName(name: String!): RiotSummoner
+    riotMatchHistory(puuid: String!, start: Int, count: Int): [String!]!
+    riotMatchDetail(matchId: String!): RiotMatch
+  }
 `;

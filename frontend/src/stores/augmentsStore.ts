@@ -1,8 +1,8 @@
 import { create } from 'zustand';
-import { graphQLApi, GraphQLAugment } from '../lib/graphql-api';
+import { api, Augment } from '../lib/api';
 
 interface AugmentsState {
-  augments: GraphQLAugment[];
+  augments: Augment[];
   loading: boolean;
   error: string | null;
 
@@ -19,7 +19,7 @@ export const useAugmentsStore = create<AugmentsState>((set, get) => ({
   fetchAugments: async () => {
     set({ loading: true, error: null });
     try {
-      const response = await graphQLApi.getAugments();
+      const response = await api.getAugments();
       set({ augments: response.data.augments, loading: false });
     } catch (error: any) {
       set({ loading: false, error: error.message || 'Failed to fetch augments' });
@@ -29,7 +29,7 @@ export const useAugmentsStore = create<AugmentsState>((set, get) => ({
   fetchAugmentById: async (id: string) => {
     set({ loading: true, error: null });
     try {
-      const response = await graphQLApi.getAugmentById(id);
+      const response = await api.getAugmentById(id);
       const augment = response.data.augment;
       if (augment) {
         const updated = get().augments.map(a => a.id === id ? { ...a, ...augment } : a);

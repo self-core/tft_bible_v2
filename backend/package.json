@@ -30,7 +30,9 @@
     "graphql": "^16.8.1",
     "helmet": "^7.0.0",
     "mongoose": "^9.0.2",
-    "tslib": "^2.6.2"
+    "reflect-metadata": "^0.2.2",
+    "tslib": "^2.6.2",
+    "tsyringe": "^4.10.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.13",

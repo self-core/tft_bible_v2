@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { useQuery } from '@apollo/client';
 import { GET_TRAITS, GET_CHAMPIONS } from '../lib/graphql';
-import { Trait, Champion } from '../types';
+import { Champion } from '../lib/api';
 import TraitTracker from '../components/TraitTracker';
-import { Board } from '../components/Board';
-import { Square } from '../components/Square';
 
 const TraitTrackerPage: React.FC = () => {
   const { data: traitsData, loading: traitsLoading } = useQuery(GET_TRAITS);

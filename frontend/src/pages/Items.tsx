@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useItemsStore } from '../stores'
-import { Filter, SearchIcon, Shield, Package, Star } from 'lucide-react'
-import { GraphQLItem } from '../lib/graphql-api'
+import { Filter, SearchIcon, Shield, Package } from 'lucide-react'
+import { Item } from '../lib/api'
 
 const Items = () => {
   const [search, setSearch] = useState('')
@@ -62,7 +62,7 @@ const Items = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filtered.map((item: GraphQLItem) => (
+        {filtered.map((item: Item) => (
           <div
             key={item.id}
             className="rounded-lg shadow-sm border hover:shadow-md transition-shadow group"

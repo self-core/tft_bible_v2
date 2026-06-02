@@ -1,3 +1,4 @@
+import { injectable } from 'tsyringe';
 import { CompositionModel } from '../models/Composition';
 import { IComposition, IBoardUnit } from '../interfaces';
 
@@ -15,6 +16,7 @@ interface CreateCompositionInput {
 
 type UpdateCompositionInput = Partial<CreateCompositionInput>;
 
+@injectable()
 export class CompositionService {
   async getAll(): Promise<IComposition[]> {
     const docs = await CompositionModel.find().sort({ createdAt: -1 }).lean();

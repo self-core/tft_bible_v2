@@ -1,8 +1,8 @@
 import { create } from 'zustand';
-import { graphQLApi, GraphQLItem } from '../lib/graphql-api';
+import { api, Item } from '../lib/api';
 
 interface ItemsState {
-  items: GraphQLItem[];
+  items: Item[];
   loading: boolean;
   error: string | null;
 
@@ -19,7 +19,7 @@ export const useItemsStore = create<ItemsState>((set, get) => ({
   fetchItems: async () => {
     set({ loading: true, error: null });
     try {
-      const response = await graphQLApi.getItems();
+      const response = await api.getItems();
       set({ items: response.data.items, loading: false });
     } catch (error: any) {
       set({ loading: false, error: error.message || 'Failed to fetch items' });
@@ -29,7 +29,7 @@ export const useItemsStore = create<ItemsState>((set, get) => ({
   fetchItemById: async (id: string) => {
     set({ loading: true, error: null });
     try {
-      const response = await graphQLApi.getItemById(id);
+      const response = await api.getItemById(id);
       const item = response.data.item;
       if (item) {
         const updated = get().items.map(i => i.id === id ? { ...i, ...item } : i);

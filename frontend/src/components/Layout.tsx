@@ -1,16 +1,16 @@
 import { Link, useLocation } from 'react-router-dom'
 import { Swords, Users, Package, Home, Search, Menu, X, Book, Target, Zap, Eye } from 'lucide-react'
 import { useState, useEffect } from 'react'
-import { useQuery } from '@apollo/client'
-import { GET_SETS } from '../lib/graphql'
 import ThemeSwitcher from './ThemeSwitcher'
+import { useSetsStore } from '../stores/setsStore'
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const { data: setsData, loading: setsLoading } = useQuery(GET_SETS, {
-    errorPolicy: 'all'
-  })
+  const sets = useSetsStore(s => s.sets)
+  const fetchSets = useSetsStore(s => s.fetchSets)
+
+  useEffect(() => { fetchSets() }, [fetchSets])
 
   // Base navigation items
   const baseNavItems = [
@@ -28,9 +28,8 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   // Add sets to navigation if available
   const navItems = [...baseNavItems]
 
-  if (setsData?.sets && setsData.sets.length > 0) {
-    // Add sets to navigation - even if there's just one set
-    const setNavItems = setsData.sets.map((set: any) => ({
+  if (sets && sets.length > 0) {
+    const setNavItems = sets.map(set => ({
       path: `/sets/${set.setId}`,
       label: set.setName,
       icon: Book

@@ -1,3 +1,4 @@
+import { injectable } from 'tsyringe';
 import { Repository } from './_internal/Repository';
 import { PathResolver } from './_internal/PathResolver';
 import { FileParser } from './_internal/FileParser';
@@ -5,14 +6,12 @@ import { DataTransformer } from './_internal/DataTransformer';
 
 const CDN_BASE = 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1';
 
+@injectable()
 export class ImportService {
-  private repository: Repository;
-  private pathResolver: PathResolver;
-
-  constructor() {
-    this.repository = new Repository();
-    this.pathResolver = new PathResolver();
-  }
+  constructor(
+    private repository: Repository,
+    private pathResolver: PathResolver,
+  ) {}
 
   async importSet(setId: number): Promise<{ champions: number; traits: number; items: number }> {
     const dragontailDir = this.pathResolver.findDragontailDir();

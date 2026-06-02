@@ -1,3 +1,5 @@
+import { injectable } from 'tsyringe';
+
 interface ParticipantBoard {
   units: string[];
   placement: number;
@@ -5,6 +7,7 @@ interface ParticipantBoard {
   traits: Array<{ name: string; num_units: number }>;
 }
 
+@injectable()
 export class CompAnalyzer {
   private readonly CO_OCCURRENCE_THRESHOLD = 0.6;
 

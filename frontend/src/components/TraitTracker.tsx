@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@apollo/client';
 import { GET_TRAITS, GET_CHAMPIONS } from '../lib/graphql';
-import { Trait, Champion } from '../types';
+import { Trait, Champion } from '../lib/api';
 
 interface TraitTrackerProps {
   championsOnBoard: Champion[];

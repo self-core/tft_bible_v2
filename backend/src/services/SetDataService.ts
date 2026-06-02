@@ -1,3 +1,4 @@
+import { injectable } from 'tsyringe';
 import { ISetData } from '../interfaces';
 import { Repository } from './_internal/Repository';
 import { ImportService } from './ImportService';
@@ -6,19 +7,18 @@ import { ResultCache } from './_internal/ResultCache';
 import { PathResolver } from './_internal/PathResolver';
 import { FileParser } from './_internal/FileParser';
 
+@injectable()
 export class SetDataService {
-  private repository: Repository;
-  private importService: ImportService;
   private embeddedFallback: typeof EmbeddedFallback;
-  private cache: ResultCache;
   private initialized = false;
   private defaultSetId: number;
 
-  constructor() {
-    this.repository = new Repository();
-    this.importService = new ImportService();
+  constructor(
+    private repository: Repository,
+    private importService: ImportService,
+    private cache: ResultCache,
+  ) {
     this.embeddedFallback = EmbeddedFallback;
-    this.cache = new ResultCache();
     this.defaultSetId = this.detectLatestSet();
   }
 

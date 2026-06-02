@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Filter, SearchIcon } from 'lucide-react';
 import { useAugmentsStore } from '../stores';
-import { GraphQLAugment } from '../lib/graphql-api';
+import { Augment } from '../lib/api';
 
 const Augments = () => {
   const [search, setSearch] = useState('');
@@ -62,7 +62,7 @@ const Augments = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filtered.map((augment: GraphQLAugment) => (
+        {filtered.map((augment: Augment) => (
           <div
             key={augment.id}
             className="rounded-lg shadow-sm border hover:shadow-md transition-shadow group"

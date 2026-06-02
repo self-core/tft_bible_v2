@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { ArrowLeft, Star, ThumbsUp, Clock, Users, Target, Zap, Shield, Sword, Heart, Swords } from 'lucide-react'
 import { useCompositionsStore } from '../stores'
-import TFTBoard, { BoardChampion } from '../components/TFTBoard'
+import TFTBoard, { BoardChampion as TFTBoardChampion } from '../components/TFTBoard'
 import { ChampionInComposition } from '../lib/api'
 
 const CompositionDetail = () => {
@@ -24,7 +24,7 @@ const CompositionDetail = () => {
     return () => clearCurrentComposition()
   }, [id])
 
-  const boardChampions = useMemo((): BoardChampion[] => {
+  const boardChampions = useMemo((): TFTBoardChampion[] => {
     if (!composition?.champions) return []
     return composition.champions.map((c: ChampionInComposition) => ({
       id: c.id,
@@ -102,7 +102,7 @@ const CompositionDetail = () => {
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
           <div className="flex-1 min-w-0">
             <div className="flex items-center flex-wrap gap-2 mb-3">
-              <h1 className="text-2xl sm:text-3xl font-bold truncate">{composition.name}</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold truncate">{composition.title}</h1>
               {composition.meta?.tier && (
                 <span className="px-3 py-1 rounded-full text-sm font-medium"
                   style={{ color: getTierColor(composition.meta.tier).textColor, backgroundColor: getTierColor(composition.meta.tier).bgColor }}>

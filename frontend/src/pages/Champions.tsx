@@ -1,27 +1,14 @@
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import { useChampionsStore } from '../stores'
-import { Filter, Sword, Shield, Zap } from 'lucide-react'
-import { ChampionSummary, ChampionQuery } from '../lib/api'
+import { Sword, Shield, Zap } from 'lucide-react'
+import { Champion } from '../lib/api'
 
 const Champions = () => {
-  const [filters, setFilters] = useState<ChampionQuery>({
-    limit: 20,
-  })
-  
-  const { champions, loading, error, fetchChampions, clearError } = useChampionsStore()
+  const { champions, loading, error, fetchChampions } = useChampionsStore()
 
-  // Fetch champions when filters change
   useEffect(() => {
-    fetchChampions(filters)
-  }, [filters, fetchChampions])
-
-  const handleFilterChange = (key: keyof ChampionQuery, value: string | number) => {
-    setFilters(prev => ({
-      ...prev,
-      [key]: value,
-      offset: 0, // Reset pagination when filtering
-    }))
-  }
+    fetchChampions()
+  }, [fetchChampions])
 
   const getCostColor = (cost: number) => {
     switch (cost) {
@@ -47,7 +34,7 @@ const Champions = () => {
       <div className="text-center py-12">
         <p className="text-red-600">Failed to load champions. Please try again.</p>
         <button 
-          onClick={() => fetchChampions(filters)}
+          onClick={() => fetchChampions()}
           className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
         >
           Retry
@@ -58,7 +45,6 @@ const Champions = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>Champions</h1>
@@ -66,66 +52,9 @@ const Champions = () => {
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="rounded-lg shadow-sm border p-6" style={{ 
-        background: 'var(--bg-accent)', 
-        border: '1px solid var(--bg-primary)' 
-      }}>
-        <div className="flex items-center gap-2 mb-4">
-          <Filter className="h-5 w-5" style={{ color: 'var(--text-secondary)' }} />
-          <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>Filters</h3>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <select
-            value={filters.cost || ''}
-            onChange={(e) => handleFilterChange('cost', e.target.value ? Number(e.target.value) : '')}
-            className="rounded-lg px-3 py-2 focus:ring-2 focus:ring-tft-gold focus:border-transparent"
-            style={{
-              border: '1px solid var(--bg-primary)',
-              background: 'var(--bg-secondary)', 
-              color: 'var(--text-primary)'
-            }}
-          >
-            <option value="" style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>All Costs</option>
-            <option value="1" style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>1 Cost</option>
-            <option value="2" style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>2 Cost</option>
-            <option value="3" style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>3 Cost</option>
-            <option value="4" style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>4 Cost</option>
-            <option value="5" style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>5 Cost</option>
-          </select>
-
-          <input
-            type="text"
-            placeholder="Search champions..."
-            value={filters.search || ''}
-            onChange={(e) => handleFilterChange('search', e.target.value)}
-            className="rounded-lg px-3 py-2 focus:ring-2 focus:ring-tft-gold focus:border-transparent"
-            style={{
-              border: '1px solid var(--bg-primary)',
-              background: 'var(--bg-secondary)', 
-              color: 'var(--text-primary)'
-            }}
-          />
-
-          <input
-            type="text"
-            placeholder="Filter by traits (comma-separated)..."
-            value={filters.traits || ''}
-            onChange={(e) => handleFilterChange('traits', e.target.value)}
-            className="rounded-lg px-3 py-2 focus:ring-2 focus:ring-tft-gold focus:border-transparent"
-            style={{
-              border: '1px solid var(--bg-primary)',
-              background: 'var(--bg-secondary)', 
-              color: 'var(--text-primary)'
-            }}
-          />
-        </div>
-      </div>
-
       {/* Results */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {champions.map((champion: ChampionSummary) => (
+        {champions.map((champion: Champion) => (
           <div
             key={champion.id}
             className="rounded-lg shadow-sm border hover:shadow-md transition-shadow group"
@@ -158,18 +87,17 @@ const Champions = () => {
                 champion.cost === 3 ? 'bg-gradient-to-br from-blue-800/50 to-blue-900/50 border-l-2 border-blue-600' :
                 champion.cost === 4 ? 'bg-gradient-to-br from-purple-800/50 to-purple-900/50 border-l-2 border-purple-600' : 'bg-gradient-to-br from-yellow-800/50 to-yellow-900/50 border-l-2 border-yellow-600'
               }`}>
-                {champion.icon_url ? (
+                {champion.iconUrl ? (
                   <div className="w-20 h-20 mx-auto rounded-xl flex items-center justify-center bg-gray-800">
                     <img 
-                      src={champion.icon_url} 
+                      src={champion.iconUrl} 
                       alt={champion.name}
                       className="w-16 h-16 rounded-lg object-cover"
                       onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.onerror = null; // Prevent infinite loop
+                        const target = e.currentTarget;
+                        target.onerror = null;
                         target.style.display = 'none';
-                        // Show fallback
-                        const fallback = target.parentElement?.querySelector('.fallback-champ-icon');
+                        const fallback = target.parentElement?.querySelector('.fallback-champ-icon') as HTMLElement | null;
                         if (fallback) fallback.style.display = 'flex';
                       }}
                     />
@@ -195,17 +123,17 @@ const Champions = () => {
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
                   <Sword className="h-4 w-4" style={{ color: 'var(--text-secondary)' }} />
-                  <span>AD: {champion.attack_damage.toFixed(0)}</span>
+                  <span>AD: {champion.stats.damage.toFixed(0)}</span>
                 </div>
 
                 <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
                   <Shield className="h-4 w-4" style={{ color: 'var(--text-secondary)' }} />
-                  <span>HP: {champion.health.toFixed(0)}</span>
+                  <span>HP: {champion.stats.hp.toFixed(0)}</span>
                 </div>
 
                 <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
                   <Zap className="h-4 w-4" style={{ color: 'var(--text-secondary)' }} />
-                  <span>{champion.ability_name}</span>
+                  <span>{champion.ability?.name || ''}</span>
                 </div>
 
                 <div className="flex flex-wrap gap-1 mt-2">

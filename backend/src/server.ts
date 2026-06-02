@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import express from 'express';
 import { ApolloServer } from 'apollo-server-express';
 import { typeDefs } from './schema';
@@ -6,6 +7,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import helmet from 'helmet';
+import { container } from './services/container';
 import { MetaService } from './services/MetaService';
 
 // Load environment variables
@@ -47,7 +49,7 @@ async function startServer() {
   server.applyMiddleware({ app, path: '/graphql' });
 
   // Schedule meta data refresh
-  const metaService = new MetaService();
+  const metaService = container.resolve(MetaService);
   const currentSetId = parseInt(process.env.TFT_CURRENT_SET || '17', 10);
 
   // Initial meta refresh on startup (non-blocking)

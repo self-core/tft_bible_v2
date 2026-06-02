@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Filter, ChevronDown, ChevronUp } from 'lucide-react';
-import { itemsApi } from '../lib/api';
+
 import { useItemsStore } from '../stores';
 
 interface Item {
@@ -209,7 +209,7 @@ export const DetailedItems: React.FC = () => {
 
   // Fetch items on mount
   useEffect(() => {
-    fetchItems({});
+    fetchItems();
   }, [fetchItems]);
 
   if (loading) {
@@ -237,7 +237,7 @@ export const DetailedItems: React.FC = () => {
           <h2 className="text-2xl font-bold mb-4">Error loading items data</h2>
           <p className="text-gray-400">Please try again later</p>
           <button
-            onClick={() => fetchItems({})}
+            onClick={() => fetchItems()}
             className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
           >
             Retry

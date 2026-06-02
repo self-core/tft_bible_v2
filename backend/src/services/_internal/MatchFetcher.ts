@@ -1,3 +1,5 @@
+import { injectable } from 'tsyringe';
+
 export interface ParticipantBoard {
   puuid: string;
   placement: number;
@@ -37,6 +39,7 @@ interface MatchDto {
   };
 }
 
+@injectable()
 export class MatchFetcher {
   extractParticipants(matchDto: MatchDto | null): ParticipantBoard[] {
     if (!matchDto?.info?.participants) return [];

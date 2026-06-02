@@ -1,5 +1,7 @@
+import { injectable } from 'tsyringe';
 import { ISetData } from '../../interfaces';
 
+@injectable()
 export class ResultCache {
   private cache = new Map<number, ISetData>();
 

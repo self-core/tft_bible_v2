@@ -1,3 +1,4 @@
+import { injectable, inject } from 'tsyringe';
 import { MetaCompositionModel, IMetaStats } from '../models/MetaComposition';
 import { RiotApiClient } from './RiotApiClient';
 import { MatchFetcher } from './_internal/MatchFetcher';
@@ -14,18 +15,16 @@ export interface MetaCompositionResult {
   lastUpdated: Date;
 }
 
+@injectable()
 export class MetaService {
   private apiClient?: RiotApiClient;
-  private matchFetcher: MatchFetcher;
-  private analyzer: CompAnalyzer;
-  private apiKey: string;
   private isRefreshing = false;
 
-  constructor(apiKey?: string) {
-    this.apiKey = apiKey || process.env.RIOT_API_KEY || '';
-    this.matchFetcher = new MatchFetcher();
-    this.analyzer = new CompAnalyzer();
-  }
+  constructor(
+    private matchFetcher: MatchFetcher,
+    private analyzer: CompAnalyzer,
+    @inject('RIOT_API_KEY') private apiKey: string,
+  ) {}
 
   private getApiClient(): RiotApiClient {
     if (!this.apiClient) {

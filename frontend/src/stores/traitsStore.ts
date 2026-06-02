@@ -1,8 +1,8 @@
 import { create } from 'zustand';
-import { graphQLApi, GraphQLTrait } from '../lib/graphql-api';
+import { api, Trait } from '../lib/api';
 
 interface TraitsState {
-  traits: GraphQLTrait[];
+  traits: Trait[];
   loading: boolean;
   error: string | null;
 
@@ -19,7 +19,7 @@ export const useTraitsStore = create<TraitsState>((set, get) => ({
   fetchTraits: async () => {
     set({ loading: true, error: null });
     try {
-      const response = await graphQLApi.getTraits();
+      const response = await api.getTraits();
       set({ traits: response.data.traits, loading: false });
     } catch (error: any) {
       set({ loading: false, error: error.message || 'Failed to fetch traits' });
@@ -29,7 +29,7 @@ export const useTraitsStore = create<TraitsState>((set, get) => ({
   fetchTraitById: async (id: string) => {
     set({ loading: true, error: null });
     try {
-      const response = await graphQLApi.getTraitById(id);
+      const response = await api.getTraitById(id);
       const trait = response.data.trait;
       if (trait) {
         const updated = get().traits.map(t => t.key === id ? { ...t, ...trait } : t);

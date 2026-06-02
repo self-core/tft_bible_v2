@@ -1,31 +1,15 @@
 import { useState, useEffect } from 'react';
 import { Loader2, Trash2 } from 'lucide-react';
-import { graphQLApi } from '../lib/graphql-api';
 import TFTBoard, { BoardChampion } from '../components/TFTBoard';
+import { useChampionsStore } from '../stores/championsStore';
 
 const ImprovedTeamBuilder = () => {
   const [boardChampions, setBoardChampions] = useState<BoardChampion[]>([]);
-  const [champions, setChampions] = useState<Record<string, any>>({});
-  const [loading, setLoading] = useState(true);
+  const championsList = useChampionsStore(s => s.champions);
+  const loading = useChampionsStore(s => s.loading);
+  const fetchChampions = useChampionsStore(s => s.fetchChampions);
 
-  useEffect(() => {
-    const fetchChampions = async () => {
-      try {
-        const response = await graphQLApi.getChampions();
-        const data = response.data;
-        const fetchedChampions: Record<string, any> = {};
-        data.champions.forEach((champion: any) => {
-          fetchedChampions[champion.id] = champion;
-        });
-        setChampions(fetchedChampions);
-        setLoading(false);
-      } catch (error) {
-        console.error('Failed to fetch champions:', error);
-        setLoading(false);
-      }
-    };
-    fetchChampions();
-  }, []);
+  useEffect(() => { fetchChampions() }, [fetchChampions]);
 
   const getTierColor = (tier: number) => {
     const colors: Record<number, string> = {
@@ -55,7 +39,7 @@ const ImprovedTeamBuilder = () => {
     );
   }
 
-  const championsList = Object.values(champions).sort((a: any, b: any) => {
+  const sortedChampions = [...championsList].sort((a: any, b: any) => {
     if (a.cost !== b.cost) return a.cost - b.cost;
     return a.name.localeCompare(b.name);
   });
@@ -71,15 +55,15 @@ const ImprovedTeamBuilder = () => {
       <div className="p-4 rounded-lg border"
         style={{ background: 'var(--bg-accent)', border: '1px solid var(--bg-primary)', color: 'var(--text-primary)' }}>
         <h3 className="text-xl font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>
-          Champions (Drag to Board) - {championsList.length} available
+          Champions (Drag to Board) - {sortedChampions.length} available
         </h3>
-        {championsList.length === 0 ? (
+        {sortedChampions.length === 0 ? (
           <div className="text-center py-4" style={{ color: 'var(--text-secondary)' }}>
             No champions loaded. Check console for errors.
           </div>
         ) : (
           <div className="grid grid-cols-8 md:grid-cols-12 lg:grid-cols-16 gap-2">
-            {championsList.map((champion: any) => (
+            {sortedChampions.map((champion: any) => (
               <div key={champion.id} draggable
                 onDragStart={(e) => handleChampionDragStart(champion, e)}
                 className="relative group cursor-grab active:cursor-grabbing"

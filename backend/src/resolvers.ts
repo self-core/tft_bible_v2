@@ -1,13 +1,24 @@
 import { ISetChampion, ITrait, IItem, IComposition, ISetData } from './interfaces';
+import { container } from './services/container';
 import { SetDataService } from './services/SetDataService';
 import { CompositionService } from './services/CompositionService';
 import { MetaService } from './services/MetaService';
+import { RiotApiClient } from './services/RiotApiClient';
 
-// Initialize services
-const setDataService = new SetDataService();
+// Initialize services from DI container
+const apiKey = process.env.RIOT_API_KEY || '';
+const setDataService = container.resolve(SetDataService);
 setDataService.initialize();
-const compositionService = new CompositionService();
-const metaService = new MetaService();
+const compositionService = container.resolve(CompositionService);
+const metaService = container.resolve(MetaService);
+
+const getRiotClient = () => {
+  if (!apiKey) throw new Error('RIOT_API_KEY not configured');
+  return new RiotApiClient({ apiKey });
+};
+
+const REGION = process.env.RIOT_REGION || 'AMERICAS';
+const PLATFORM = process.env.RIOT_PLATFORM || 'NA1';
 
 // Async function to get the current set data from database
 const getCurrentSetDataFromDB = async (): Promise<ISetData> => {
@@ -110,6 +121,28 @@ export const resolvers = {
     },
     metaComposition: async (_: any, { id }: { id: string }) => {
       return metaService.getMetaCompositionById(id);
+    },
+
+    // Riot API queries
+    riotSummonerByPuuid: async (_: any, { puuid }: { puuid: string }) => {
+      const client = getRiotClient();
+      return client.request<any>(PLATFORM, `/tft/summoner/v1/summoners/by-puuid/${puuid}`);
+    },
+    riotSummonerByName: async (_: any, { name }: { name: string }) => {
+      const client = getRiotClient();
+      return client.request<any>(PLATFORM, `/tft/summoner/v1/summoners/by-name/${encodeURIComponent(name)}`);
+    },
+    riotMatchHistory: async (_: any, { puuid, start, count }: { puuid: string; start?: number; count?: number }) => {
+      const client = getRiotClient();
+      const params = new URLSearchParams();
+      if (start !== undefined) params.set('start', String(start));
+      if (count !== undefined) params.set('count', String(count));
+      const query = params.toString() ? `?${params.toString()}` : '';
+      return client.regionalRequest<string[]>(REGION, `/tft/match/v1/matches/by-puuid/${puuid}/ids${query}`);
+    },
+    riotMatchDetail: async (_: any, { matchId }: { matchId: string }) => {
+      const client = getRiotClient();
+      return client.regionalRequest<any>(REGION, `/tft/match/v1/matches/${matchId}`);
     },
   },
   Mutation: {

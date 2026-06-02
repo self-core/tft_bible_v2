@@ -1,6 +1,8 @@
 import * as path from 'path';
 import * as fs from 'fs';
+import { injectable } from 'tsyringe';
 
+@injectable()
 export class PathResolver {
   private static readonly VERSION_PATTERN = /^\d+\.\d+\.\d+$/;
   private static readonly DRAGONTAIL_DIR_PATTERN = /^dragontail-/i;

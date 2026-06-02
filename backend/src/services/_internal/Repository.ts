@@ -1,9 +1,11 @@
+import { injectable } from 'tsyringe';
 import { ChampionModel } from '../../models/Champion';
 import { TraitModel } from '../../models/Trait';
 import { ItemModel } from '../../models/Item';
 import { SetModel } from '../../models/Set';
 import { ISetData } from '../../interfaces';
 
+@injectable()
 export class Repository {
   async getSetData(setId: number): Promise<ISetData | null> {
     const setDoc = await SetModel.findOne({ setId }).exec();

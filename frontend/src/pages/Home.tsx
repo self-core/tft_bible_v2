@@ -1,20 +1,18 @@
 import { Link } from 'react-router-dom'
-import { Swords, Users, Package, Search, Star, Zap, Target, Cpu, TrendingUp, Eye, ThumbsUp, Sword, Shield } from 'lucide-react'
+import { Swords, Users, Package, Star, Zap, Target, TrendingUp, Sword, Shield } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useTheme } from '../contexts/ThemeContext'
 import { useCompositionsStore, useChampionsStore } from '../stores'
-import { CompositionSummary, ChampionSummary } from '../lib/api'
+import { Composition, Champion } from '../lib/api'
 
 const Home = () => {
   const { theme } = useTheme();
 
-  // State for trending compositions
-  const [trendingCompositions, setTrendingCompositions] = useState<CompositionSummary[]>([]);
+  const [trendingCompositions, setTrendingCompositions] = useState<Composition[]>([]);
   const [trendingCompositionsLoading, setTrendingCompositionsLoading] = useState(false);
   const [trendingCompositionsError, setTrendingCompositionsError] = useState<string | null>(null);
 
-  // State for trending champions
-  const [trendingChampions, setTrendingChampions] = useState<ChampionSummary[]>([]);
+  const [trendingChampions, setTrendingChampions] = useState<Champion[]>([]);
   const [trendingChampionsLoading, setTrendingChampionsLoading] = useState(false);
   const [trendingChampionsError, setTrendingChampionsError] = useState<string | null>(null);
 
@@ -25,7 +23,7 @@ const Home = () => {
       setTrendingCompositionsError(null);
       try {
         // Use the compositions store to fetch data
-        await useCompositionsStore.getState().fetchCompositions({ limit: 4, offset: 0 });
+        await useCompositionsStore.getState().fetchCompositions();
         const state = useCompositionsStore.getState();
         setTrendingCompositions(state.compositions || []);
       } catch (error: any) {
@@ -45,7 +43,7 @@ const Home = () => {
       setTrendingChampionsError(null);
       try {
         // Use the champions store to fetch data
-        await useChampionsStore.getState().fetchChampions({ limit: 4, offset: 0 });
+        await useChampionsStore.getState().fetchChampions();
         const state = useChampionsStore.getState();
         setTrendingChampions(state.champions || []);
       } catch (error: any) {
@@ -57,28 +55,6 @@ const Home = () => {
 
     fetchTrendingChampions();
   }, []);
-
-  const getTierColor = (tier: string) => {
-    switch (tier.toUpperCase()) {
-      case 'S': return { textColor: 'var(--accent1)', bgColor: 'var(--accent1)' } // Gold theme
-      case 'A': return { textColor: 'var(--accent2)', bgColor: 'var(--accent2)' } // Blue theme
-      case 'B': return { textColor: 'var(--accent3)', bgColor: 'var(--accent3)' } // Green theme
-      case 'C': return { textColor: 'var(--text-secondary)', bgColor: 'var(--bg-secondary)' } // Gray theme
-      case 'D': return { textColor: 'var(--accent2)', bgColor: 'var(--accent2)' } // Red theme
-      default: return { textColor: 'var(--text-secondary)', bgColor: 'var(--bg-secondary)' }
-    }
-  };
-
-  const getCostColor = (cost: number) => {
-    switch (cost) {
-      case 1: return 'text-gray-600 bg-gray-100'
-      case 2: return 'text-green-600 bg-green-100'
-      case 3: return 'text-blue-600 bg-blue-100'
-      case 4: return 'text-purple-600 bg-purple-100'
-      case 5: return 'text-tft-gold bg-tft-gold/10'
-      default: return 'text-gray-600 bg-gray-100'
-    }
-  };
 
   const features = [
     {
@@ -215,7 +191,7 @@ const Home = () => {
 
         {!trendingCompositionsLoading && !trendingCompositionsError && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {trendingCompositions.map((comp: CompositionSummary) => (
+            {trendingCompositions.map((comp: Composition) => (
               <Link
                 key={comp.id}
                 to={`/compositions/${comp.id}`}
@@ -229,81 +205,20 @@ const Home = () => {
                 <div className="p-6">
                   <div className="flex items-start justify-between mb-3">
                     <h3 className="text-lg font-semibold group-hover:text-tft-gold transition-colors" style={{ color: 'var(--text-primary)' }}>
-                      {comp.name}
+                      {comp.title}
                     </h3>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getTierColor(comp.tier).textColor}`}>
-                      {comp.tier}
+                    <span className="px-2 py-1 rounded-full text-xs font-medium" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}>
+                      {comp.difficulty || 'N/A'}
                     </span>
                   </div>
 
                   <p className="text-sm mb-4 line-clamp-2" style={{ color: 'var(--text-secondary)' }}>
-                    {comp.category} • Difficulty: {comp.difficulty || 'N/A'}/5
+                    {comp.description || 'No description'}
                   </p>
 
-                  {/* Champion row */}
-                  <div className="flex items-center gap-1 mb-4" style={{ color: 'var(--text-secondary)' }}>
-                    <span className="text-xs">Champions:</span>
-                    <div className="flex -space-x-1 overflow-x-auto max-w-full">
-                      {comp.champions && comp.champions.slice(0, 5).map((champion, idx) => (
-                        <div key={idx} className="w-6 h-6 rounded-full border flex-shrink-0 flex items-center justify-center text-[8px] font-bold relative"
-                          style={{
-                            background: 'var(--bg-primary)',
-                            borderColor: 'var(--bg-accent)',
-                            color: 'var(--text-primary)',
-                            width: '24px',
-                            height: '24px'
-                          }} title={champion.name}>
-                          {champion.icon_url ? (
-                            <img
-                              src={champion.icon_url}
-                              alt={champion.name}
-                              className="w-full h-full rounded-full object-cover"
-                              onError={(e) => {
-                                const target = e.target as HTMLImageElement;
-                                target.onerror = null; // Prevent infinite loop
-                                target.style.display = 'none';
-                                // Show fallback
-                                const fallback = target.parentElement?.querySelector('.fallback-comp-champ');
-                                if (fallback) fallback.style.display = 'flex';
-                              }}
-                            />
-                          ) : (
-                            <span className="fallback-comp-champ flex items-center justify-center w-full h-full">
-                              {champion.name.substring(0, 2)}
-                            </span>
-                          )}
-                        </div>
-                      ))}
-                      {comp.champions && comp.champions.length > 5 && (
-                        <div className="w-6 h-6 rounded-full border flex-shrink-0 flex items-center justify-center text-[8px] font-bold"
-                          style={{
-                            background: 'var(--bg-accent)',
-                            borderColor: 'var(--bg-primary)',
-                            color: 'var(--text-primary)',
-                            width: '24px',
-                            height: '24px'
-                          }} title={`+${comp.champions.length - 5} more`}>
-                          +{comp.champions.length - 5}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between text-sm" style={{ color: 'var(--text-secondary)' }}>
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-1">
-                        <Eye className="h-4 w-4" style={{ color: 'var(--text-secondary)' }} />
-                        <span>{comp.views || 0}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <ThumbsUp className="h-4 w-4" style={{ color: 'var(--text-secondary)' }} />
-                        <span>{comp.upvotes || 0}</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Star className="h-4 w-4" style={{ color: 'var(--accent1)' }} />
-                      <span>{comp.winrate ? comp.winrate.toFixed(1) : 'N/A'}%</span>
-                    </div>
+                  <div className="flex items-center gap-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                    <span className="flex items-center gap-1"><Star className="h-4 w-4" style={{ color: 'var(--accent1)' }} /> Set {comp.setId}</span>
+                    <span className="flex items-center gap-1"><Users className="h-4 w-4" /> {comp.championIds?.length || 0} champions</span>
                   </div>
                 </div>
               </Link>
@@ -347,7 +262,7 @@ const Home = () => {
 
         {!trendingChampionsLoading && !trendingChampionsError && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {trendingChampions.map((champ: ChampionSummary) => (
+            {trendingChampions.map((champ: Champion) => (
               <div
                 key={champ.id}
                 className="rounded-lg shadow-sm border hover:shadow-md transition-shadow group"
@@ -365,18 +280,17 @@ const Home = () => {
                     champ.cost === 3 ? 'bg-gradient-to-br from-blue-800/50 to-blue-900/50 border-l-2 border-blue-600' :
                     champ.cost === 4 ? 'bg-gradient-to-br from-purple-800/50 to-purple-900/50 border-l-2 border-purple-600' : 'bg-gradient-to-br from-yellow-800/50 to-yellow-900/50 border-l-2 border-yellow-600'
                   }`}>
-                    {champ.icon_url ? (
+                    {champ.iconUrl ? (
                       <div className="w-20 h-20 mx-auto rounded-xl flex items-center justify-center bg-gray-800">
                         <img
-                          src={champ.icon_url}
+                          src={champ.iconUrl}
                           alt={champ.name}
                           className="w-16 h-16 rounded-lg object-cover"
                           onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.onerror = null; // Prevent infinite loop
+                            const target = e.currentTarget;
+                            target.onerror = null;
                             target.style.display = 'none';
-                            // Show fallback
-                            const fallback = target.parentElement?.querySelector('.fallback-home-champ');
+                            const fallback = target.parentElement?.querySelector('.fallback-home-champ') as HTMLElement | null;
                             if (fallback) fallback.style.display = 'flex';
                           }}
                         />
@@ -408,17 +322,17 @@ const Home = () => {
                   <div className="space-y-3">
                     <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
                       <Sword className="h-4 w-4" style={{ color: 'var(--text-secondary)' }} />
-                      <span>AD: {champ.attack_damage ? champ.attack_damage.toFixed(0) : 'N/A'}</span>
+                      <span>AD: {champ.stats?.damage ? champ.stats.damage.toFixed(0) : 'N/A'}</span>
                     </div>
 
                     <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
                       <Shield className="h-4 w-4" style={{ color: 'var(--text-secondary)' }} />
-                      <span>HP: {champ.health ? champ.health.toFixed(0) : 'N/A'}</span>
+                      <span>HP: {champ.stats?.hp ? champ.stats.hp.toFixed(0) : 'N/A'}</span>
                     </div>
 
                     <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
                       <Zap className="h-4 w-4" style={{ color: 'var(--text-secondary)' }} />
-                      <span>{champ.ability_name || 'N/A'}</span>
+                      <span>{champ.ability?.name || 'N/A'}</span>
                     </div>
 
                     <div className="flex flex-wrap gap-1 mt-2">

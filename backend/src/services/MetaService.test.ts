@@ -1,60 +1,137 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import mongoose from 'mongoose';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { MetaService } from './MetaService';
-import { MetaCompositionModel } from '../models/MetaComposition';
+import { MatchFetcher } from './_internal/MatchFetcher';
+import { CompAnalyzer } from './_internal/CompAnalyzer';
+import { RiotApiClient } from './RiotApiClient';
+import type { IMetaStats } from '../models/MetaComposition';
 
-describe('MetaService', () => {
+vi.mock('../models/MetaComposition', () => ({
+  MetaCompositionModel: {
+    findOneAndUpdate: vi.fn().mockResolvedValue({}),
+  },
+  IMetaStats: {} as IMetaStats,
+}));
+
+const mockMatchFetcher = {
+  extractParticipants: vi.fn(),
+};
+
+const mockCompAnalyzer = {
+  buildCoOccurrence: vi.fn(),
+  cluster: vi.fn(),
+  computeStats: vi.fn(),
+};
+
+describe('MetaService.refreshMetaData', () => {
   let service: MetaService;
-  let isConnected = false;
 
-  beforeAll(async () => {
-    service = new MetaService();
-    const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/tft_bible_test';
-    try {
-      await mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 2000 });
-      isConnected = true;
-    } catch {
-      console.warn('MongoDB not available, skipping integration tests');
-    }
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.spyOn(RiotApiClient.prototype, 'request').mockRejectedValue(new Error('API unreachable'));
+    vi.spyOn(RiotApiClient.prototype, 'regionalRequest').mockRejectedValue(new Error('API unreachable'));
+    service = new MetaService(
+      mockMatchFetcher as unknown as MatchFetcher,
+      mockCompAnalyzer as unknown as CompAnalyzer,
+      'test-api-key',
+    );
   });
 
-  afterAll(async () => {
-    if (isConnected) {
-      try {
-        await mongoose.connection.dropDatabase();
-        await mongoose.disconnect();
-      } catch {}
-    }
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
-  it('should be constructable', () => {
-    const s = new MetaService();
-    expect(s).toBeDefined();
+  it('handles challenger API failure gracefully without throwing', async () => {
+    await expect(service.refreshMetaData(16)).resolves.toBeUndefined();
+    expect(mockMatchFetcher.extractParticipants).not.toHaveBeenCalled();
   });
 
-  it('should return empty list when no meta comps in DB', async () => {
-    if (!isConnected) return;
-    const comps = await service.getMetaCompositions(17);
-    expect(comps).toEqual([]);
+  it('handles empty challenger entries gracefully', async () => {
+    const requestSpy = vi.spyOn(RiotApiClient.prototype, 'request');
+    requestSpy.mockResolvedValue({ entries: [] });
+
+    await expect(service.refreshMetaData(16)).resolves.toBeUndefined();
+    expect(requestSpy).toHaveBeenCalledWith('NA1', '/tft/league/v1/challenger');
   });
 
-  it('should return null for non-existent id', async () => {
-    if (!isConnected) return;
-    const result = await service.getMetaCompositionById('nonexistent');
-    expect(result).toBeNull();
-  });
+  it('processes matches and saves meta compositions when data is available', async () => {
+    const requestSpy = vi.spyOn(RiotApiClient.prototype, 'request');
+    const regionalSpy = vi.spyOn(RiotApiClient.prototype, 'regionalRequest');
 
-  it('should find a composition by id after creation', async () => {
-    if (!isConnected) return;
-    await MetaCompositionModel.create({
-      id: 'test-comp', setId: 17, patchVersion: '17.3',
-      champions: [], traits: [],
-      stats: { matchesAnalyzed: 50, winRate: 0.2, top4Rate: 0.5, avgPlacement: 4.0, pickRate: 0.1 },
-      playstyle: 'Standard',
+    requestSpy.mockResolvedValue({
+      entries: Array.from({ length: 3 }, (_, i) => ({
+        puuid: `puuid-${i}`,
+        summonerName: `Player${i}`,
+        leaguePoints: 1000 - i * 100,
+      })),
     });
-    const result = await service.getMetaCompositionById('test-comp');
-    expect(result).not.toBeNull();
-    expect(result!.id).toBe('test-comp');
-    expect(result!.stats.winRate).toBe(0.2);
+    regionalSpy.mockImplementation(async (region: string, path: string) => {
+      if (path.includes('/ids')) return [`match-main`];
+      return {
+        info: { participants: [] },
+        metadata: { match_id: path.split('/').pop() },
+      };
+    });
+
+    mockMatchFetcher.extractParticipants.mockImplementation(() => {
+      return Array.from({ length: 25 }, (_, j) => makeBoard(j + 1));
+    });
+
+    const makeBoard = (placement: number) => ({
+      puuid: `puuid-${placement}`,
+      placement,
+      level: 8,
+      units: [
+        { character_id: 'TFT16_Ahri', tier: 2, items: [1001], rarity: 4 },
+        { character_id: 'TFT16_Viego', tier: 1, items: [], rarity: 5 },
+      ],
+      traits: [
+        { name: 'Arcane', num_units: 2, style: 1, tier_current: 1, tier_total: 3 },
+      ],
+    });
+
+    mockMatchFetcher.extractParticipants.mockImplementation((match: any) => {
+      return Array.from({ length: 25 }, (_, j) => makeBoard(j + 1));
+    });
+
+    mockCompAnalyzer.buildCoOccurrence.mockReturnValue({});
+    mockCompAnalyzer.cluster.mockReturnValue([['TFT16_Ahri', 'TFT16_Viego']]);
+    mockCompAnalyzer.computeStats.mockReturnValue({
+      matchesAnalyzed: 5,
+      winRate: 0.2,
+      top4Rate: 0.5,
+      avgPlacement: 4.0,
+      pickRate: 0.1,
+    });
+
+    const { MetaCompositionModel } = await import('../models/MetaComposition');
+    const updateSpy = vi.mocked(MetaCompositionModel.findOneAndUpdate);
+
+    await expect(service.refreshMetaData(16)).resolves.toBeUndefined();
+
+    expect(mockMatchFetcher.extractParticipants).toHaveBeenCalled();
+    expect(mockCompAnalyzer.buildCoOccurrence).toHaveBeenCalled();
+    expect(mockCompAnalyzer.cluster).toHaveBeenCalled();
+    expect(updateSpy).toHaveBeenCalled();
+  });
+
+  it('skips clustering when no boards found', async () => {
+    const requestSpy = vi.spyOn(RiotApiClient.prototype, 'request');
+    const regionalSpy = vi.spyOn(RiotApiClient.prototype, 'regionalRequest');
+
+    requestSpy.mockResolvedValue({
+      entries: [{ puuid: 'test-puuid', summonerName: 'TestPlayer', leaguePoints: 1000 }],
+    });
+    regionalSpy.mockImplementation(async (region: string, path: string) => {
+      if (path.includes('/ids')) return ['match-1'];
+      return {
+        info: { participants: [] },
+        metadata: { match_id: 'match-1' },
+      };
+    });
+
+    mockMatchFetcher.extractParticipants.mockReturnValue([]);
+
+    await expect(service.refreshMetaData(16)).resolves.toBeUndefined();
+    expect(mockCompAnalyzer.buildCoOccurrence).not.toHaveBeenCalled();
   });
 });

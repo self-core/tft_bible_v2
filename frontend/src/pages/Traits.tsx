@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useTraitsStore } from '../stores'
 import { Filter, ChevronDown, ChevronUp } from 'lucide-react'
-import { GraphQLTrait } from '../lib/graphql-api'
+import { Trait } from '../lib/api'
 
 const Traits = () => {
   const [search, setSearch] = useState('')
@@ -65,7 +65,7 @@ const Traits = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filtered.map((trait: GraphQLTrait) => (
+        {filtered.map((trait: Trait) => (
           <div
             key={trait.key}
             className="rounded-lg shadow-sm border hover:shadow-md transition-shadow"

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useQuery } from '@apollo/client';
 import { GET_SETS } from '../lib/graphql';
-import { Set } from '../types';
+import { SetData } from '../lib/api';
 
 const SetPatchInfoPage: React.FC = () => {
   const { data, loading, error } = useQuery(GET_SETS);
@@ -9,7 +9,7 @@ const SetPatchInfoPage: React.FC = () => {
   if (loading) return <div className="container mx-auto p-4">Loading set information...</div>;
   if (error) return <div className="container mx-auto p-4 text-red-500">Error loading set information: {error.message}</div>;
 
-  const sets: Set[] = data?.sets || [];
+  const sets: SetData[] = data?.sets || [];
 
   return (
     <div className="container mx-auto p-4 min-h-screen" style={{ background: 'var(--bg-primary)' }}>
@@ -19,7 +19,7 @@ const SetPatchInfoPage: React.FC = () => {
       </div>
 
       <div className="space-y-6">
-        {sets.map((set: Set) => (
+        {sets.map((set: SetData) => (
           <div
             key={set.setId}
             className="rounded-xl shadow-md p-6"
@@ -138,8 +138,8 @@ const SetPatchInfoPage: React.FC = () => {
                   color: 'var(--text-primary)'
                 }}
               >
-                {set.patch_notes && set.patch_notes.length > 0 ? (
-                  set.patch_notes.map((patch: any, index: number) => (
+                {(set as any).patch_notes && (set as any).patch_notes.length > 0 ? (
+                  (set as any).patch_notes.map((patch: any, index: number) => (
                     <div key={index} className="mb-3 last:mb-0">
                       <div className="flex justify-between items-center mb-2">
                         <h4 className="font-medium" style={{ color: 'var(--text-primary)' }}>Patch: {patch.version || 'N/A'}</h4>
@@ -160,9 +160,9 @@ const SetPatchInfoPage: React.FC = () => {
 
             <div className="mt-6">
               <h3 className="text-lg font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>Top Meta Compositions</h3>
-              {set.compositions && set.compositions.length > 0 ? (
+              {(set as any).compositions && (set as any).compositions.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {set.compositions.slice(0, 3).map((composition: any, index: number) => (
+                  {(set as any).compositions.slice(0, 3).map((composition: any, index: number) => (
                     <div
                       key={index}
                       className="rounded-lg p-4 hover:shadow-md transition-shadow"
