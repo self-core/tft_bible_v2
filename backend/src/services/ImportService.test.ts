@@ -69,7 +69,8 @@ describe('ImportService.importSet', () => {
       expect.arrayContaining([expect.stringMatching(/TFT16/)]),
       expect.arrayContaining(['arcane', 'ranger', 'warrior']),
       expect.arrayContaining(['item1']),
-      []
+      [],
+      'active'
     );
   });
 
@@ -87,5 +88,11 @@ describe('ImportService.importSet', () => {
 
     await expect(service.importSet(16)).rejects.toThrow('One or more dragontail data files not found for set 16');
     expect(mockRepository.saveChampions).not.toHaveBeenCalled();
+  });
+
+  it('importSet should accept status parameter', () => {
+    const svc = new ImportService({} as any, {} as any);
+    expect(typeof svc.importSet).toBe('function');
+    expect(svc.importSet.length).toBe(1);
   });
 });

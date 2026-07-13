@@ -13,7 +13,10 @@ export class ImportService {
     private pathResolver: PathResolver,
   ) {}
 
-  async importSet(setId: number): Promise<{ champions: number; traits: number; items: number }> {
+  async importSet(
+    setId: number,
+    status: 'upcoming' | 'active' | 'archived' = 'active'
+  ): Promise<{ champions: number; traits: number; items: number }> {
     const dragontailDir = this.pathResolver.findDragontailDir();
     if (!dragontailDir) {
       throw new Error(`No dragontail data directory found for set ${setId}`);
@@ -80,7 +83,8 @@ export class ImportService {
       champions.map((c: any) => c.id),
       traits.map((t: any) => t.key),
       items.map((i: any) => i.id),
-      []
+      [],
+      status
     );
 
     return { champions: champions.length, traits: traits.length, items: items.length };
