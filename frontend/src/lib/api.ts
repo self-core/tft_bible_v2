@@ -540,7 +540,7 @@ export interface Item {
 export interface SetData {
   setId: number;
   setName: string;
-  status: string;
+  status: 'upcoming' | 'active' | 'archived';
   champions: Champion[];
   traits: Trait[];
   items: Item[];
