@@ -3,7 +3,6 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { container } from '../services/container';
 import { ImportService } from '../services/ImportService';
-import { Repository } from '../services/_internal/Repository';
 import { PathResolver } from '../services/_internal/PathResolver';
 import { SetModel } from '../models/Set';
 
@@ -22,10 +21,20 @@ function parseArgs(): MigrationArgs {
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--archive' && args[i + 1]) {
-      result.archiveSetId = parseInt(args[i + 1], 10);
+      const val = parseInt(args[i + 1], 10);
+      if (isNaN(val)) {
+        console.error(`Invalid set ID for --archive: ${args[i + 1]}`);
+        process.exit(1);
+      }
+      result.archiveSetId = val;
       i++;
     } else if (args[i] === '--import' && args[i + 1]) {
-      result.importSetId = parseInt(args[i + 1], 10);
+      const val = parseInt(args[i + 1], 10);
+      if (isNaN(val)) {
+        console.error(`Invalid set ID for --import: ${args[i + 1]}`);
+        process.exit(1);
+      }
+      result.importSetId = val;
       i++;
     }
   }
@@ -57,7 +66,6 @@ async function main() {
     process.exit(1);
   }
 
-  const repository = container.resolve(Repository);
   const importService = container.resolve(ImportService);
   const pathResolver = container.resolve(PathResolver);
 
@@ -104,7 +112,19 @@ async function main() {
     } catch (error) {
       console.error(`Failed to import Set ${args.importSetId}:`, error);
       console.warn('Rolling back: deleting partially-imported set data');
+
       await SetModel.findOneAndDelete({ setId: args.importSetId });
+
+      const { ChampionModel } = require('../models/Champion');
+      const { TraitModel } = require('../models/Trait');
+      const { ItemModel } = require('../models/Item');
+
+      const prefix = `TFT${args.importSetId}_`;
+      await ChampionModel.deleteMany({ id: { $regex: `^${prefix}` } });
+      await TraitModel.deleteMany({ key: { $regex: `^${prefix}` } });
+      await ItemModel.deleteMany({ id: { $regex: `^${prefix}` } });
+
+      console.log('Rolled back imported champions, traits, and items');
     }
   }
 
