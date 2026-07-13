@@ -18,7 +18,7 @@ export class Repository {
     return {
       setId: setDoc.setId,
       setName: setDoc.setName,
-      status: (setDoc as any).status || 'active',
+      status: setDoc.status,
       champions: champions.map(doc => ({
         id: doc.id,
         name: doc.name,
@@ -117,15 +117,16 @@ export class Repository {
     return doc !== null;
   }
 
-  async getAllSets(): Promise<any[]> {
+  async getAllSets(): Promise<Partial<ISetDocument>[]> {
     return SetModel.find({}).sort({ setId: -1 }).lean();
   }
 
-  async getActiveSet(): Promise<any | null> {
+  async getActiveSet(): Promise<Partial<ISetDocument> | null> {
     return SetModel.findOne({ status: 'active' }).lean();
   }
 
-  async setSetStatus(setId: number, status: 'upcoming' | 'active' | 'archived'): Promise<void> {
-    await SetModel.findOneAndUpdate({ setId }, { status }).exec();
+  async setSetStatus(setId: number, status: 'upcoming' | 'active' | 'archived'): Promise<boolean> {
+    const result = await SetModel.findOneAndUpdate({ setId }, { status }).exec();
+    return result !== null;
   }
 }
