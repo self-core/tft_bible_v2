@@ -1,5 +1,6 @@
 import { apolloClient } from './apolloClient';
 import { gql } from 'graphql-tag';
+import { GET_ACTIVE_SET } from './graphql';
 
 // ===== GraphQL Query Documents =====
 
@@ -142,6 +143,7 @@ export const GET_SETS = gql`
     sets {
       setId
       setName
+      status
       champions {
         id
         name
@@ -193,6 +195,7 @@ export const GET_SET = gql`
     set(setId: $setId) {
       setId
       setName
+      status
       champions {
         id
         name
@@ -537,6 +540,7 @@ export interface Item {
 export interface SetData {
   setId: number;
   setName: string;
+  status: string;
   champions: Champion[];
   traits: Trait[];
   items: Item[];
@@ -569,10 +573,6 @@ export interface EntitySearchResult {
   items: Item[];
   sets: SetData[];
   compositions: Composition[];
-}
-
-export interface GraphQLResponse<T> {
-  data: T;
 }
 
 export interface ChampionInComposition {
@@ -994,6 +994,19 @@ export const api = {
       return response;
     } catch (error: any) {
       console.error('GraphQL Error - getRiotMatchDetail:', error.message || error);
+      throw error;
+    }
+  },
+
+  getActiveSet: async () => {
+    try {
+      const response = await apolloClient.query({
+        query: GET_ACTIVE_SET,
+        errorPolicy: 'all',
+      });
+      return response;
+    } catch (error: any) {
+      console.error('GraphQL Error - getActiveSet:', error.message || error);
       throw error;
     }
   },

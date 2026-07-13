@@ -148,6 +148,7 @@ export const GET_SETS = gql`
     sets {
       setId
       setName
+      status
       champions {
         id
         name
@@ -200,6 +201,7 @@ export const GET_SET = gql`
     set(setId: $setId) {
       setId
       setName
+      status
       champions {
         id
         name
@@ -242,6 +244,17 @@ export const GET_SET = gql`
         description
         imageUrl
       }
+    }
+  }
+`;
+
+// Query to get the currently active set
+export const GET_ACTIVE_SET = gql`
+  query GetActiveSet {
+    activeSet {
+      setId
+      setName
+      status
     }
   }
 `;
