@@ -53,9 +53,16 @@ export const typeDefs = gql`
     trait: String
   }
 
+  enum SetStatus {
+    UPCOMING
+    ACTIVE
+    ARCHIVED
+  }
+
   type SetData {
     setId: Int!
     setName: String!
+    status: SetStatus!
     champions: [Champion!]!
     traits: [Trait!]!
     items: [Item!]!
@@ -148,6 +155,7 @@ export const typeDefs = gql`
     compositions: [Composition!]!
     composition(id: ID!): Composition
     compositionsBySet(setId: Int!): [Composition!]!
+    activeSet: SetData
     search(searchTerm: String!): SearchResult!
   }
 
