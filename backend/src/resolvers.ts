@@ -135,7 +135,9 @@ export const resolvers = {
       return null;
     },
     activeSet: async () => {
-      return await setDataService.getSetData();
+      const activeSetDoc = await SetModel.findOne({ status: 'active' }).lean();
+      if (!activeSetDoc) return null;
+      return await setDataService.getSetData(activeSetDoc.setId);
     },
     compositions: () => compositionService.getAll(),
     compositionsBySet: (_: any, { setId }: { setId: number }) => {
@@ -204,7 +206,7 @@ export const resolvers = {
   Mutation: {
     createComposition: async (_: any, { input }: { input: any }) => {
       const setData = await setDataService.getSetData(input.setId);
-      if ((setData as any).status === 'archived') {
+      if (setData.status === 'archived') {
         throw new Error(`Cannot create compositions for archived set ${input.setId}`);
       }
       return compositionService.create(input);
@@ -213,7 +215,7 @@ export const resolvers = {
       const composition = await compositionService.getById(id);
       if (composition) {
         const setData = await setDataService.getSetData(composition.setId);
-        if ((setData as any).status === 'archived') {
+      if (setData.status === 'archived') {
           throw new Error(`Cannot edit compositions for archived set ${composition.setId}`);
         }
       }
