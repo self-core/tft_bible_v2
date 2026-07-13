@@ -9,6 +9,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import { container } from './services/container';
 import { MetaService } from './services/MetaService';
+import { SetDataService } from './services/SetDataService';
 
 // Load environment variables
 dotenv.config();
@@ -50,7 +51,10 @@ async function startServer() {
 
   // Schedule meta data refresh
   const metaService = container.resolve(MetaService);
-  const currentSetId = parseInt(process.env.TFT_CURRENT_SET || '17', 10);
+  const setDataService = container.resolve(SetDataService);
+  await setDataService.initialize();
+  const currentSetData = await setDataService.getSetData();
+  const currentSetId = currentSetData.setId;
 
   // Initial meta refresh on startup (non-blocking)
   if (process.env.RIOT_API_KEY) {
