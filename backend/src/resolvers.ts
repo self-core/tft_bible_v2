@@ -6,19 +6,21 @@ import { MetaService } from './services/MetaService';
 import { RiotApiClient } from './services/RiotApiClient';
 
 // Initialize services from DI container
-const apiKey = process.env.RIOT_API_KEY || '';
 const setDataService = container.resolve(SetDataService);
 setDataService.initialize();
 const compositionService = container.resolve(CompositionService);
 const metaService = container.resolve(MetaService);
+const riotClient = container.resolve(RiotApiClient);
 
-const getRiotClient = () => {
-  if (!apiKey) throw new Error('RIOT_API_KEY not configured');
-  return new RiotApiClient({ apiKey });
-};
+import { SetModel } from './models/Set';
 
 const REGION = process.env.RIOT_REGION || 'AMERICAS';
 const PLATFORM = process.env.RIOT_PLATFORM || 'NA1';
+
+const getAllSetIds = async (): Promise<number[]> => {
+  const sets = await SetModel.find({}).select('setId').lean();
+  return sets.map((s: any) => s.setId).sort((a: number, b: number) => b - a);
+};
 
 // Async function to get the current set data from database
 const getCurrentSetDataFromDB = async (): Promise<ISetData> => {
@@ -33,49 +35,107 @@ export const resolvers = {
       return currentSet.champions;
     },
     championsBySet: async (_: any, { setId }: { setId: number }) => {
-      const currentSet = await getCurrentSetDataFromDB();
-      // In a real implementation, we'd look up the set by ID
-      // For now, just return current set champions if setId matches
-      if (setId === currentSet.setId) return currentSet.champions;
-      return []; // Return empty array for other sets
+      try {
+        const setData = await setDataService.getSetData(setId);
+        return setData.champions;
+      } catch {
+        return [];
+      }
     },
     champion: async (_: any, { id }: { id: string }) => {
-      const currentSet = await getCurrentSetDataFromDB();
-      return currentSet.champions.find((champ: ISetChampion) => champ.id === id);
+      const match = id.match(/^TFT(\d+)_/i);
+      if (match) {
+        const setId = parseInt(match[1], 10);
+        try {
+          const setData = await setDataService.getSetData(setId);
+          const found = setData.champions.find((champ: ISetChampion) => champ.id === id);
+          if (found) return found;
+        } catch {}
+      }
+      const allIds = await getAllSetIds();
+      for (const setId of allIds) {
+        try {
+          const setData = await setDataService.getSetData(setId);
+          const found = setData.champions.find((champ: ISetChampion) => champ.id === id);
+          if (found) return found;
+        } catch {}
+      }
+      return null;
     },
     traits: async () => {
       const currentSet = await getCurrentSetDataFromDB();
       return currentSet.traits;
     },
     trait: async (_: any, { id }: { id: string }) => {
-      const currentSet = await getCurrentSetDataFromDB();
-      return currentSet.traits.find((trait: ITrait) => trait.key === id);
+      const allIds = await getAllSetIds();
+      for (const setId of allIds) {
+        try {
+          const setData = await setDataService.getSetData(setId);
+          const found = setData.traits.find((trait: ITrait) => trait.key === id);
+          if (found) return found;
+        } catch {}
+      }
+      return null;
     },
     items: async () => {
       const currentSet = await getCurrentSetDataFromDB();
       return currentSet.items;
     },
     item: async (_: any, { id }: { id: string }) => {
-      const currentSet = await getCurrentSetDataFromDB();
-      return currentSet.items.find((item: IItem) => item.id === id);
+      const match = id.match(/^TFT(\d+)_/i);
+      if (match) {
+        const setId = parseInt(match[1], 10);
+        try {
+          const setData = await setDataService.getSetData(setId);
+          const found = setData.items.find((item: IItem) => item.id === id);
+          if (found) return found;
+        } catch {}
+      }
+      const allIds = await getAllSetIds();
+      for (const setId of allIds) {
+        try {
+          const setData = await setDataService.getSetData(setId);
+          const found = setData.items.find((item: IItem) => item.id === id);
+          if (found) return found;
+        } catch {}
+      }
+      return null;
     },
     sets: async () => {
-      const currentSet = await getCurrentSetDataFromDB();
-      return [currentSet]; // Return all available sets
+      const allIds = await getAllSetIds();
+      const sets: ISetData[] = [];
+      for (const id of allIds) {
+        try {
+          const s = await setDataService.getSetData(id);
+          sets.push(s);
+        } catch {}
+      }
+      return sets;
     },
     set: async (_: any, { setId }: { setId: number }) => {
-      const currentSet = await getCurrentSetDataFromDB();
-      // In a real implementation, we'd look up the set by ID
-      if (setId === currentSet.setId) return currentSet;
-      return null; // Return null if set is not found
+      try {
+        return await setDataService.getSetData(setId);
+      } catch {
+        return null;
+      }
     },
     augments: async () => {
       const currentSet = await getCurrentSetDataFromDB();
       return currentSet.augments;
     },
     augment: async (_: any, { id }: { id: string }) => {
-      const currentSet = await getCurrentSetDataFromDB();
-      return currentSet.augments.find((augment: any) => augment.id === id);
+      const allIds = await getAllSetIds();
+      for (const setId of allIds) {
+        try {
+          const setData = await setDataService.getSetData(setId);
+          const found = setData.augments.find((augment: any) => augment.id === id);
+          if (found) return found;
+        } catch {}
+      }
+      return null;
+    },
+    activeSet: async () => {
+      return await setDataService.getSetData();
     },
     compositions: () => compositionService.getAll(),
     compositionsBySet: (_: any, { setId }: { setId: number }) => {
@@ -123,33 +183,40 @@ export const resolvers = {
       return metaService.getMetaCompositionById(id);
     },
 
-    // Riot API queries
+    // Riot API queries (shared client with rate limiting)
     riotSummonerByPuuid: async (_: any, { puuid }: { puuid: string }) => {
-      const client = getRiotClient();
-      return client.request<any>(PLATFORM, `/tft/summoner/v1/summoners/by-puuid/${puuid}`);
+      return riotClient.request<any>(PLATFORM, `/tft/summoner/v1/summoners/by-puuid/${puuid}`);
     },
     riotSummonerByName: async (_: any, { name }: { name: string }) => {
-      const client = getRiotClient();
-      return client.request<any>(PLATFORM, `/tft/summoner/v1/summoners/by-name/${encodeURIComponent(name)}`);
+      return riotClient.request<any>(PLATFORM, `/tft/summoner/v1/summoners/by-name/${encodeURIComponent(name)}`);
     },
     riotMatchHistory: async (_: any, { puuid, start, count }: { puuid: string; start?: number; count?: number }) => {
-      const client = getRiotClient();
       const params = new URLSearchParams();
       if (start !== undefined) params.set('start', String(start));
       if (count !== undefined) params.set('count', String(count));
       const query = params.toString() ? `?${params.toString()}` : '';
-      return client.regionalRequest<string[]>(REGION, `/tft/match/v1/matches/by-puuid/${puuid}/ids${query}`);
+      return riotClient.regionalRequest<string[]>(REGION, `/tft/match/v1/matches/by-puuid/${puuid}/ids${query}`);
     },
     riotMatchDetail: async (_: any, { matchId }: { matchId: string }) => {
-      const client = getRiotClient();
-      return client.regionalRequest<any>(REGION, `/tft/match/v1/matches/${matchId}`);
+      return riotClient.regionalRequest<any>(REGION, `/tft/match/v1/matches/${matchId}`);
     },
   },
   Mutation: {
     createComposition: async (_: any, { input }: { input: any }) => {
+      const setData = await setDataService.getSetData(input.setId);
+      if ((setData as any).status === 'archived') {
+        throw new Error(`Cannot create compositions for archived set ${input.setId}`);
+      }
       return compositionService.create(input);
     },
     updateComposition: async (_: any, { id, input }: { id: string, input: any }) => {
+      const composition = await compositionService.getById(id);
+      if (composition) {
+        const setData = await setDataService.getSetData(composition.setId);
+        if ((setData as any).status === 'archived') {
+          throw new Error(`Cannot edit compositions for archived set ${composition.setId}`);
+        }
+      }
       const result = await compositionService.update(id, input);
       if (!result) throw new Error(`Composition with id ${id} not found`);
       return result;
