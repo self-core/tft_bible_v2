@@ -18,6 +18,7 @@ export class Repository {
     return {
       setId: setDoc.setId,
       setName: setDoc.setName,
+      status: (setDoc as any).status || 'active',
       champions: champions.map(doc => ({
         id: doc.id,
         name: doc.name,
@@ -56,12 +57,21 @@ export class Repository {
     };
   }
 
-  async saveSetData(setId: number, setName: string, championIds: string[], traitKeys: string[], itemIds: string[], augments: any[]): Promise<void> {
+  async saveSetData(
+    setId: number,
+    setName: string,
+    championIds: string[],
+    traitKeys: string[],
+    itemIds: string[],
+    augments: any[],
+    status: 'upcoming' | 'active' | 'archived' = 'active'
+  ): Promise<void> {
     await SetModel.findOneAndUpdate(
       { setId },
       {
         setId,
         setName,
+        status,
         champions: championIds,
         traits: traitKeys,
         items: itemIds,
@@ -105,5 +115,17 @@ export class Repository {
   async hasSet(setId: number): Promise<boolean> {
     const doc = await SetModel.exists({ setId });
     return doc !== null;
+  }
+
+  async getAllSets(): Promise<any[]> {
+    return SetModel.find({}).sort({ setId: -1 }).lean();
+  }
+
+  async getActiveSet(): Promise<any | null> {
+    return SetModel.findOne({ status: 'active' }).lean();
+  }
+
+  async setSetStatus(setId: number, status: 'upcoming' | 'active' | 'archived'): Promise<void> {
+    await SetModel.findOneAndUpdate({ setId }, { status }).exec();
   }
 }
