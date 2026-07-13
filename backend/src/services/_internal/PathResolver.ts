@@ -111,8 +111,18 @@ export class PathResolver {
       try {
         fs.renameSync(srcPath, destPath);
         moved.push(fileName);
-      } catch (err) {
-        errors.push(`Failed to move ${fileName}: ${err}`);
+      } catch (err: any) {
+        if (err.code === 'EXDEV') {
+          try {
+            fs.copyFileSync(srcPath, destPath);
+            fs.unlinkSync(srcPath);
+            moved.push(fileName);
+          } catch (copyErr) {
+            errors.push(`Failed to copy ${fileName}: ${copyErr}`);
+          }
+        } else {
+          errors.push(`Failed to move ${fileName}: ${err}`);
+        }
       }
     }
 
