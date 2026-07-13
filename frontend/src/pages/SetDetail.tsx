@@ -19,18 +19,31 @@ const SetDetail = () => {
   const { set } = data;
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className={`max-w-6xl mx-auto px-4 py-8 ${set.status === 'archived' ? 'opacity-75' : ''}`}>
       <h1 className="text-3xl font-bold mb-8 text-center" style={{ color: 'var(--text-primary)' }}>
         {set.setName} (Set {set.setId})
+        {set.status === 'archived' && (
+          <span className="ml-3 text-sm font-normal px-2 py-1 rounded"
+            style={{
+              backgroundColor: 'color-mix(in srgb, var(--text-secondary) 20%, transparent)',
+              color: 'var(--text-secondary)'
+            }}>
+            Archived
+          </span>
+        )}
       </h1>
 
       {set.status === 'archived' && (
-        <div className="mb-6 rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-4">
+        <div className="mb-6 rounded-lg border p-4"
+          style={{
+            borderColor: 'color-mix(in srgb, var(--warning, #f59e0b) 30%, transparent)',
+            backgroundColor: 'color-mix(in srgb, var(--warning, #f59e0b) 10%, transparent)'
+          }}>
           <div className="flex items-center gap-2">
-            <span className="text-yellow-400">⚠</span>
-            <span className="font-medium text-yellow-300">Archived Set</span>
+            <span style={{ color: 'var(--warning, #f59e0b)' }}>⚠</span>
+            <span className="font-medium" style={{ color: 'var(--warning, #f59e0b)' }}>Archived Set</span>
           </div>
-          <p className="mt-1 text-sm text-yellow-200/70">
+          <p className="mt-1 text-sm" style={{ color: 'color-mix(in srgb, var(--warning, #f59e0b) 70%, transparent)' }}>
             This set is no longer active. You can browse champions, traits, and items,
             but cannot create new compositions.
           </p>
