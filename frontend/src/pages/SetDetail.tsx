@@ -24,6 +24,19 @@ const SetDetail = () => {
         {set.setName} (Set {set.setId})
       </h1>
 
+      {set.status === 'archived' && (
+        <div className="mb-6 rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-4">
+          <div className="flex items-center gap-2">
+            <span className="text-yellow-400">⚠</span>
+            <span className="font-medium text-yellow-300">Archived Set</span>
+          </div>
+          <p className="mt-1 text-sm text-yellow-200/70">
+            This set is no longer active. You can browse champions, traits, and items,
+            but cannot create new compositions.
+          </p>
+        </div>
+      )}
+
       {/* Champions Section */}
       <section className="mb-12">
         <h2 className="text-2xl font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Champions</h2>
