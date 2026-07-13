@@ -28,14 +28,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   // Add sets to navigation if available
   const navItems = [...baseNavItems]
 
-  if (sets && sets.length > 0) {
-    const setNavItems = sets.map(set => ({
-      path: `/sets/${set.setId}`,
-      label: set.setName,
-      icon: Book
-    }))
-    navItems.push(...setNavItems)
-  }
+  const currentSetId = sets?.find(s => s.status === 'active')?.setId
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--bg-primary)' }}>
@@ -69,6 +62,38 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
                     <Icon className="h-4 w-4" style={{ color: location.pathname === path ? 'var(--accent1)' : 'var(--text-secondary)' }} />
                     <span>{label}</span>
                     {location.pathname === path && (
+                      <div className="absolute bottom-0 left-0 w-full h-0.5 rounded-full" style={{ background: 'var(--accent1)' }}></div>
+                    )}
+                  </Link>
+                ))}
+                {sets?.map((set) => (
+                  <Link
+                    key={set.setId}
+                    to={`/sets/${set.setId}`}
+                    className="flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-all duration-300 relative"
+                    style={{
+                      color: set.status === 'archived'
+                        ? 'color-mix(in srgb, var(--text-secondary) 40%, transparent)'
+                        : currentSetId === set.setId
+                          ? 'var(--accent1)'
+                          : 'var(--text-secondary)',
+                      backgroundColor: currentSetId === set.setId && set.status !== 'archived'
+                        ? 'var(--bg-accent)'
+                        : 'transparent'
+                    }}
+                  >
+                    <Book className="h-4 w-4" style={{
+                      color: set.status === 'archived'
+                        ? 'color-mix(in srgb, var(--text-secondary) 40%, transparent)'
+                        : currentSetId === set.setId
+                          ? 'var(--accent1)'
+                          : 'var(--text-secondary)'
+                    }} />
+                    <span>{set.setName}</span>
+                    {set.status === 'archived' && (
+                      <span className="ml-1 text-xs" style={{ color: 'color-mix(in srgb, var(--text-secondary) 40%, transparent)' }}>archived</span>
+                    )}
+                    {currentSetId === set.setId && set.status !== 'archived' && (
                       <div className="absolute bottom-0 left-0 w-full h-0.5 rounded-full" style={{ background: 'var(--accent1)' }}></div>
                     )}
                   </Link>
@@ -137,6 +162,39 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
                 >
                   <Icon className="h-5 w-5" style={{ color: location.pathname === path ? 'var(--accent1)' : 'var(--text-secondary)' }} />
                   <span>{label}</span>
+                </Link>
+              ))}
+              {sets?.map((set) => (
+                <Link
+                  key={set.setId}
+                  to={`/sets/${set.setId}`}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center space-x-2 px-3 py-3 rounded-md text-base font-medium transition-all duration-300"
+                  style={{
+                    color: set.status === 'archived'
+                      ? 'color-mix(in srgb, var(--text-secondary) 40%, transparent)'
+                      : currentSetId === set.setId
+                        ? 'var(--accent1)'
+                        : 'var(--text-secondary)',
+                    backgroundColor: currentSetId === set.setId && set.status !== 'archived'
+                      ? 'var(--bg-accent)'
+                      : 'transparent',
+                    borderLeft: currentSetId === set.setId && set.status !== 'archived'
+                      ? '4px solid var(--accent1)'
+                      : 'none'
+                  }}
+                >
+                  <Book className="h-5 w-5" style={{
+                    color: set.status === 'archived'
+                      ? 'color-mix(in srgb, var(--text-secondary) 40%, transparent)'
+                      : currentSetId === set.setId
+                        ? 'var(--accent1)'
+                        : 'var(--text-secondary)'
+                  }} />
+                  <span>{set.setName}</span>
+                  {set.status === 'archived' && (
+                    <span className="ml-1 text-xs" style={{ color: 'color-mix(in srgb, var(--text-secondary) 40%, transparent)' }}>archived</span>
+                  )}
                 </Link>
               ))}
             </div>
