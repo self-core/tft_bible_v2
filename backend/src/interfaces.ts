@@ -44,6 +44,7 @@ export interface IItem {
 export interface ISetData {
   setId: number;
   setName: string;
+  status: 'upcoming' | 'active' | 'archived';
   champions: ISetChampion[];
   traits: ITrait[];
   items: IItem[];
