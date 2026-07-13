@@ -11,30 +11,35 @@ import { FileParser } from './_internal/FileParser';
 export class SetDataService {
   private embeddedFallback: typeof EmbeddedFallback;
   private initialized = false;
-  private defaultSetId: number;
+  private defaultSetId = 18;
 
   constructor(
     private repository: Repository,
     private importService: ImportService,
     private cache: ResultCache,
+    private pathResolver: PathResolver,
   ) {
     this.embeddedFallback = EmbeddedFallback;
-    this.defaultSetId = this.detectLatestSet();
   }
 
-  private detectLatestSet(): number {
+  private async detectLatestSet(): Promise<number> {
     if (process.env.TFT_CURRENT_SET) {
       return parseInt(process.env.TFT_CURRENT_SET, 10);
     }
+
     try {
-      const resolver = new PathResolver();
-      const dir = resolver.findDragontailDir();
-      if (!dir) return 17;
-      const championJson = FileParser.readJsonFile(resolver.getChampionPath(dir)) || this.loadHighestSetFile(resolver, dir);
+      const activeSet = await this.repository.getActiveSet();
+      if (activeSet) return activeSet.setId;
+    } catch {}
+
+    try {
+      const dir = this.pathResolver.findDragontailDir();
+      if (!dir) return 18;
+      const championJson = FileParser.readJsonFile(this.pathResolver.getChampionPath(dir)) || this.loadHighestSetFile(this.pathResolver, dir);
       const sets = FileParser.detectAvailableSets(championJson);
-      return sets.length > 0 ? sets[0] : 17;
+      return sets.length > 0 ? sets[0] : 18;
     } catch {
-      return 17;
+      return 18;
     }
   }
 
@@ -48,6 +53,7 @@ export class SetDataService {
 
   async initialize(): Promise<void> {
     if (this.initialized) return;
+    this.defaultSetId = await this.detectLatestSet();
     try {
       await this.getSetData(this.defaultSetId);
     } catch {
