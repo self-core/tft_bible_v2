@@ -90,9 +90,28 @@ describe('ImportService.importSet', () => {
     expect(mockRepository.saveChampions).not.toHaveBeenCalled();
   });
 
-  it('importSet should accept status parameter', () => {
-    const svc = new ImportService({} as any, {} as any);
-    expect(typeof svc.importSet).toBe('function');
-    expect(svc.importSet.length).toBe(1);
+  it('forwards non-default status parameter to saveSetData', async () => {
+    const { FileParser } = await import('./_internal/FileParser');
+    mockPathResolver.findDragontailDir.mockReturnValue('/dragontail');
+    (FileParser.readJsonFile as ReturnType<typeof vi.fn>)
+      .mockReturnValue({ data: {} });
+    (FileParser.parseChampionFile as ReturnType<typeof vi.fn>)
+      .mockReturnValue([{ name: 'Ahri', cost: 4, traits: ['Arcane'], stats: {}, ability: {} }]);
+    (FileParser.parseTraitFile as ReturnType<typeof vi.fn>)
+      .mockReturnValue([{ key: 'arcane', name: 'Arcane' }]);
+    (FileParser.parseItemFile as ReturnType<typeof vi.fn>)
+      .mockReturnValue([{ id: 'item1', name: 'Rabadon', description: 'AP', components: [] }]);
+
+    await service.importSet(16, 'archived');
+
+    expect(mockRepository.saveSetData).toHaveBeenCalledWith(
+      16,
+      'Set 16',
+      expect.any(Array),
+      expect.any(Array),
+      expect.any(Array),
+      expect.any(Array),
+      'archived'
+    );
   });
 });
