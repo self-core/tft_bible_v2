@@ -76,4 +76,46 @@ export class PathResolver {
   getItemSetPath(baseDir: string, setId: number): string {
     return path.join(baseDir, `tft-item_Set${setId}.json`);
   }
+
+  getArchiveDir(): string {
+    return path.join(process.cwd(), 'dragontail-archive');
+  }
+
+  archiveSetFiles(setId: number): { moved: string[]; errors: string[] } {
+    const dragontailDir = this.findDragontailDir();
+    if (!dragontailDir) {
+      return { moved: [], errors: ['No dragontail directory found'] };
+    }
+
+    const archiveDir = path.join(this.getArchiveDir(), String(setId));
+    if (!fs.existsSync(archiveDir)) {
+      fs.mkdirSync(archiveDir, { recursive: true });
+    }
+
+    const filesToMove = [
+      this.getChampionSetPath(dragontailDir, setId),
+      this.getTraitSetPath(dragontailDir, setId),
+      this.getItemSetPath(dragontailDir, setId),
+    ];
+
+    const moved: string[] = [];
+    const errors: string[] = [];
+
+    for (const srcPath of filesToMove) {
+      if (!fs.existsSync(srcPath)) {
+        errors.push(`File not found: ${srcPath}`);
+        continue;
+      }
+      const fileName = path.basename(srcPath);
+      const destPath = path.join(archiveDir, fileName);
+      try {
+        fs.renameSync(srcPath, destPath);
+        moved.push(fileName);
+      } catch (err) {
+        errors.push(`Failed to move ${fileName}: ${err}`);
+      }
+    }
+
+    return { moved, errors };
+  }
 }
