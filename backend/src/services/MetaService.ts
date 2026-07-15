@@ -17,21 +17,15 @@ export interface MetaCompositionResult {
 
 @injectable()
 export class MetaService {
-  private apiClient?: RiotApiClient;
   private isRefreshing = false;
 
   constructor(
+    private apiClient: RiotApiClient,
     private matchFetcher: MatchFetcher,
     private analyzer: CompAnalyzer,
-    @inject('RIOT_API_KEY') private apiKey: string,
+    @inject('RIOT_REGION') private region: string,
+    @inject('RIOT_PLATFORM') private platform: string,
   ) {}
-
-  private getApiClient(): RiotApiClient {
-    if (!this.apiClient) {
-      this.apiClient = new RiotApiClient({ apiKey: this.apiKey });
-    }
-    return this.apiClient;
-  }
 
   async getMetaCompositions(setId?: number, patchVersion?: string): Promise<MetaCompositionResult[]> {
     const filter: Record<string, unknown> = {};
@@ -56,17 +50,14 @@ export class MetaService {
     }
     this.isRefreshing = true;
 
-    const region = process.env.RIOT_REGION || 'AMERICAS';
-    const platform = process.env.RIOT_PLATFORM || 'NA1';
     const patchVersion = `${process.env.TFT_PATCH_VERSION || '17'}.${setId}`;
 
     try {
-      const client = this.getApiClient();
       let challenger;
       try {
-        challenger = await client.request<any>(platform, '/tft/league/v1/challenger');
+        challenger = await this.apiClient.request<any>(this.platform, '/tft/league/v1/challenger');
       } catch (err) {
-        console.error(`[MetaService] Failed to fetch challenger league for ${platform}:`, err instanceof Error ? err.message : String(err));
+        console.error(`[MetaService] Failed to fetch challenger league for ${this.platform}:`, err instanceof Error ? err.message : String(err));
         return;
       }
       const entries: any[] = challenger?.entries || [];
@@ -77,7 +68,7 @@ export class MetaService {
       let puuidFailures = 0;
       for (const puuid of puuids) {
         try {
-          const ids = await client.regionalRequest<string[]>(region, `/tft/match/v1/matches/by-puuid/${puuid}/ids?count=5`);
+          const ids = await this.apiClient.regionalRequest<string[]>(this.region, `/tft/match/v1/matches/by-puuid/${puuid}/ids?count=5`);
           if (ids) ids.forEach((id: string) => allMatchIds.add(id));
         } catch (err) {
           puuidFailures++;
@@ -93,7 +84,7 @@ export class MetaService {
 
       for (const matchId of matchIds) {
         try {
-          const match = await client.regionalRequest<any>(region, `/tft/match/v1/matches/${matchId}`);
+          const match = await this.apiClient.regionalRequest<any>(this.region, `/tft/match/v1/matches/${matchId}`);
           const participants = this.matchFetcher.extractParticipants(match);
           for (const p of participants) {
             allBoards.push({

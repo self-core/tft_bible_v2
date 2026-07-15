@@ -1,9 +1,6 @@
 import * as https from 'https';
+import { injectable, inject } from 'tsyringe';
 import { RateLimiter } from './_internal/RateLimiter';
-
-interface RiotApiConfig {
-  apiKey: string;
-}
 
 const PLATFORM_HOSTS: Record<string, string> = {
   NA1: 'na1.api.riotgames.com',
@@ -17,13 +14,16 @@ const REGIONAL_HOSTS: Record<string, string> = {
   ASIA: 'asia.api.riotgames.com',
 };
 
+@injectable()
 export class RiotApiClient {
-  private apiKey: string;
   private limiter = new RateLimiter({ maxTokens: 500, refillRate: 50, refillIntervalMs: 1000 });
 
-  constructor(config: RiotApiConfig) {
-    if (!config.apiKey) throw new Error('RIOT_API_KEY is required');
-    this.apiKey = config.apiKey;
+  constructor(
+    @inject('RIOT_API_KEY') private apiKey: string,
+  ) {
+    if (!apiKey) {
+      console.warn('[RiotApiClient] RIOT_API_KEY not set — Riot API calls will be unavailable');
+    }
   }
 
   buildUrl(platform: string, path: string): string {
@@ -33,12 +33,14 @@ export class RiotApiClient {
   }
 
   async request<T>(platform: string, path: string): Promise<T> {
+    if (!this.apiKey) throw new Error('RIOT_API_KEY not configured');
     await this.limiter.acquire();
     const url = this.buildUrl(platform, path);
     return this.fetchJson<T>(url);
   }
 
   async regionalRequest<T>(region: string, path: string): Promise<T> {
+    if (!this.apiKey) throw new Error('RIOT_API_KEY not configured');
     await this.limiter.acquire();
     const host = REGIONAL_HOSTS[region];
     if (!host) throw new Error(`Unknown region: ${region}`);

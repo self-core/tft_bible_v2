@@ -101,6 +101,20 @@
   --grid-color: #2a9d8f;
 }
 
+/* Enchanted Wilds (Set 18) Theme - Mystical Night Forest with glowing pink blossom & mint green accents */
+[data-theme="enchanted"] {
+  --bg-primary: #081411; /* Deep forest void */
+  --bg-secondary: #0e241f; /* Mystic jade shadows */
+  --bg-accent: #193d35; /* Glowing moss */
+  --text-primary: #e8f7f4; /* Ethereal ice white */
+  --text-secondary: #82bdae; /* Muted sage mint */
+  --accent1: #52e3c2; /* Magical teal spark */
+  --accent2: #f28eb3; /* Blossom wisp pink */
+  --accent3: #ffcf70; /* Golden fire wisp */
+  --accent-glow: rgba(82, 227, 194, 0.25);
+  --grid-color: #193d35;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

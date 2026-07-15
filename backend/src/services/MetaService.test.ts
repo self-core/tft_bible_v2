@@ -22,6 +22,19 @@ const mockCompAnalyzer = {
   computeStats: vi.fn(),
 };
 
+const makeBoard = (placement: number) => ({
+  puuid: `puuid-${placement}`,
+  placement,
+  level: 8,
+  units: [
+    { character_id: 'TFT16_Ahri', tier: 2, items: [1001], rarity: 4 },
+    { character_id: 'TFT16_Viego', tier: 1, items: [], rarity: 5 },
+  ],
+  traits: [
+    { name: 'Arcane', num_units: 2, style: 1, tier_current: 1, tier_total: 3 },
+  ],
+});
+
 describe('MetaService.refreshMetaData', () => {
   let service: MetaService;
 
@@ -30,9 +43,11 @@ describe('MetaService.refreshMetaData', () => {
     vi.spyOn(RiotApiClient.prototype, 'request').mockRejectedValue(new Error('API unreachable'));
     vi.spyOn(RiotApiClient.prototype, 'regionalRequest').mockRejectedValue(new Error('API unreachable'));
     service = new MetaService(
+      new RiotApiClient('test-api-key'),
       mockMatchFetcher as unknown as MatchFetcher,
       mockCompAnalyzer as unknown as CompAnalyzer,
-      'test-api-key',
+      'AMERICAS',
+      'NA1',
     );
   });
 
@@ -73,23 +88,6 @@ describe('MetaService.refreshMetaData', () => {
     });
 
     mockMatchFetcher.extractParticipants.mockImplementation(() => {
-      return Array.from({ length: 25 }, (_, j) => makeBoard(j + 1));
-    });
-
-    const makeBoard = (placement: number) => ({
-      puuid: `puuid-${placement}`,
-      placement,
-      level: 8,
-      units: [
-        { character_id: 'TFT16_Ahri', tier: 2, items: [1001], rarity: 4 },
-        { character_id: 'TFT16_Viego', tier: 1, items: [], rarity: 5 },
-      ],
-      traits: [
-        { name: 'Arcane', num_units: 2, style: 1, tier_current: 1, tier_total: 3 },
-      ],
-    });
-
-    mockMatchFetcher.extractParticipants.mockImplementation((match: any) => {
       return Array.from({ length: 25 }, (_, j) => makeBoard(j + 1));
     });
 

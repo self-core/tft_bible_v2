@@ -18,8 +18,13 @@ const REGION = process.env.RIOT_REGION || 'AMERICAS';
 const PLATFORM = process.env.RIOT_PLATFORM || 'NA1';
 
 const getAllSetIds = async (): Promise<number[]> => {
-  const sets = await SetModel.find({}).select('setId').lean();
-  return sets.map((s: any) => s.setId).sort((a: number, b: number) => b - a);
+  try {
+    const sets = await SetModel.find({}).select('setId').lean();
+    return sets.map((s: any) => s.setId).sort((a: number, b: number) => b - a);
+  } catch {
+    // MongoDB not available — fall back to known embedded set IDs
+    return [18, 16];
+  }
 };
 
 // Async function to get the current set data from database
@@ -135,15 +140,23 @@ export const resolvers = {
       return null;
     },
     activeSet: async () => {
-      const activeSetDoc = await SetModel.findOne({ status: 'active' }).lean();
-      if (!activeSetDoc) return null;
-      return await setDataService.getSetData(activeSetDoc.setId);
+      try {
+        const activeSetDoc = await SetModel.findOne({ status: 'active' }).lean();
+        if (!activeSetDoc) return null;
+        return await setDataService.getSetData(activeSetDoc.setId);
+      } catch {
+        return await setDataService.getSetData();
+      }
     },
-    compositions: () => compositionService.getAll(),
-    compositionsBySet: (_: any, { setId }: { setId: number }) => {
-      return compositionService.getBySet(setId);
+    compositions: async () => {
+      try { return await compositionService.getAll(); } catch { return []; }
     },
-    composition: (_: any, { id }: { id: string }) => compositionService.getById(id),
+    compositionsBySet: async (_: any, { setId }: { setId: number }) => {
+      try { return await compositionService.getBySet(setId); } catch { return []; }
+    },
+    composition: async (_: any, { id }: { id: string }) => {
+      try { return await compositionService.getById(id); } catch { return null; }
+    },
     search: async (_: any, { searchTerm }: { searchTerm: string }) => {
       const currentSet = await getCurrentSetDataFromDB();
       const term = searchTerm.toLowerCase();
@@ -168,7 +181,9 @@ export const resolvers = {
         set.setName.toLowerCase().includes(term)
       );
 
-      const filteredCompositions = await compositionService.search(term);
+      const filteredCompositions = await (async () => {
+        try { return await compositionService.search(term); } catch { return []; }
+      })();
 
       return {
         champions: filteredChampions,
@@ -179,10 +194,10 @@ export const resolvers = {
       };
     },
     metaCompositions: async (_: any, { setId, patchVersion }: { setId?: number; patchVersion?: string }) => {
-      return metaService.getMetaCompositions(setId, patchVersion);
+      try { return await metaService.getMetaCompositions(setId, patchVersion); } catch { return []; }
     },
     metaComposition: async (_: any, { id }: { id: string }) => {
-      return metaService.getMetaCompositionById(id);
+      try { return await metaService.getMetaCompositionById(id); } catch { return null; }
     },
 
     // Riot API queries (shared client with rate limiting)
@@ -215,7 +230,7 @@ export const resolvers = {
       const composition = await compositionService.getById(id);
       if (composition) {
         const setData = await setDataService.getSetData(composition.setId);
-      if (setData.status === 'archived') {
+        if (setData.status === 'archived') {
           throw new Error(`Cannot edit compositions for archived set ${composition.setId}`);
         }
       }

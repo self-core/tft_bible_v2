@@ -117,11 +117,11 @@ export class Repository {
     return doc !== null;
   }
 
-  async getAllSets(): Promise<Partial<ISetDocument>[]> {
+  async getAllSets(): Promise<any[]> {
     return SetModel.find({}).sort({ setId: -1 }).lean();
   }
 
-  async getActiveSet(): Promise<Partial<ISetDocument> | null> {
+  async getActiveSet(): Promise<any | null> {
     return SetModel.findOne({ status: 'active' }).lean();
   }
 
