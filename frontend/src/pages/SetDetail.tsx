@@ -2,6 +2,7 @@ import { useParams } from 'react-router-dom';
 import { useQuery } from '@apollo/client';
 import { GET_SET } from '../lib/graphql';
 import { useState } from 'react';
+import { proxyUrl } from '../lib/imageProxy';
 
 const SetDetail = () => {
   const { setId } = useParams<{ setId: string }>();
@@ -66,7 +67,7 @@ const SetDetail = () => {
             >
               {champion.iconUrl && (
                 <img 
-                  src={champion.iconUrl} 
+                  src={proxyUrl(champion.iconUrl)} 
                   alt={champion.name} 
                   className="w-16 h-16 mx-auto mb-2 rounded"
                   onError={(e) => {
@@ -145,7 +146,7 @@ const SetDetail = () => {
             >
               {item.imageUrl && (
                 <img 
-                  src={item.imageUrl} 
+                  src={proxyUrl(item.imageUrl)} 
                   alt={item.name} 
                   className="w-12 h-12 mx-auto mb-2"
                   onError={(e) => {
@@ -179,7 +180,7 @@ const SetDetail = () => {
               >
                 {augment.imageUrl && (
                   <img 
-                    src={augment.imageUrl} 
+                    src={proxyUrl(augment.imageUrl)} 
                     alt={augment.name} 
                     className="w-12 h-12 mx-auto mb-2"
                     onError={(e) => {

@@ -3,6 +3,7 @@ import { useQuery } from '@apollo/client';
 import { GET_TRAITS, GET_CHAMPIONS } from '../lib/graphql';
 import { Champion } from '../lib/api';
 import TraitTracker from '../components/TraitTracker';
+import { proxyUrl } from '../lib/imageProxy';
 
 const TraitTrackerPage: React.FC = () => {
   const { data: traitsData, loading: traitsLoading } = useQuery(GET_TRAITS);
@@ -93,7 +94,7 @@ const TraitTrackerPage: React.FC = () => {
                     onClick={() => handleChampionSelect(champion)}
                   >
                     <img
-                      src={champion.imageUrl}
+                      src={proxyUrl(champion.imageUrl)}
                       alt={champion.name}
                       className="w-12 h-12 rounded border border-gray-300 mb-1"
                     />
@@ -140,7 +141,7 @@ const TraitTrackerPage: React.FC = () => {
                         >
                           {champion && (
                             <img
-                              src={champion.imageUrl}
+                              src={proxyUrl(champion.imageUrl)}
                               alt={champion.name}
                               className="w-12 h-12 rounded border border-gray-300"
                             />
@@ -164,7 +165,7 @@ const TraitTrackerPage: React.FC = () => {
                     >
                       {champion && (
                         <img
-                          src={champion.imageUrl}
+                          src={proxyUrl(champion.imageUrl)}
                           alt={champion.name}
                           className="w-12 h-12 rounded border border-gray-300"
                         />
@@ -185,7 +186,7 @@ const TraitTrackerPage: React.FC = () => {
             <div className="w-full bg-white rounded-xl shadow-md p-4 border border-blue-200">
               <div className="flex items-start gap-4">
                 <img
-                  src={selectedChampion.imageUrl}
+                  src={proxyUrl(selectedChampion.imageUrl)}
                   alt={selectedChampion.name}
                   className="w-20 h-20 rounded-lg border border-gray-300"
                 />

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useTheme } from '../contexts/ThemeContext'
 import { useCompositionsStore, useChampionsStore } from '../stores'
 import { Composition, Champion } from '../lib/api'
+import { proxyUrl } from '../lib/imageProxy'
 
 const Home = () => {
   const { theme } = useTheme();
@@ -283,7 +284,7 @@ const Home = () => {
                     {champ.iconUrl ? (
                       <div className="w-20 h-20 mx-auto rounded-xl flex items-center justify-center bg-gray-800">
                         <img
-                          src={champ.iconUrl}
+                          src={proxyUrl(champ.iconUrl)}
                           alt={champ.name}
                           className="w-16 h-16 rounded-lg object-cover"
                           onError={(e) => {

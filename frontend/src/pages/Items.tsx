@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useItemsStore } from '../stores'
 import { Filter, SearchIcon, Shield, Package } from 'lucide-react'
 import { Item } from '../lib/api'
+import { proxyUrl } from '../lib/imageProxy'
 
 const Items = () => {
   const [search, setSearch] = useState('')
@@ -71,7 +72,7 @@ const Items = () => {
             <div className="p-6">
               {item.imageUrl ? (
                 <div className="flex justify-center mb-4">
-                  <img src={item.imageUrl} alt={item.name} className="w-16 h-16 rounded-lg object-cover"
+                  <img src={proxyUrl(item.imageUrl)} alt={item.name} className="w-16 h-16 rounded-lg object-cover"
                     onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
                 </div>
               ) : (

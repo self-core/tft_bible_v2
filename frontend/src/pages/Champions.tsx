@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useChampionsStore } from '../stores'
 import { Sword, Shield, Zap } from 'lucide-react'
 import { Champion } from '../lib/api'
+import { proxyUrl } from '../lib/imageProxy'
 
 const Champions = () => {
   const { champions, loading, error, fetchChampions } = useChampionsStore()
@@ -90,7 +91,7 @@ const Champions = () => {
                 {champion.iconUrl ? (
                   <div className="w-20 h-20 mx-auto rounded-xl flex items-center justify-center bg-gray-800">
                     <img 
-                      src={champion.iconUrl} 
+                      src={proxyUrl(champion.iconUrl)} 
                       alt={champion.name}
                       className="w-16 h-16 rounded-lg object-cover"
                       onError={(e) => {

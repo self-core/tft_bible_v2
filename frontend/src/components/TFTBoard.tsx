@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { Star, Trash2 } from 'lucide-react';
+import { proxyUrl } from '../lib/imageProxy';
 
 export interface BoardChampion {
   id: string;
@@ -229,7 +230,7 @@ const TFTBoard = ({ champions = [], editMode = false, onBoardChange, title = 'TF
                 {/* Champion image or fallback */}
                 {unit.iconUrl ? (
                   <image
-                    href={unit.iconUrl}
+                    href={proxyUrl(unit.iconUrl) || ''}
                     x={cx - r}
                     y={cy - 4 - r}
                     width={r * 2}

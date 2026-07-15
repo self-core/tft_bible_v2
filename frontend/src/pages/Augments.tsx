@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Filter, SearchIcon } from 'lucide-react';
 import { useAugmentsStore } from '../stores';
 import { Augment } from '../lib/api';
+import { proxyUrl } from '../lib/imageProxy';
 
 const Augments = () => {
   const [search, setSearch] = useState('');
@@ -75,7 +76,7 @@ const Augments = () => {
 
               {augment.imageUrl ? (
                 <div className="w-16 h-16 mx-auto mb-3">
-                  <img src={augment.imageUrl} alt={augment.name} className="w-full h-full rounded object-cover"
+                   <img src={proxyUrl(augment.imageUrl)} alt={augment.name} className="w-full h-full rounded object-cover"
                     onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
                 </div>
               ) : (

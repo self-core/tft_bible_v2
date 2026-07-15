@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Loader2, Trash2 } from 'lucide-react';
 import TFTBoard, { BoardChampion } from '../components/TFTBoard';
 import { useChampionsStore } from '../stores/championsStore';
+import { proxyUrl } from '../lib/imageProxy';
 
 const ImprovedTeamBuilder = () => {
   const [boardChampions, setBoardChampions] = useState<BoardChampion[]>([]);
@@ -26,7 +27,7 @@ const ImprovedTeamBuilder = () => {
     e.dataTransfer.setData('text/champion-id', champion.id);
     e.dataTransfer.setData('text/champion-name', champion.name);
     e.dataTransfer.setData('text/champion-cost', String(champion.cost || 1));
-    e.dataTransfer.setData('text/champion-icon', champion.iconUrl || champion.imageUrl || '');
+    e.dataTransfer.setData('text/champion-icon', proxyUrl(champion.iconUrl || champion.imageUrl) || '');
     e.dataTransfer.effectAllowed = 'copy';
   };
 
@@ -71,7 +72,7 @@ const ImprovedTeamBuilder = () => {
                 <div className="w-12 h-12 rounded-lg overflow-hidden border-2 transition-transform hover:scale-110"
                   style={{ borderColor: getTierColor(champion.cost) }}>
                   {champion.iconUrl || champion.imageUrl ? (
-                    <img src={champion.iconUrl || champion.imageUrl} alt={champion.name}
+                     <img src={proxyUrl(champion.iconUrl || champion.imageUrl)} alt={champion.name}
                       className="w-full h-full object-cover" draggable={false} />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-white font-bold text-sm"
