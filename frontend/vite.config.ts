@@ -17,6 +17,11 @@ export default defineConfig({
       '/health': {
         target: 'http://localhost:4000',
         changeOrigin: true,
+      },
+      // Proxy image requests to the backend image cache
+      '/api/images': {
+        target: 'http://localhost:4000',
+        changeOrigin: true,
       }
     },
   },
