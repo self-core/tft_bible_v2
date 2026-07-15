@@ -10,6 +10,7 @@ import helmet from 'helmet';
 import { container } from './services/container';
 import { MetaService } from './services/MetaService';
 import { SetDataService } from './services/SetDataService';
+import { imageProxyHandler } from './routes/imageProxy';
 
 // Load environment variables
 dotenv.config();
@@ -25,13 +26,14 @@ async function startServer() {
   app.use(cors());
   app.use(express.json());
 
-  // Connect to MongoDB
+  // Connect to MongoDB (non-fatal — embedded fallback data is available)
+  let mongoConnected = false;
   try {
     await mongoose.connect(MONGODB_URI);
+    mongoConnected = true;
     console.log('Connected to MongoDB');
   } catch (error) {
-    console.error('MongoDB connection error:', error);
-    process.exit(1); // Exit if database connection fails
+    console.warn('MongoDB not available, using embedded fallback data:', error instanceof Error ? error.message : String(error));
   }
 
   // Create Apollo Server
@@ -52,9 +54,13 @@ async function startServer() {
   // Schedule meta data refresh
   const metaService = container.resolve(MetaService);
   const setDataService = container.resolve(SetDataService);
-  await setDataService.initialize();
-  const currentSetData = await setDataService.getSetData();
-  const currentSetId = currentSetData.setId;
+  try {
+    await setDataService.initialize();
+  } catch (err) {
+    console.warn('SetDataService initialization failed (will retry on demand):', err instanceof Error ? err.message : String(err));
+  }
+  const currentSetData = await setDataService.getSetData().catch(() => null);
+  const currentSetId = currentSetData?.setId || 18;
 
   // Initial meta refresh on startup (non-blocking)
   if (process.env.RIOT_API_KEY) {
@@ -78,6 +84,9 @@ async function startServer() {
   app.get('/health', (_req: any, res: any) => {
     res.status(200).json({ status: 'OK', service: 'TFT Bible Backend' });
   });
+
+  // Image proxy endpoint — caches CDN images to disk
+  app.get('/api/images/proxy', imageProxyHandler);
 
   // Start the server
   app.listen(PORT, () => {
