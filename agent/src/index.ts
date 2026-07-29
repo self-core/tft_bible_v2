@@ -1,8 +1,9 @@
 import express, { Express, Request } from "express";
 import dotenv from "dotenv";
 import { loadConfig, Config } from "./config";
-import { verifyWebhookSignature, routeWebhookEvent } from "./webhooks";
+import { verifyWebhookSignature, routeWebhookEvent, WebhookContext } from "./webhooks";
 import { getAuthenticatedOctokit } from "./github";
+import { createLLMProvider } from "./llm";
 
 declare global {
   namespace Express {
@@ -51,7 +52,14 @@ export function createApp(config?: Config): Express {
 
     try {
       const octokit = await getAuthenticatedOctokit(cfg, installationId);
-      await routeWebhookEvent(event ?? "", req.body, octokit, cfg.GITHUB_OWNER, cfg.GITHUB_REPO);
+      const llm = createLLMProvider(cfg);
+      const context: WebhookContext = {
+        octokit,
+        llm,
+        owner: cfg.GITHUB_OWNER,
+        repo: cfg.GITHUB_REPO,
+      };
+      await routeWebhookEvent(event ?? "", req.body, context);
     } catch (err) {
       console.error("Webhook processing error:", err);
     }

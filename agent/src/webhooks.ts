@@ -1,5 +1,16 @@
 import crypto from "crypto";
 import { Octokit } from "octokit";
+import { LLMProvider } from "./llm";
+import { analyzeAndCommentPullRequest } from "./pr-comment";
+import { generateReleaseNotes } from "./changelog";
+import { createRelease } from "./release";
+
+export interface WebhookContext {
+  octokit: Octokit;
+  llm: LLMProvider;
+  owner: string;
+  repo: string;
+}
 
 export function verifyWebhookSignature(
   payload: string,
@@ -17,36 +28,53 @@ export function verifyWebhookSignature(
 
 export async function handlePullRequestOpened(
   payload: Record<string, unknown>,
-  _octokit: Octokit,
-  _owner: string,
-  _repo: string
+  context: WebhookContext
 ): Promise<void> {
   const pr = payload.pull_request as Record<string, unknown> | undefined;
-  console.log(`PR #${pr?.number} opened`);
+  const pullNumber = pr?.number as number | undefined;
+  if (!pullNumber) return;
+  console.log(`PR #${pullNumber} opened`);
+  await analyzeAndCommentPullRequest({
+    owner: context.owner,
+    repo: context.repo,
+    pullNumber,
+    octokit: context.octokit,
+    llm: context.llm,
+  });
 }
 
 export async function handlePushToMain(
-  _payload: Record<string, unknown>,
-  _octokit: Octokit,
-  _owner: string,
-  _repo: string
+  payload: Record<string, unknown>,
+  context: WebhookContext
 ): Promise<void> {
-  console.log("Push to main");
+  const ref = payload.ref as string | undefined;
+  console.log(`Push to main (ref: ${ref})`);
+  const notes = await generateReleaseNotes({
+    owner: context.owner,
+    repo: context.repo,
+    octokit: context.octokit,
+    llm: context.llm,
+  });
+  const result = await createRelease({
+    owner: context.owner,
+    repo: context.repo,
+    octokit: context.octokit,
+    notes,
+  });
+  console.log(`Release created: ${result.releaseUrl}`);
 }
 
 export async function routeWebhookEvent(
   event: string,
   payload: Record<string, unknown>,
-  octokit: Octokit,
-  owner: string,
-  repo: string
+  context: WebhookContext
 ): Promise<void> {
   if (event === "pull_request") {
     const action = payload.action;
     if (action === "opened" || action === "synchronize") {
-      await handlePullRequestOpened(payload, octokit, owner, repo);
+      await handlePullRequestOpened(payload, context);
     }
   } else if (event === "push") {
-    await handlePushToMain(payload, octokit, owner, repo);
+    await handlePushToMain(payload, context);
   }
 }
