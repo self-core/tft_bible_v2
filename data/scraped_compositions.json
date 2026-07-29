@@ -1,0 +1,254 @@
+{
+  "scraped_at": "2025-11-19T13:06:19.478128",
+  "sources": [
+    "tftacademy.com",
+    "metatft.com",
+    "tactics.tools"
+  ],
+  "total_compositions": 5,
+  "data": [
+    {
+      "name": "Bastion Bruisers",
+      "description": "Frontline focused comp with Bastion synergies",
+      "category": "Frontline",
+      "tags": [
+        "beginner",
+        "frontline"
+      ],
+      "tier": "A",
+      "difficulty": 2,
+      "winrate": 0.53,
+      "avg_placement": 3.9,
+      "playrate": 0.12,
+      "patch": "15.23",
+      "playstyle": "Defensive",
+      "champions": [
+        {
+          "name": "Bastion",
+          "items": [
+            "Bloodthirster",
+            "Dragon's Claw"
+          ]
+        },
+        {
+          "name": "Garen",
+          "items": [
+            "Edge of Night",
+            "Warmog's Armor"
+          ]
+        },
+        {
+          "name": "Poppy",
+          "items": [
+            "Sterak's Gage",
+            "Dragon's Claw"
+          ]
+        }
+      ],
+      "augments": [
+        "Bastion Heart",
+        "Frontline Fighters"
+      ],
+      "traits": [
+        "Bastion",
+        "Warrior",
+        "Knight"
+      ]
+    },
+    {
+      "name": "Luchador Reroll",
+      "description": "Aggressive reroll around Luchador core",
+      "category": "Reroll",
+      "tags": [
+        "aggressive",
+        "reroll"
+      ],
+      "tier": "S",
+      "difficulty": 3,
+      "winrate": 0.58,
+      "avg_placement": 3.4,
+      "playrate": 0.16,
+      "patch": "15.23",
+      "playstyle": "Aggressive",
+      "champions": [
+        {
+          "name": "Luchador",
+          "items": [
+            "Infinity Edge",
+            "Guinsoo's Rageblade"
+          ]
+        },
+        {
+          "name": "Jinx",
+          "items": [
+            "Giant Slayer",
+            "Runaan's Hurricane"
+          ]
+        },
+        {
+          "name": "Miss Fortune",
+          "items": [
+            "Bloodthirster",
+            "Giant Slayer"
+          ]
+        }
+      ],
+      "augments": [
+        "Luchador Soul",
+        "Reroll Economy"
+      ],
+      "traits": [
+        "Luchador",
+        "Sharpshooter",
+        "Multistriker"
+      ]
+    },
+    {
+      "name": "Yordle Rushdown",
+      "description": "Fast-paced yordle composition with high burst damage",
+      "category": "Vertical",
+      "tags": [
+        "yordle",
+        "burst",
+        "fast"
+      ],
+      "tier": "B",
+      "difficulty": 4,
+      "winrate": 0.45,
+      "avg_placement": 4.2,
+      "playrate": 0.08,
+      "patch": "15.23",
+      "playstyle": "Aggressive",
+      "champions": [
+        {
+          "name": "Yuumi",
+          "items": [
+            "Rabadon's Deathcap",
+            "Archangel's Staff"
+          ]
+        },
+        {
+          "name": "Veigar",
+          "items": [
+            "Guinsoo's Rageblade",
+            "Runaan's Hurricane"
+          ]
+        },
+        {
+          "name": "Ziggs",
+          "items": [
+            "Giant Slayer",
+            "Statikk Shiv"
+          ]
+        }
+      ],
+      "augments": [
+        "Yordle Soul",
+        "Magic Emblem"
+      ],
+      "traits": [
+        "Yordle",
+        "Mage",
+        "Multistriker"
+      ]
+    },
+    {
+      "name": "Dragon Tank Comp",
+      "description": "Heavy tank composition with dragon synergies",
+      "category": "Frontline",
+      "tags": [
+        "tank",
+        "dragon",
+        "defensive"
+      ],
+      "tier": "A",
+      "difficulty": 2,
+      "winrate": 0.52,
+      "avg_placement": 3.8,
+      "playrate": 0.14,
+      "patch": "15.23",
+      "playstyle": "Defensive",
+      "champions": [
+        {
+          "name": "Idas",
+          "items": [
+            "Warmog's Armor",
+            "Dragon's Claw"
+          ]
+        },
+        {
+          "name": "Sett",
+          "items": [
+            "Bloodthirster",
+            "Edge of Night"
+          ]
+        },
+        {
+          "name": "Garen",
+          "items": [
+            "Sterak's Gage",
+            "Warmog's Armor"
+          ]
+        }
+      ],
+      "augments": [
+        "Dragon Heart",
+        "Tank Emblem"
+      ],
+      "traits": [
+        "Dragon",
+        "Warrior",
+        "Knight"
+      ]
+    },
+    {
+      "name": "Ghostly Assassins",
+      "description": "Stealth-based assassin composition",
+      "category": "Assassin",
+      "tags": [
+        "stealth",
+        "assassin",
+        "late-game"
+      ],
+      "tier": "S",
+      "difficulty": 4,
+      "winrate": 0.61,
+      "avg_placement": 3.2,
+      "playrate": 0.11,
+      "patch": "15.23",
+      "playstyle": "Late Game",
+      "champions": [
+        {
+          "name": "Katarina",
+          "items": [
+            "Infinity Edge",
+            "Bloodthirster"
+          ]
+        },
+        {
+          "name": "Qiyana",
+          "items": [
+            "Guinsoo's Rageblade",
+            "Runaan's Hurricane"
+          ]
+        },
+        {
+          "name": "Zed",
+          "items": [
+            "Giant Slayer",
+            "Edge of Night"
+          ]
+        }
+      ],
+      "augments": [
+        "Ghostly Soul",
+        "Assassin Emblem"
+      ],
+      "traits": [
+        "Ghostly",
+        "Assassin",
+        "Multistriker"
+      ]
+    }
+  ]
+}

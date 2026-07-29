@@ -1,0 +1,117 @@
+import { injectable } from 'tsyringe';
+import { ISetData } from '../interfaces';
+import { Repository } from './_internal/Repository';
+import { ImportService } from './ImportService';
+import { EmbeddedFallback } from './_internal/EmbeddedFallback';
+import { ResultCache } from './_internal/ResultCache';
+import { PathResolver } from './_internal/PathResolver';
+import { FileParser } from './_internal/FileParser';
+
+@injectable()
+export class SetDataService {
+  private embeddedFallback: typeof EmbeddedFallback;
+  private initialized = false;
+  private defaultSetId = 18;
+
+  constructor(
+    private repository: Repository,
+    private importService: ImportService,
+    private cache: ResultCache,
+    private pathResolver: PathResolver,
+  ) {
+    this.embeddedFallback = EmbeddedFallback;
+  }
+
+  private async detectLatestSet(): Promise<number> {
+    if (process.env.TFT_CURRENT_SET) {
+      return parseInt(process.env.TFT_CURRENT_SET, 10);
+    }
+
+    try {
+      const activeSet = await this.repository.getActiveSet();
+      if (activeSet) return activeSet.setId;
+    } catch {}
+
+    try {
+      const dir = this.pathResolver.findDragontailDir();
+      if (!dir) return 18;
+      const championJson = FileParser.readJsonFile(this.pathResolver.getChampionPath(dir)) || this.loadHighestSetFile(this.pathResolver, dir);
+      const sets = FileParser.detectAvailableSets(championJson);
+      return sets.length > 0 ? sets[0] : 18;
+    } catch {
+      return 18;
+    }
+  }
+
+  private loadHighestSetFile(resolver: PathResolver, dir: string): any {
+    for (let s = 20; s >= 1; s--) {
+      const json = FileParser.readJsonFile(resolver.getChampionSetPath(dir, s));
+      if (json) return json;
+    }
+    return null;
+  }
+
+  async initialize(): Promise<void> {
+    if (this.initialized) return;
+    this.defaultSetId = await this.detectLatestSet();
+    try {
+      await this.getSetData(this.defaultSetId);
+    } catch {
+      // Not fatal — data can be loaded on demand for any set
+    }
+    this.initialized = true;
+  }
+
+  async getSetData(setId?: number): Promise<ISetData> {
+    const sid = setId ?? this.defaultSetId;
+    console.log(`[SetDataService] getSetData called for setId=${sid}`);
+    const cached = this.cache.get(sid);
+    if (cached) {
+      console.log(`[SetDataService] returning cached data for set ${sid}`);
+      return cached;
+    }
+
+    try {
+      const fromDb = await this.repository.getSetData(sid);
+      if (fromDb && fromDb.champions && fromDb.champions.length > 0) {
+        this.cache.set(sid, fromDb);
+        return fromDb;
+      }
+    } catch {
+    }
+
+    try {
+      await this.importService.importFromCDragon(sid);
+      const fromCDragon = await this.repository.getSetData(sid);
+      if (fromCDragon) {
+        this.cache.set(sid, fromCDragon);
+        console.log(`[SetDataService] CDragon import succeeded for set ${sid}`);
+        return fromCDragon;
+      }
+    } catch (e) {
+      console.warn(`[SetDataService] CDragon import failed for set ${sid}:`, (e as Error).message);
+    }
+
+    try {
+      await this.importService.importSet(sid);
+      const fromImport = await this.repository.getSetData(sid);
+      if (fromImport) {
+        this.cache.set(sid, fromImport);
+        return fromImport;
+      }
+    } catch {
+    }
+
+    const embedded = this.embeddedFallback.getSetData(sid);
+    if (embedded) {
+      this.cache.set(sid, embedded);
+      return embedded;
+    }
+
+    throw new Error(`No data available for set ${sid}`);
+  }
+
+  clearSetCache(setId: number): void {
+    this.cache.clear(setId);
+  }
+}

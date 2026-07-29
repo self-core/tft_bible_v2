@@ -5,12 +5,24 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 3000,
+    port: 3000, // Frontend development port
     proxy: {
-      '/api': {
-        target: 'http://localhost:8080',
+      // Proxy GraphQL requests to the new simplified backend
+      '/graphql': {
+        target: 'http://localhost:4000',
+        changeOrigin: true,
+        secure: false,
+      },
+      // Proxy health check to the new simplified backend
+      '/health': {
+        target: 'http://localhost:4000',
         changeOrigin: true,
       },
+      // Proxy image requests to the backend image cache
+      '/api/images': {
+        target: 'http://localhost:4000',
+        changeOrigin: true,
+      }
     },
   },
 })

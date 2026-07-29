@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "name": "tft-bible-backend",
+  "rewrites": [
+    {
+      "source": "/graphql",
+      "destination": "/api/graphql"
+    },
+    {
+      "source": "/health",
+      "destination": "/api/health"
+    }
+  ]
+}

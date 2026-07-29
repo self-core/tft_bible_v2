@@ -1,289 +1,1013 @@
-import axios from 'axios';
+import { apolloClient } from './apolloClient';
+import { gql } from 'graphql-tag';
+import { GET_ACTIVE_SET } from './graphql';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+// ===== GraphQL Query Documents =====
 
-export const api = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: 10000,
-});
-
-// Request interceptor for auth headers (when implemented)
-api.interceptors.request.use((config) => {
-  // Add auth token when available
-  // const token = localStorage.getItem('auth_token');
-  // if (token) {
-  //   config.headers.Authorization = `Bearer ${token}`;
-  // }
-  return config;
-});
-
-// Response interceptor for error handling
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      // Handle unauthorized (redirect to login when implemented)
-      console.warn('Unauthorized access');
+export const GET_CHAMPIONS = gql`
+  query GetChampions {
+    champions {
+      id
+      name
+      cost
+      traits
+      imageUrl
+      splashUrl
+      iconUrl
+      stats {
+        hp
+        mana
+        damage
+      }
+      ability {
+        name
+        variables {
+          name
+          values
+        }
+      }
     }
-    return Promise.reject(error);
   }
-);
+`;
 
-// API Types (matching backend models)
-export interface PaginatedResponse<T> {
-  data: T[];
-  total: number;
-  page: number;
-  per_page: number;
-  total_pages: number;
+export const GET_CHAMPIONS_BY_SET = gql`
+  query GetChampionsBySet($setId: Int!) {
+    championsBySet(setId: $setId) {
+      id
+      name
+      cost
+      traits
+      imageUrl
+      splashUrl
+      iconUrl
+      stats {
+        hp
+        mana
+        damage
+      }
+      ability {
+        name
+        variables {
+          name
+          values
+        }
+      }
+    }
+  }
+`;
+
+export const GET_CHAMPION = gql`
+  query GetChampion($id: ID!) {
+    champion(id: $id) {
+      id
+      name
+      cost
+      traits
+      imageUrl
+      splashUrl
+      iconUrl
+      stats {
+        hp
+        mana
+        damage
+      }
+      ability {
+        name
+        variables {
+          name
+          values
+        }
+      }
+    }
+  }
+`;
+
+export const GET_TRAITS = gql`
+  query GetTraits {
+    traits {
+      key
+      name
+      description
+      breakpoints {
+        count
+        bonus
+      }
+    }
+  }
+`;
+
+export const GET_TRAIT = gql`
+  query GetTrait($id: String!) {
+    trait(id: $id) {
+      key
+      name
+      description
+      breakpoints {
+        count
+        bonus
+      }
+    }
+  }
+`;
+
+export const GET_ITEMS = gql`
+  query GetItems {
+    items {
+      id
+      name
+      description
+      components
+      imageUrl
+      unique
+      trait
+    }
+  }
+`;
+
+export const GET_ITEM = gql`
+  query GetItem($id: ID!) {
+    item(id: $id) {
+      id
+      name
+      description
+      components
+      imageUrl
+      unique
+      trait
+    }
+  }
+`;
+
+export const GET_SETS = gql`
+  query GetSets {
+    sets {
+      setId
+      setName
+      status
+      champions {
+        id
+        name
+        cost
+        traits
+        stats {
+          hp
+          mana
+          damage
+        }
+        ability {
+          name
+          variables {
+            name
+            values
+          }
+        }
+      }
+      traits {
+        key
+        name
+        description
+        breakpoints {
+          count
+          bonus
+        }
+      }
+      items {
+        id
+        name
+        description
+        components
+        imageUrl
+        unique
+        trait
+      }
+      augments {
+        id
+        name
+        description
+        imageUrl
+      }
+    }
+  }
+`;
+
+export const GET_SET = gql`
+  query GetSet($setId: Int!) {
+    set(setId: $setId) {
+      setId
+      setName
+      status
+      champions {
+        id
+        name
+        cost
+        traits
+        stats {
+          hp
+          mana
+          damage
+        }
+        ability {
+          name
+          variables {
+            name
+            values
+          }
+        }
+      }
+      traits {
+        key
+        name
+        description
+        breakpoints {
+          count
+          bonus
+        }
+      }
+      items {
+        id
+        name
+        description
+        components
+        imageUrl
+        unique
+        trait
+      }
+      augments {
+        id
+        name
+        description
+        imageUrl
+      }
+    }
+  }
+`;
+
+export const GET_AUGMENTS = gql`
+  query GetAugments {
+    augments {
+      id
+      name
+      description
+      imageUrl
+    }
+  }
+`;
+
+export const GET_AUGMENT = gql`
+  query GetAugment($id: ID!) {
+    augment(id: $id) {
+      id
+      name
+      description
+      imageUrl
+    }
+  }
+`;
+
+export const GET_COMPOSITIONS = gql`
+  query GetCompositions {
+    compositions {
+      id
+      title
+      description
+      setId
+      championIds
+      traitBonuses
+      augmentRecommendations
+      difficulty
+      region
+    }
+  }
+`;
+
+export const GET_COMPOSITIONS_BY_SET = gql`
+  query GetCompositionsBySet($setId: Int!) {
+    compositionsBySet(setId: $setId) {
+      id
+      title
+      description
+      setId
+      championIds
+      traitBonuses
+      augmentRecommendations
+      difficulty
+      region
+    }
+  }
+`;
+
+export const GET_COMPOSITION = gql`
+  query GetComposition($id: ID!) {
+    composition(id: $id) {
+      id
+      title
+      description
+      setId
+      championIds
+      traitBonuses
+      augmentRecommendations
+      difficulty
+      region
+    }
+  }
+`;
+
+export const SEARCH_ENTITIES = gql`
+  query Search($searchTerm: String!) {
+    search(searchTerm: $searchTerm) {
+      champions {
+        id
+        name
+        cost
+        traits
+        imageUrl
+        stats {
+          hp
+          mana
+          damage
+        }
+        ability {
+          name
+          variables {
+            name
+            values
+          }
+        }
+      }
+      traits {
+        key
+        name
+        description
+        breakpoints {
+          count
+          bonus
+        }
+      }
+      items {
+        id
+        name
+        description
+      }
+      sets {
+        setId
+        setName
+      }
+      compositions {
+        id
+        title
+        description
+        setId
+      }
+    }
+  }
+`;
+
+export const CREATE_COMPOSITION = gql`
+  mutation CreateComposition($input: CreateCompositionInput!) {
+    createComposition(input: $input) {
+      id
+      title
+      description
+      setId
+      championIds
+      traitBonuses
+      augmentRecommendations
+      difficulty
+      region
+    }
+  }
+`;
+
+export const UPDATE_COMPOSITION = gql`
+  mutation UpdateComposition($id: ID!, $input: UpdateCompositionInput!) {
+    updateComposition(id: $id, input: $input) {
+      id
+      title
+      description
+      setId
+      championIds
+      traitBonuses
+      augmentRecommendations
+      difficulty
+      region
+    }
+  }
+`;
+
+export const DELETE_COMPOSITION = gql`
+  mutation DeleteComposition($id: ID!) {
+    deleteComposition(id: $id)
+  }
+`;
+
+// ===== Riot Query Documents =====
+
+export const RIOT_SUMMONER_BY_PUUID = gql`
+  query RiotSummonerByPuuid($puuid: String!) {
+    riotSummonerByPuuid(puuid: $puuid) {
+      id
+      accountId
+      puuid
+      name
+      profileIconId
+      revisionDate
+      summonerLevel
+    }
+  }
+`;
+
+export const RIOT_SUMMONER_BY_NAME = gql`
+  query RiotSummonerByName($name: String!) {
+    riotSummonerByName(name: $name) {
+      id
+      accountId
+      puuid
+      name
+      profileIconId
+      revisionDate
+      summonerLevel
+    }
+  }
+`;
+
+export const RIOT_MATCH_HISTORY = gql`
+  query RiotMatchHistory($puuid: String!, $start: Int, $count: Int) {
+    riotMatchHistory(puuid: $puuid, start: $start, count: $count)
+  }
+`;
+
+export const RIOT_MATCH_DETAIL = gql`
+  query RiotMatchDetail($matchId: String!) {
+    riotMatchDetail(matchId: $matchId) {
+      metadata {
+        dataVersion
+        matchId
+        participants
+      }
+      info {
+        gameDatetime
+        gameLength
+        gameVersion
+        queueId
+        tftGameType
+        tftSetCoreName
+        tftSetNumber
+      }
+      participants {
+        companion
+        goldLeft
+        lastRound
+        level
+        placement
+        playersEliminated
+        puuid
+        timeEliminated
+        totalDamageToPlayers
+        traits {
+          name
+          numUnits
+          style
+        }
+        units {
+          characterId
+          itemNames
+          name
+          rarity
+          tier
+        }
+      }
+    }
+  }
+`;
+
+// ===== Types =====
+
+export interface ChampionStats {
+  hp: number;
+  mana: number;
+  damage: number;
 }
 
-export interface CompositionSummary {
+export interface Stat {
+  name: string;
+  value: number;
+}
+
+export interface AbilityVariable {
+  name: string;
+  values: number[];
+}
+
+export interface Ability {
+  name: string;
+  variables: AbilityVariable[];
+}
+
+export interface Champion {
   id: string;
   name: string;
-  category: string;
-  tier: string;
-  difficulty: number;
-  winrate: number;
-  views: number;
-  upvotes: number;
-  author?: string;
-  champion_count: number;
-  main_champions: string[];
-  created_at: string;
+  cost: number;
+  traits: string[];
+  stats: ChampionStats;
+  ability: Ability;
+  imageUrl?: string;
+  splashUrl?: string;
+  iconUrl?: string;
+}
+
+export interface TraitBreakpoint {
+  count: number;
+  bonus: string;
+}
+
+export interface Trait {
+  key: string;
+  name?: string;
+  description?: string;
+  breakpoints: TraitBreakpoint[];
+}
+
+export interface Item {
+  id: string;
+  name: string;
+  description: string;
+  components: string[];
+  imageUrl?: string;
+  unique?: boolean;
+  trait?: string;
+}
+
+export interface SetData {
+  setId: number;
+  setName: string;
+  status: 'upcoming' | 'active' | 'archived';
+  champions: Champion[];
+  traits: Trait[];
+  items: Item[];
+  augments: Augment[];
+  mechanics?: string;
+}
+
+export interface Augment {
+  id: string;
+  name: string;
+  description: string;
+  imageUrl?: string;
 }
 
 export interface Composition {
   id: string;
-  set_id: string;
-  author_id?: string;
-  name: string;
+  title: string;
   description: string;
-  category: string;
-  tags: string[];
-  champions: any[]; // Simplified for now
-  augments: any; // Simplified for now
-  meta: {
-    tier: string;
-    difficulty: number;
-    cost: string;
-    patch: string;
-    playstyle: string;
-    winrate: number;
-    avg_placement: number;
-    playrate: number;
-    contest_rate: number;
-  };
-  votes: {
-    upvotes: number;
-    downvotes: number;
-  };
-  views: number;
-  favorites: number;
-  comments: string[];
-  is_public: boolean;
-  is_verified: boolean;
-  is_featured: boolean;
-  created_at: string;
-  updated_at: string;
+  setId: number;
+  championIds: string[];
+  traitBonuses: string[];
+  augmentRecommendations: string[];
+  difficulty: string;
+  region: string;
 }
 
-export interface ChampionSummary {
+export interface EntitySearchResult {
+  champions: Champion[];
+  traits: Trait[];
+  items: Item[];
+  sets: SetData[];
+  compositions: Composition[];
+}
+
+export interface ChampionInComposition {
   id: string;
   name: string;
+  star_level: number;
+  position: { x: number; y: number };
+  items: string[];
+  is_core: boolean;
+  priority: string;
   cost: number;
   traits: string[];
   health: number;
   attack_damage: number;
   ability_name: string;
-  image_url?: string;
+  icon_url?: string;
 }
 
-export interface ItemSummary {
-  id: string;
-  name: string;
-  category: string;
-  item_type: string;
-  description: string;
-  is_unique: boolean;
-  priority: number;
-  image_url?: string;
-}
-
-export interface CompositionQuery {
-  set?: string;
-  tier?: string;
-  category?: string;
-  champion?: string;
-  difficulty?: number;
-  patch?: string;
-  limit?: number;
-  offset?: number;
-  sort_by?: string;
-  tags?: string;
-}
-
-export interface ChampionQuery {
-  set?: string;
-  cost?: number;
-  traits?: string;
-  limit?: number;
-  search?: string;
-}
-
-export interface ItemQuery {
-  set?: string;
-  category?: string;
-  type?: string;
-  limit?: number;
-  search?: string;
-}
-
-export interface SearchQuery {
-  q: string;
-  type?: string;
-  limit?: number;
-  set_id?: string;
-}
-
-// API Functions
-export const compositionsApi = {
-  getCompositions: (params?: CompositionQuery) =>
-    api.get<PaginatedResponse<CompositionSummary>>('/api/v1/compositions', { params }),
-
-  getCompositionById: (id: string) =>
-    api.get(`/api/v1/compositions/${id}`),
-
-  createComposition: (data: any) =>
-    api.post('/api/v1/compositions', data),
-
-  updateComposition: (id: string, data: any) =>
-    api.put(`/api/v1/compositions/${id}`, data),
-
-  deleteComposition: (id: string) =>
-    api.delete(`/api/v1/compositions/${id}`),
-
-  voteComposition: (id: string, voteType: string) =>
-    api.post(`/api/v1/compositions/${id}/vote`, { vote_type: voteType }),
-};
-
-export const championsApi = {
-  getChampions: (params?: ChampionQuery) =>
-    api.get<PaginatedResponse<ChampionSummary>>('/api/v1/champions', { params }),
-
-  getChampionById: (id: string) =>
-    api.get(`/api/v1/champions/${id}`),
-
-  getChampionsByTrait: (traitName: string) =>
-    api.get(`/api/v1/champions/trait/${traitName}`),
-};
-
-export const itemsApi = {
-  getItems: (params?: ItemQuery) =>
-    api.get<PaginatedResponse<ItemSummary>>('/api/v1/items', { params }),
-
-  getItemById: (id: string) =>
-    api.get(`/api/v1/items/${id}`),
-
-  getItemRecommendations: (championId: string) =>
-    api.get(`/api/v1/items/recommendations/${championId}`),
-};
-
-export const searchApi = {
-  search: (params: SearchQuery) =>
-    api.get('/api/v1/search', { params }),
-};
-
-// Riot API Types
 export interface RiotSummoner {
   id: string;
-  account_id: string;
+  accountId: string;
   puuid: string;
   name: string;
-  profile_icon_id: number;
-  revision_date: number;
-  summoner_level: number;
-}
-
-export interface RiotMatch {
-  metadata: {
-    data_version: string;
-    match_id: string;
-    participants: string[]; // PUUIDs
-  };
-  info: {
-    game_datetime: number;
-    game_length: number;
-    game_version: string;
-    queue_id: number;
-    tft_game_type: string;
-    tft_set_core_name: string;
-    tft_set_number: number;
-    participants: RiotMatchParticipant[];
-  };
-}
-
-export interface RiotMatchParticipant {
-  companion: {
-    content_ID: string;
-    skin_ID: number;
-    species_ID: string;
-  };
-  gold_left: number;
-  last_round: string;
-  level: number;
-  placement: number;
-  players_eliminated: number;
-  puuid: string;
-  time_eliminated: string;
-  total_damage_to_players: number;
-  traits: RiotMatchTrait[];
-  units: RiotMatchUnit[];
+  profileIconId: number;
+  revisionDate: number;
+  summonerLevel: number;
 }
 
 export interface RiotMatchTrait {
   name: string;
-  num_units: number;
+  numUnits: number;
   style?: number;
 }
 
 export interface RiotMatchUnit {
-  character_id: string;
-  item_names: string[];
+  characterId: string;
+  itemNames: string[];
   name: string;
   rarity: number;
   tier: number;
 }
 
-export interface RiotMatchList {
-  match_ids: string[];
-  total: number;
-  start: number;
+export interface RiotMatchParticipant {
+  companion?: string;
+  goldLeft: number;
+  lastRound: number;
+  level: number;
+  placement: number;
+  playersEliminated: number;
+  puuid: string;
+  timeEliminated: string;
+  totalDamageToPlayers: number;
+  traits: RiotMatchTrait[];
+  units: RiotMatchUnit[];
 }
 
-// Riot API Functions
-export const riotApi = {
-  getSummonerByPuuid: (puuid: string) =>
-    api.get(`/api/v1/riot/summoner/${puuid}?type=puuid`),
+export interface RiotMatchMetadata {
+  dataVersion: string;
+  matchId: string;
+  participants: string[];
+}
 
-  getSummonerByName: (name: string) =>
-    api.get(`/api/v1/riot/summoner/${name}?type=name`),
+export interface RiotMatchInfo {
+  gameDatetime: number;
+  gameLength: number;
+  gameVersion: string;
+  queueId: number;
+  tftGameType: string;
+  tftSetCoreName: string;
+  tftSetNumber: number;
+}
 
-  getMatchHistory: (puuid: string, start?: number, count?: number) =>
-    api.get<RiotMatchList>(`/api/v1/riot/match-history/${puuid}`, {
-      params: { start, count }
-    }),
+export interface RiotMatch {
+  metadata: RiotMatchMetadata;
+  info: RiotMatchInfo;
+  participants: RiotMatchParticipant[];
+}
 
-  getMatchDetails: (matchId: string) =>
-    api.get(`/api/v1/riot/match/${matchId}`),
+// ===== API Object =====
 
-  queueSummonerFetch: (identifier: string) =>
-    api.post(`/api/v1/riot/queue/summoner/${identifier}`),
+export const api = {
+  getChampions: async () => {
+    try {
+      const response = await apolloClient.query({
+        query: GET_CHAMPIONS,
+        errorPolicy: 'all',
+      });
+      if (response.errors && response.errors.length > 0) {
+        console.warn('GraphQL warnings for getChampions:', response.errors);
+      }
+      return response;
+    } catch (error: any) {
+      console.error('GraphQL Error - getChampions:', error.message || error);
+      throw { message: error.message || 'Failed to fetch champions', code: error.code || 'GRAPHQL_ERROR', details: error };
+    }
+  },
 
-  queueMatchHistoryFetch: (puuid: string) =>
-    api.post(`/api/v1/riot/queue/match-history/${puuid}`),
-};
+  getChampionsBySet: async (setId: number) => {
+    try {
+      const response = await apolloClient.query({
+        query: GET_CHAMPIONS_BY_SET,
+        variables: { setId },
+        errorPolicy: 'all',
+      });
+      if (response.errors && response.errors.length > 0) {
+        console.warn(`GraphQL warnings for getChampionsBySet(${setId}):`, response.errors);
+      }
+      return response;
+    } catch (error: any) {
+      console.error(`GraphQL Error - getChampionsBySet(${setId}):`, error.message || error);
+      throw { message: error.message || 'Failed to fetch champions by set', code: error.code || 'GRAPHQL_ERROR', details: error };
+    }
+  },
 
-export const healthApi = {
-  check: () => api.get('/api/v1/health'),
+  getChampionById: async (id: string) => {
+    try {
+      const response = await apolloClient.query({
+        query: GET_CHAMPION,
+        variables: { id },
+        errorPolicy: 'all',
+      });
+      if (response.errors && response.errors.length > 0) {
+        console.warn(`GraphQL warnings for getChampionById(${id}):`, response.errors);
+      }
+      return response;
+    } catch (error: any) {
+      console.error(`GraphQL Error - getChampionById(${id}):`, error.message || error);
+      throw { message: error.message || 'Failed to fetch champion', code: error.code || 'GRAPHQL_ERROR', details: error };
+    }
+  },
+
+  getTraits: async () => {
+    try {
+      const response = await apolloClient.query({
+        query: GET_TRAITS,
+        errorPolicy: 'all',
+      });
+      if (response.errors && response.errors.length > 0) {
+        console.warn('GraphQL warnings for getTraits:', response.errors);
+      }
+      return response;
+    } catch (error: any) {
+      console.error('GraphQL Error - getTraits:', error.message || error);
+      throw { message: error.message || 'Failed to fetch traits', code: error.code || 'GRAPHQL_ERROR', details: error };
+    }
+  },
+
+  getTraitById: async (id: string) => {
+    try {
+      const response = await apolloClient.query({
+        query: GET_TRAIT,
+        variables: { id },
+        errorPolicy: 'all',
+      });
+      if (response.errors && response.errors.length > 0) {
+        console.warn(`GraphQL warnings for getTraitById(${id}):`, response.errors);
+      }
+      return response;
+    } catch (error: any) {
+      console.error(`GraphQL Error - getTraitById(${id}):`, error.message || error);
+      throw { message: error.message || 'Failed to fetch trait', code: error.code || 'GRAPHQL_ERROR', details: error };
+    }
+  },
+
+  getItems: async () => {
+    try {
+      const response = await apolloClient.query({
+        query: GET_ITEMS,
+        errorPolicy: 'all',
+      });
+      if (response.errors && response.errors.length > 0) {
+        console.warn('GraphQL warnings for getItems:', response.errors);
+      }
+      return response;
+    } catch (error: any) {
+      console.error('GraphQL Error - getItems:', error.message || error);
+      throw { message: error.message || 'Failed to fetch items', code: error.code || 'GRAPHQL_ERROR', details: error };
+    }
+  },
+
+  getItemById: async (id: string) => {
+    try {
+      const response = await apolloClient.query({
+        query: GET_ITEM,
+        variables: { id },
+        errorPolicy: 'all',
+      });
+      if (response.errors && response.errors.length > 0) {
+        console.warn(`GraphQL warnings for getItemById(${id}):`, response.errors);
+      }
+      return response;
+    } catch (error: any) {
+      console.error(`GraphQL Error - getItemById(${id}):`, error.message || error);
+      throw { message: error.message || 'Failed to fetch item', code: error.code || 'GRAPHQL_ERROR', details: error };
+    }
+  },
+
+  getSets: async () => {
+    try {
+      const response = await apolloClient.query({
+        query: GET_SETS,
+        errorPolicy: 'all',
+      });
+      if (response.errors && response.errors.length > 0) {
+        console.warn('GraphQL warnings for getSets:', response.errors);
+      }
+      return response;
+    } catch (error: any) {
+      console.error('GraphQL Error - getSets:', error.message || error);
+      throw { message: error.message || 'Failed to fetch sets', code: error.code || 'GRAPHQL_ERROR', details: error };
+    }
+  },
+
+  getSet: async (setId: number) => {
+    try {
+      const response = await apolloClient.query({
+        query: GET_SET,
+        variables: { setId },
+        errorPolicy: 'all',
+      });
+      if (response.errors && response.errors.length > 0) {
+        console.warn(`GraphQL warnings for getSet(${setId}):`, response.errors);
+      }
+      return response;
+    } catch (error: any) {
+      console.error(`GraphQL Error - getSet(${setId}):`, error.message || error);
+      throw { message: error.message || 'Failed to fetch set', code: error.code || 'GRAPHQL_ERROR', details: error };
+    }
+  },
+
+  getAugments: async () => {
+    try {
+      const response = await apolloClient.query({
+        query: GET_AUGMENTS,
+        errorPolicy: 'all',
+      });
+      if (response.errors && response.errors.length > 0) {
+        console.warn('GraphQL warnings for getAugments:', response.errors);
+      }
+      return response;
+    } catch (error: any) {
+      console.error('GraphQL Error - getAugments:', error.message || error);
+      throw { message: error.message || 'Failed to fetch augments', code: error.code || 'GRAPHQL_ERROR', details: error };
+    }
+  },
+
+  getAugmentById: async (id: string) => {
+    try {
+      const response = await apolloClient.query({
+        query: GET_AUGMENT,
+        variables: { id },
+        errorPolicy: 'all',
+      });
+      if (response.errors && response.errors.length > 0) {
+        console.warn(`GraphQL warnings for getAugmentById(${id}):`, response.errors);
+      }
+      return response;
+    } catch (error: any) {
+      console.error(`GraphQL Error - getAugmentById(${id}):`, error.message || error);
+      throw { message: error.message || 'Failed to fetch augment', code: error.code || 'GRAPHQL_ERROR', details: error };
+    }
+  },
+
+  getCompositions: async () => {
+    try {
+      const response = await apolloClient.query({
+        query: GET_COMPOSITIONS,
+        errorPolicy: 'all',
+      });
+      if (response.errors && response.errors.length > 0) {
+        console.warn('GraphQL warnings for getCompositions:', response.errors);
+      }
+      return response;
+    } catch (error: any) {
+      console.error('GraphQL Error - getCompositions:', error.message || error);
+      throw { message: error.message || 'Failed to fetch compositions', code: error.code || 'GRAPHQL_ERROR', details: error };
+    }
+  },
+
+  getCompositionsBySet: async (setId: number) => {
+    try {
+      const response = await apolloClient.query({
+        query: GET_COMPOSITIONS_BY_SET,
+        variables: { setId },
+        errorPolicy: 'all',
+      });
+      if (response.errors && response.errors.length > 0) {
+        console.warn(`GraphQL warnings for getCompositionsBySet(${setId}):`, response.errors);
+      }
+      return response;
+    } catch (error: any) {
+      console.error(`GraphQL Error - getCompositionsBySet(${setId}):`, error.message || error);
+      throw { message: error.message || 'Failed to fetch compositions by set', code: error.code || 'GRAPHQL_ERROR', details: error };
+    }
+  },
+
+  getCompositionById: async (id: string) => {
+    try {
+      const response = await apolloClient.query({
+        query: GET_COMPOSITION,
+        variables: { id },
+        errorPolicy: 'all',
+      });
+      if (response.errors && response.errors.length > 0) {
+        console.warn(`GraphQL warnings for getCompositionById(${id}):`, response.errors);
+      }
+      return response;
+    } catch (error: any) {
+      console.error(`GraphQL Error - getCompositionById(${id}):`, error.message || error);
+      throw { message: error.message || 'Failed to fetch composition', code: error.code || 'GRAPHQL_ERROR', details: error };
+    }
+  },
+
+  createComposition: async (input: any) => {
+    try {
+      const response = await apolloClient.mutate({
+        mutation: CREATE_COMPOSITION,
+        variables: { input },
+      });
+      return response;
+    } catch (error: any) {
+      console.error('GraphQL Error - createComposition:', error.message || error);
+      throw error;
+    }
+  },
+
+  updateComposition: async (id: string, input: any) => {
+    try {
+      const response = await apolloClient.mutate({
+        mutation: UPDATE_COMPOSITION,
+        variables: { id, input },
+      });
+      return response;
+    } catch (error: any) {
+      console.error('GraphQL Error - updateComposition:', error.message || error);
+      throw error;
+    }
+  },
+
+  deleteComposition: async (id: string) => {
+    try {
+      const response = await apolloClient.mutate({
+        mutation: DELETE_COMPOSITION,
+        variables: { id },
+      });
+      return response;
+    } catch (error: any) {
+      console.error('GraphQL Error - deleteComposition:', error.message || error);
+      throw error;
+    }
+  },
+
+  searchEntities: async (searchTerm: string) => {
+    try {
+      const response = await apolloClient.query({
+        query: SEARCH_ENTITIES,
+        variables: { searchTerm },
+        errorPolicy: 'all',
+      });
+      if (response.errors && response.errors.length > 0) {
+        console.warn(`GraphQL warnings for searchEntities(${searchTerm}):`, response.errors);
+      }
+      return response;
+    } catch (error: any) {
+      console.error(`GraphQL Error - searchEntities(${searchTerm}):`, error.message || error);
+      throw { message: error.message || 'Failed to search entities', code: error.code || 'GRAPHQL_ERROR', details: error };
+    }
+  },
+
+  getRiotSummonerByPuuid: async (puuid: string) => {
+    try {
+      const response = await apolloClient.query({
+        query: RIOT_SUMMONER_BY_PUUID,
+        variables: { puuid },
+        errorPolicy: 'all',
+      });
+      return response;
+    } catch (error: any) {
+      console.error('GraphQL Error - getRiotSummonerByPuuid:', error.message || error);
+      throw error;
+    }
+  },
+
+  getRiotSummonerByName: async (name: string) => {
+    try {
+      const response = await apolloClient.query({
+        query: RIOT_SUMMONER_BY_NAME,
+        variables: { name },
+        errorPolicy: 'all',
+      });
+      return response;
+    } catch (error: any) {
+      console.error('GraphQL Error - getRiotSummonerByName:', error.message || error);
+      throw error;
+    }
+  },
+
+  getRiotMatchHistory: async (puuid: string, start?: number, count?: number) => {
+    try {
+      const response = await apolloClient.query({
+        query: RIOT_MATCH_HISTORY,
+        variables: { puuid, start, count },
+        errorPolicy: 'all',
+      });
+      return response;
+    } catch (error: any) {
+      console.error('GraphQL Error - getRiotMatchHistory:', error.message || error);
+      throw error;
+    }
+  },
+
+  getRiotMatchDetail: async (matchId: string) => {
+    try {
+      const response = await apolloClient.query({
+        query: RIOT_MATCH_DETAIL,
+        variables: { matchId },
+        errorPolicy: 'all',
+      });
+      return response;
+    } catch (error: any) {
+      console.error('GraphQL Error - getRiotMatchDetail:', error.message || error);
+      throw error;
+    }
+  },
+
+  getActiveSet: async () => {
+    try {
+      const response = await apolloClient.query({
+        query: GET_ACTIVE_SET,
+        errorPolicy: 'all',
+      });
+      return response;
+    } catch (error: any) {
+      console.error('GraphQL Error - getActiveSet:', error.message || error);
+      throw error;
+    }
+  },
 };

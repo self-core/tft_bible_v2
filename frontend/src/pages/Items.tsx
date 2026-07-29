@@ -1,45 +1,24 @@
-import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { Filter, Star, Shield, Sword, Zap } from 'lucide-react'
-import { itemsApi, ItemSummary, ItemQuery } from '../lib/api'
+import { useState, useEffect } from 'react'
+import { useItemsStore } from '../stores'
+import { Filter, SearchIcon, Shield, Package } from 'lucide-react'
+import { Item } from '../lib/api'
+import { proxyUrl } from '../lib/imageProxy'
 
 const Items = () => {
-  const [filters, setFilters] = useState<ItemQuery>({
-    limit: 20,
-  })
+  const [search, setSearch] = useState('')
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['items', filters],
-    queryFn: () => itemsApi.getItems(filters).then(res => res.data),
-  })
+  const { items, loading, error, fetchItems } = useItemsStore()
 
-  const handleFilterChange = (key: keyof ItemQuery, value: string | number) => {
-    setFilters(prev => ({
-      ...prev,
-      [key]: value,
-      offset: 0, // Reset pagination when filtering
-    }))
-  }
+  useEffect(() => {
+    fetchItems()
+  }, [fetchItems])
 
-  const getCategoryIcon = (category: string) => {
-    switch (category.toLowerCase()) {
-      case 'ad': return <Sword className="h-4 w-4" />
-      case 'ap': return <Zap className="h-4 w-4" />
-      case 'tank': return <Shield className="h-4 w-4" />
-      default: return <Star className="h-4 w-4" />
-    }
-  }
+  const filtered = items.filter(i =>
+    !search || i.name.toLowerCase().includes(search.toLowerCase()) ||
+    i.description.toLowerCase().includes(search.toLowerCase())
+  )
 
-  const getCategoryColor = (category: string) => {
-    switch (category.toLowerCase()) {
-      case 'ad': return 'text-red-600 bg-red-100'
-      case 'ap': return 'text-blue-600 bg-blue-100'
-      case 'tank': return 'text-green-600 bg-green-100'
-      default: return 'text-gray-600 bg-gray-100'
-    }
-  }
-
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-tft-gold"></div>
@@ -51,110 +30,88 @@ const Items = () => {
     return (
       <div className="text-center py-12">
         <p className="text-red-600">Failed to load items. Please try again.</p>
+        <button onClick={() => fetchItems()} className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Retry</button>
       </div>
     )
   }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Items</h1>
-          <p className="text-gray-600 mt-1">Browse all TFT items and their effects</p>
+          <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>Items</h1>
+          <p className="mt-1" style={{ color: 'var(--text-secondary)' }}>Browse all TFT items and their effects</p>
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border p-6">
+      <div className="rounded-lg shadow-sm border p-6" style={{ background: 'var(--bg-accent)', border: '1px solid var(--bg-primary)' }}>
         <div className="flex items-center gap-2 mb-4">
-          <Filter className="h-5 w-5 text-gray-500" />
-          <h3 className="font-semibold text-gray-900">Filters</h3>
+          <Filter className="h-5 w-5" style={{ color: 'var(--text-secondary)' }} />
+          <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>Filter</h3>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <select
-            value={filters.category || ''}
-            onChange={(e) => handleFilterChange('category', e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-tft-gold focus:border-transparent"
-          >
-            <option value="">All Categories</option>
-            <option value="AD">Attack Damage</option>
-            <option value="AP">Ability Power</option>
-            <option value="Tank">Tank</option>
-            <option value="Utility">Utility</option>
-          </select>
-
-          <select
-            value={filters.type || ''}
-            onChange={(e) => handleFilterChange('type', e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-tft-gold focus:border-transparent"
-          >
-            <option value="">All Types</option>
-            <option value="Component">Component</option>
-            <option value="Completed">Completed</option>
-            <option value="Radiant">Radiant</option>
-            <option value="Artifact">Artifact</option>
-          </select>
-
+        <div className="relative">
+          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: 'var(--text-secondary)' }} />
           <input
             type="text"
             placeholder="Search items..."
-            value={filters.search || ''}
-            onChange={(e) => handleFilterChange('search', e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-tft-gold focus:border-transparent"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 rounded-lg focus:ring-2 focus:ring-tft-gold focus:border-transparent"
+            style={{ border: '1px solid var(--bg-primary)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
           />
         </div>
       </div>
 
-      {/* Results */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {data?.data.map((item: ItemSummary) => (
+        {filtered.map((item: Item) => (
           <div
             key={item.id}
-            className="bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow group"
+            className="rounded-lg shadow-sm border hover:shadow-md transition-shadow group"
+            style={{ background: 'var(--bg-accent)', border: '1px solid var(--bg-primary)', color: 'var(--text-primary)' }}
           >
             <div className="p-6">
-              <div className="flex items-start justify-between mb-3">
-                <h3 className="text-lg font-semibold text-gray-900 group-hover:text-tft-gold transition-colors">
-                  {item.name}
-                </h3>
-                <div className="flex items-center gap-2">
-                  {getCategoryIcon(item.category)}
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(item.category)}`}>
-                    {item.category}
-                  </span>
+              {item.imageUrl ? (
+                <div className="flex justify-center mb-4">
+                  <img src={proxyUrl(item.imageUrl)} alt={item.name} className="w-16 h-16 rounded-lg object-cover"
+                    onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
                 </div>
-              </div>
+              ) : (
+                <div className="flex justify-center mb-4">
+                  <div className="w-16 h-16 rounded-lg flex items-center justify-center" style={{ background: 'var(--bg-secondary)' }}>
+                    <Package className="h-8 w-8" style={{ color: 'var(--text-secondary)' }} />
+                  </div>
+                </div>
+              )}
 
-              <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+              <h3 className="text-lg font-semibold group-hover:text-tft-gold transition-colors text-center mb-3" style={{ color: 'var(--text-primary)' }}>
+                {item.name}
+              </h3>
+
+              <p className="text-sm mb-4 line-clamp-3 text-center" style={{ color: 'var(--text-secondary)' }}>
                 {item.description}
               </p>
 
-              <div className="flex items-center justify-between text-sm text-gray-500">
-                <div className="flex items-center gap-4">
+              <div className="flex items-center justify-center gap-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                {item.components && item.components.length > 0 && (
                   <span className="flex items-center gap-1">
-                    <Star className="h-4 w-4 text-tft-gold" />
-                    {item.priority}
+                    <Shield className="h-4 w-4" />
+                    {item.components.length} components
                   </span>
-                  {item.is_unique && (
-                    <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded text-xs">
-                      Unique
-                    </span>
-                  )}
-                </div>
-                <span className="text-xs text-gray-400">
-                  {item.item_type}
-                </span>
+                )}
+                {item.unique && (
+                  <span className="px-2 py-1 rounded text-xs" style={{ background: 'var(--bg-secondary)', color: 'var(--accent1)' }}>
+                    Unique
+                  </span>
+                )}
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      {data?.data.length === 0 && (
+      {filtered.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-gray-500">No items found matching your criteria.</p>
+          <p style={{ color: 'var(--text-secondary)' }}>No items found.</p>
         </div>
       )}
     </div>

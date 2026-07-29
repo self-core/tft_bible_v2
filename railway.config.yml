@@ -1,0 +1,38 @@
+# Railway Configuration for TFT Bible
+# Documentation: https://docs.railway.app
+
+# Service configuration
+service:
+  name: "tft-bible-app"
+  type: "container"  # Using container as we have a Dockerfile
+
+# Build configuration
+build:
+  # Use the Dockerfile in the backend-simple directory
+  context: "."
+  dockerfilePath: "backend-simple/Dockerfile"
+
+# Environment variables
+variables:
+  - name: "PORT"
+    value: "4000"
+  - name: "NODE_ENV"
+    value: "production"
+  - name: "MONGODB_URI"  # Keep for compatibility, though we use in-memory data
+    value: ""
+    required: false
+
+# Health check configuration
+healthcheck:
+  protocol: "HTTP"
+  port: 4000
+  path: "/health"
+  interval: 30
+  timeout: 10
+  threshold: 2
+
+# Expose port for the service
+expose:
+  - port: 4000
+    name: "api"
+    public: true

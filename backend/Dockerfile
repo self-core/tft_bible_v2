@@ -1,50 +1,43 @@
-# Use the official Rust image as the base image
-FROM rust:1.90-slim AS builder
+# Multi-stage build for optimized production image
+# Build stage
+FROM node:18-alpine AS builder
 
-# Set the working directory
+# Set working directory
 WORKDIR /app
 
-# Install required packages for building
-RUN apt-get update && apt-get install -y \
-    pkg-config \
-    libssl-dev \
-    librdkafka-dev \
-    && rm -rf /var/lib/apt/lists/*
+# Copy package files
+COPY package*.json ./
 
-# Copy the Cargo.toml and Cargo.lock files
-COPY Cargo.toml Cargo.lock ./
+# Install dependencies
+RUN npm ci --only=production=false
 
-# Copy the source code
-COPY src ./src
+# Copy source code
+COPY src/ ./src/
+COPY tsconfig.json ./
 
-# Build the application in release mode
-RUN cargo build --release
+# Build the application
+RUN npm run build
 
-# Create a new stage for the runtime image
-FROM debian:bookworm-slim
+# Production stage
+FROM node:18-alpine AS production
 
-# Install runtime dependencies
-RUN apt-get update && apt-get install -y \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
-
-# Create a non-root user
-RUN useradd -r -s /bin/false tftuser
-
-# Set the working directory
+# Set working directory
 WORKDIR /app
 
-# Copy the compiled binary from the builder stage
-COPY --from=builder /app/target/release/backend /app/backend
+# Copy package files
+COPY --from=builder /app/package*.json ./
 
-# Change ownership to non-root user
-RUN chown tftuser:tftuser /app/backend
+# Install only production dependencies
+RUN npm ci --only=production && npm cache clean --force
 
-# Switch to non-root user
-USER tftuser
+# Copy the built application
+COPY --from=builder /app/dist ./dist
 
-# Expose the port the app runs on
-EXPOSE 8080
+# Create directory for dragontail data
+RUN mkdir -p /app/dragontail-data
 
-# Set the default command to run the application
-CMD ["./backend"]
+# Expose port
+EXPOSE 4000
+
+# Start the application
+CMD ["node", "dist/server.js"]

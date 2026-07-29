@@ -1,152 +1,134 @@
-# TFT Bible v2
+# TFT Bible - Scalable Set-Based Architecture
 
-A comprehensive Teamfight Tactics (TFT) companion application built with Rust and modern web technologies.
+A comprehensive Teamfight Tactics (TFT) companion application built with Node.js and GraphQL following a scalable set-based architecture designed to evolve with each new TFT set. Optimized for easy deployment on Vercel or Railway.
 
 ## 🏗️ Architecture
 
-- **Backend**: Rust with Axum web framework
-- **Database**: MongoDB for data persistence
-- **Testing**: Comprehensive unit and integration tests
-- **Development**: Docker-based development environment
+- **Architecture**: Set-based document architecture supporting multiple TFT sets
+- **Backend**: Node.js with TypeScript, Apollo Server, Express.js
+- **API**: Single GraphQL endpoint at `/graphql` with comprehensive schema
+- **Data Model**: Flexible document-per-set structure for easy evolution
+- **Frontend**: React frontend with Apollo Client for GraphQL integration
+- **Deployment**: Optimized for Vercel Serverless Functions or Railway container
+- **Development**: Simple Node.js environment with npm/yarn
+
+## 🎯 Set-Based Design Philosophy
+
+The architecture follows a **document-per-set** approach ensuring that changes in future TFT sets do not break historical data:
+
+- **Set Documents**: Each TFT set (e.g., Set 12, Set 16) stored as a complete document
+- **Versioned IDs**: Champion IDs prefixed with set numbers (e.g. `TFT16_Ahri`)
+- **Flexible Traits**: Trait breakpoints defined per set with evolving mechanics
+- **Scalable Structure**: Easy to add new sets without affecting existing data
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
-- Docker and Docker Compose
+- Node.js 18+ and npm
 - Git
 
 ### Development Setup
 
 1. **Clone the repository**
    ```bash
-   git clone https://gitlab.com/puppets-dev/tft_bible_v2.git
+   git clone https://github.com/self-core/tft_bible_v2.git
    cd tft_bible_v2
    ```
 
-2. **Start the development environment**
+2. **Install backend dependencies**
    ```bash
-   docker-compose up --build
+   cd backend-simple
+   npm install
    ```
 
-   This will:
-   - Build the Rust backend in a Docker container
-   - Start MongoDB with development data
-   - Enable hot reloading for development
+3. **Start the development server**
+   ```bash
+   npm run dev
+   ```
 
-3. **Access the API**
-   - API: http://localhost:8080
-   - Health check: http://localhost:8080/api/v1/health
-   - MongoDB: localhost:27017 (admin/password)
+4. **Access the API**
+   - GraphQL Playground: http://localhost:4000/graphql
+   - Health check: http://localhost:4000/health
 
-### Available Endpoints
+## 🔧 Running in Production
 
-#### Compositions
-- `GET /api/v1/compositions` - List compositions with filtering
-- `GET /api/v1/compositions/:id` - Get composition by ID
-- `POST /api/v1/compositions` - Create composition (mock mode)
-- `PUT /api/v1/compositions/:id` - Update composition (mock mode)
-- `DELETE /api/v1/compositions/:id` - Delete composition (mock mode)
-- `POST /api/v1/compositions/:id/vote` - Vote on composition (mock mode)
-
-#### Champions
-- `GET /api/v1/champions` - List champions with filtering
-- `GET /api/v1/champions/:id` - Get champion by ID
-- `GET /api/v1/champions/trait/:trait` - Get champions by trait
-
-#### Items
-- `GET /api/v1/items` - List items with filtering
-- `GET /api/v1/items/:id` - Get item by ID
-- `GET /api/v1/items/recommendations/:champion_id` - Get item recommendations
-
-#### Search
-- `GET /api/v1/search?q=query` - Search across all entities
-
-#### Health
-- `GET /api/v1/health` - API health check
-
-## 🧪 Testing
-
-### Run Tests in Docker
-
+### With Node.js
 ```bash
-# Run all tests
-docker-compose exec tft-backend cargo test
-
-# Run with coverage
-docker-compose exec tft-backend cargo tarpaulin --ignore-tests --out Html
-
-# Run specific test
-docker-compose exec tft-backend cargo test test_champion_service
+npm run build
+npm start
 ```
 
-### Test Structure
-
-- **Unit Tests**: `backend/tests/unit/` - Service layer testing
-- **Integration Tests**: `backend/tests/integration/` - API endpoint testing
-- **Common**: `backend/tests/common/` - Test utilities and helpers
-
-## 🛠️ Development
-
-### Adding New Features
-
-1. Create a feature branch: `git checkout -b feature/your-feature`
-2. Make changes and add tests
-3. Run tests: `docker-compose exec tft-backend cargo test`
-4. Commit and push: `git push origin feature/your-feature`
-5. Create merge request to `dev` branch
-
-### Code Quality
-
-- **Linting**: `cargo clippy`
-- **Formatting**: `cargo fmt`
-- **Testing**: `cargo test`
-- **Coverage**: `cargo tarpaulin`
+### With Docker
+```bash
+docker build -t tft-bible-backend .
+docker run -p 4000:4000 tft-bible-backend
+```
 
 ### Environment Variables
 
 ```bash
-# Database
-MONGODB_URL=mongodb://mongodb:27017
-DATABASE_NAME=tft_bible_dev
-
 # Server
-PORT=8080
-
-# Security
-JWT_SECRET=your-super-secret-jwt-key-change-in-production
-
-# CORS
-CORS_ORIGIN=http://localhost:3000
+PORT=4000
 ```
 
 ## 📁 Project Structure
 
 ```
 tft_bible_v2/
-├── backend/                    # Rust backend
-│   ├── src/
-│   │   ├── handlers/          # API route handlers
-│   │   ├── services/          # Business logic services
-│   │   ├── models.rs          # Data models and DTOs
-│   │   ├── errors.rs          # Error types
-│   │   ├── config.rs          # Configuration
-│   │   └── main.rs            # Application entry point
-│   ├── tests/                 # Test suite
-│   │   ├── unit/             # Unit tests
-│   │   ├── integration/      # Integration tests
-│   │   └── common/           # Test utilities
-│   ├── Dockerfile            # Docker build
-│   ├── .dockerignore         # Docker ignore file
-│   └── docker-entrypoint-initdb.d/  # MongoDB init scripts
-├── docker-compose.yml        # Development environment
-├── .github/workflows/        # CI/CD pipelines
-└── CONTRIBUTING.md           # Development guidelines
+├── backend-simple/             # Set-based Node.js backend
+│   ├── src/                   # Source code
+│   │   ├── server.ts          # Express + Apollo server
+│   │   ├── schema.ts          # GraphQL schema definition
+│   │   ├── resolvers.ts       # GraphQL resolvers with set-based data
+│   │   ├── interfaces.ts      # TypeScript interfaces for set architecture
+│   │   └── types/             # TypeScript types
+│   ├── package.json           # Dependencies and scripts
+│   ├── tsconfig.json          # TypeScript configuration
+│   ├── Dockerfile             # Docker build
+│   └── .env.example           # Environment variables example
+├── microservices/
+│   └── frontend-service/      # React frontend
+├── docs/                      # Documentation including schema design
+├── data/                      # TFT data files
+├── scripts/                   # Utility scripts
+├── vercel.json               # Vercel deployment configuration
+├── railway.config.yml        # Railway deployment configuration
+└── README.md                 # This file
 ```
+
+## 🚀 Deployment
+
+### Deploy to Vercel
+1. Connect your GitHub repository to Vercel
+2. Vercel will automatically detect and deploy the Node.js application
+3. Add environment variables in Vercel dashboard
+
+### Deploy to Railway
+1. Connect your GitHub repository to Railway
+2. Railway will automatically build and deploy from the Dockerfile
+3. Add environment variables in Railway dashboard
+
+## 📊 API Endpoints
+
+### GraphQL Schema
+- `champions`: All champions in the current set
+- `championsBySet(setId: Int!)`: Champions for a specific set
+- `champion(id: ID!)`: Specific champion by ID
+- `traits`: All trait definitions
+- `trait(key: String!)`: Specific trait by key
+- `items`: All items in the current set
+- `item(id: ID!)`: Specific item by ID
+- `sets`: All TFT sets
+- `set(setId: Int!)`: Specific set by ID
+- `compositions`: All compositions
+- `compositionsBySet(setId: Int!)`: Compositions for a specific set
+- `composition(id: ID!)`: Specific composition by ID
+- `search(searchTerm: String!)`: Search across all entities
 
 ## 🤝 Contributing
 
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+Please read the contributing guidelines in the main repository for details on our code of conduct and the process for submitting pull requests.
 
 ## 📝 License
 
@@ -154,11 +136,12 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 🔄 Current Status
 
-- ✅ Mock services implemented
-- ✅ API endpoints wired
-- ✅ Comprehensive test suite
-- ✅ Docker development environment
-- ✅ CI/CD pipeline
-- 🚧 MongoDB integration (planned)
-- 🚧 Authentication system (planned)
-- 🚧 Frontend application (planned)
+- ✅ Set-based architecture implemented
+- ✅ Flexible schema supporting multiple TFT sets
+- ✅ Realistic TFT data based on Set 16 and current meta
+- ✅ Optimized for Vercel and Railway deployment
+- ✅ Complete frontend integration with Apollo Client
+- ✅ Comprehensive data models with set evolution capability
+- ✅ Ready for production deployment
+- ✅ Support for Lore & Legends (Set 16) content
+- ✅ Scalable for future TFT sets

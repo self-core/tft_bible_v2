@@ -2,36 +2,57 @@ name: CI
 
 on:
   push:
-    branches: [ main, dev ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, dev ]
+    branches: [main, develop]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: read
 
 jobs:
   test:
     runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongodb:7-jammy
+        ports:
+          - 27017:27017
+
+    env:
+      MONGODB_URI: mongodb://localhost:27017/tft-bible-test
+      NODE_ENV: test
+      CI: true
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build and test with Docker
-        working-directory: backend
-        run: |
-          docker build -t tft-backend:test .
-          docker run --rm tft-backend:test cargo test --verbose
-          docker run --rm tft-backend:test cargo clippy -- -D warnings
-
-      - name: Generate test coverage
-        working-directory: backend
-        run: |
-          docker run --rm -v $(pwd):/app tft-backend:test cargo tarpaulin --ignore-tests --out Xml
-          docker run --rm -v $(pwd):/app tft-backend:test cargo tarpaulin --ignore-tests --out Html
-
-      - name: Upload coverage reports
-        uses: codecov/codecov-action@v4
+      - uses: actions/setup-node@v4
         with:
-          file: ./backend/cobertura.xml
-          flags: rust
-          name: codecov-umbrella
-          fail_ci_if_error: false
+          node-version: "20.x"
+
+      - name: Cache node_modules
+        id: cache-npm
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run lint
+        run: npm run lint --if-present
+
+      - name: Build
+        run: npm run build
+
+      - name: Test
+        run: npm test --if-present
