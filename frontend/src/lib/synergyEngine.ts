@@ -121,7 +121,8 @@ export function computeActiveTraits(
 ): ActiveTraitInfo[] {
   const counts = countTraitsOnBoard(board, emblems);
   return traits.map(trait => {
-    const currentCount = counts[trait.name] || counts[trait.key] || 0;
+    const nameKey = trait.name ?? '';
+    const currentCount = counts[nameKey] || counts[trait.key] || 0;
     const sorted = [...(trait.breakpoints || [])].sort((a, b) => a.count - b.count);
     const activeBP = sorted.filter(bp => currentCount >= bp.count);
     const nextBP = sorted.find(bp => bp.count > currentCount) || null;

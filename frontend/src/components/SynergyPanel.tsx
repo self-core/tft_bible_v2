@@ -1,7 +1,6 @@
 import React from 'react';
 import { Champion, Trait } from '../lib/api';
 import { useSynergy, SynergyFilters } from '../hooks/useSynergy';
-import { ChampScore, ActiveTraitInfo } from '../lib/synergyEngine';
 import { proxyUrl } from '../lib/imageProxy';
 
 interface SynergyPanelProps {

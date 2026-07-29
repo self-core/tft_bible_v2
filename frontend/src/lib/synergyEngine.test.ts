@@ -14,9 +14,9 @@ const makeChamp = (overrides: Partial<Champion> = {}): Champion => ({
   traits: [],
   stats: { hp: 600, mana: 40, damage: 50 },
   ability: { name: '', variables: [] },
-  imageUrl: null,
-  splashUrl: null,
-  iconUrl: null,
+  imageUrl: undefined,
+  splashUrl: undefined,
+  iconUrl: undefined,
   ...overrides,
 });
 
