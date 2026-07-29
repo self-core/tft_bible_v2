@@ -1,16 +1,23 @@
 import React, { useState } from 'react';
 import { useQuery } from '@apollo/client';
-import { GET_TRAITS, GET_CHAMPIONS } from '../lib/graphql';
+import { GET_ACTIVE_SET } from '../lib/graphql';
 import { Champion } from '../lib/api';
-import TraitTracker from '../components/TraitTracker';
+import SynergyPanel from '../components/SynergyPanel';
+import { SynergyFilters } from '../hooks/useSynergy';
 import { proxyUrl } from '../lib/imageProxy';
 
 const TraitTrackerPage: React.FC = () => {
-  const { data: traitsData, loading: traitsLoading } = useQuery(GET_TRAITS);
-  const { data: championsData, loading: championsLoading } = useQuery(GET_CHAMPIONS);
+  const { data: activeSetData } = useQuery(GET_ACTIVE_SET);
+  const champions = (activeSetData?.activeSet?.champions || []) as Champion[];
+  const traits = (activeSetData?.activeSet?.traits || []) as any[];
+  const setName = activeSetData?.activeSet?.setName || '';
 
-  const [championsOnBoard, setChampionsOnBoard] = useState<Champion[]>([]);
-  const [championsOnBench, setChampionsOnBench] = useState<Champion[]>([]);
+  const [filters, setFilters] = useState<SynergyFilters>({
+    boardSize: 8,
+    enabledCosts: [1, 2, 3, 4, 5],
+    emblems: {},
+  });
+
   const [selectedChampion, setSelectedChampion] = useState<Champion | null>(null);
 
   // Board dimensions
@@ -63,9 +70,8 @@ const TraitTrackerPage: React.FC = () => {
     }
   };
 
-  // Calculate champions on board and bench for the trait tracker
+  // Calculate champions on board for synergy recommendations
   const championsOnBoardFlat = board.flat().filter(champ => champ !== null) as Champion[];
-  const championsOnBenchFiltered = bench.filter(champ => champ !== null) as Champion[];
 
   return (
     <div className="container mx-auto p-4 bg-gray-50 min-h-screen">
@@ -83,7 +89,7 @@ const TraitTrackerPage: React.FC = () => {
             </div>
             <div className="max-h-96 overflow-y-auto p-2">
               <div className="grid grid-cols-3 gap-2">
-                {championsData?.champions.map((champion: Champion) => (
+                {champions.map((champion: Champion) => (
                   <div
                     key={champion.id}
                     className={`p-2 rounded-lg border cursor-pointer transition-all flex flex-col items-center ${
@@ -225,11 +231,15 @@ const TraitTrackerPage: React.FC = () => {
           )}
         </div>
 
-        {/* Right panel - Trait tracker */}
+        {/* Right panel - Synergy panel */}
         <div className="lg:col-span-3">
-          <TraitTracker
-            championsOnBoard={championsOnBoardFlat}
-            championsOnBench={championsOnBenchFiltered}
+          <SynergyPanel
+            setLabel={setName ? `Set ${activeSetData?.activeSet?.setId} · ${setName}` : 'Loading...'}
+            champions={champions}
+            traits={traits}
+            board={championsOnBoardFlat}
+            filters={filters}
+            onFiltersChange={setFilters}
           />
         </div>
       </div>
