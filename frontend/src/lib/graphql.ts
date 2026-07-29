@@ -255,6 +255,34 @@ export const GET_ACTIVE_SET = gql`
       setId
       setName
       status
+      champions {
+        id
+        name
+        cost
+        traits
+        stats {
+          hp
+          mana
+          damage
+        }
+        ability {
+          name
+          variables {
+            name
+            values
+          }
+        }
+        imageUrl
+      }
+      traits {
+        key
+        name
+        description
+        breakpoints {
+          count
+          bonus
+        }
+      }
     }
   }
 `;
