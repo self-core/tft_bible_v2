@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ImportService } from './ImportService';
 import { Repository } from './_internal/Repository';
 import { PathResolver } from './_internal/PathResolver';
+import { CDragonService } from './_internal/CDragonService';
 
 vi.mock('./_internal/FileParser', () => ({
   FileParser: {
@@ -18,6 +19,14 @@ vi.mock('./_internal/DataTransformer', () => ({
     buildSplashUrl: vi.fn().mockReturnValue('http://cdn/splash.jpg'),
     parseTrait: vi.fn().mockImplementation((t: any) => ({ key: t.key, name: t.name })),
   },
+}));
+
+vi.mock('./_internal/CDragonService', () => ({
+  CDragonService: vi.fn().mockImplementation(() => ({
+    fetch: vi.fn().mockResolvedValue({ setData: {}, items: [], augments: [] }),
+    getCdnBase: vi.fn().mockReturnValue('http://cdn'),
+    clearCache: vi.fn(),
+  })),
 }));
 
 const mockRepository = {
@@ -37,12 +46,18 @@ const mockPathResolver = {
   getItemPath: vi.fn().mockReturnValue('/dragontail/items.json'),
 };
 
+const mockCDragonService = new (CDragonService as any)();
+
 describe('ImportService.importSet', () => {
   let service: ImportService;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    service = new ImportService(mockRepository as unknown as Repository, mockPathResolver as unknown as PathResolver);
+    service = new ImportService(
+      mockRepository as unknown as Repository,
+      mockPathResolver as unknown as PathResolver,
+      mockCDragonService,
+    );
   });
 
   it('returns champion/trait/item counts when import succeeds', async () => {

@@ -4,6 +4,7 @@ import { SetDataService } from './services/SetDataService';
 import { CompositionService } from './services/CompositionService';
 import { MetaService } from './services/MetaService';
 import { RiotApiClient } from './services/RiotApiClient';
+import { Repository } from './services/_internal/Repository';
 
 // Initialize services from DI container
 const setDataService = container.resolve(SetDataService);
@@ -11,6 +12,7 @@ setDataService.initialize();
 const compositionService = container.resolve(CompositionService);
 const metaService = container.resolve(MetaService);
 const riotClient = container.resolve(RiotApiClient);
+const repository = container.resolve(Repository);
 
 import { SetModel } from './models/Set';
 
@@ -34,6 +36,9 @@ const getCurrentSetDataFromDB = async (): Promise<ISetData> => {
 
 // Define the resolvers following the new Set-based architecture
 export const resolvers = {
+  SetData: {
+    status: (parent: ISetData) => parent.status.toUpperCase(),
+  },
   Query: {
     champions: async () => {
       const currentSet = await getCurrentSetDataFromDB();
@@ -142,11 +147,9 @@ export const resolvers = {
     activeSet: async () => {
       try {
         const activeSetDoc = await SetModel.findOne({ status: 'active' }).lean();
-        if (!activeSetDoc) return null;
-        return await setDataService.getSetData(activeSetDoc.setId);
-      } catch {
-        return await setDataService.getSetData();
-      }
+        if (activeSetDoc) return await setDataService.getSetData(activeSetDoc.setId);
+      } catch {}
+      return await setDataService.getSetData();
     },
     compositions: async () => {
       try { return await compositionService.getAll(); } catch { return []; }
@@ -244,6 +247,25 @@ export const resolvers = {
     refreshMetaData: async (_: any, { setId }: { setId: number }) => {
       await metaService.refreshMetaData(setId);
       return true;
+    },
+    setSetStatus: async (_: any, { setId, status }: { setId: number, status: string }) => {
+      const newStatus = status.toLowerCase() as 'upcoming' | 'active' | 'archived';
+      let result = await repository.setSetStatus(setId, newStatus);
+      if (!result) {
+        const setData = await setDataService.getSetData(setId);
+        await repository.saveSetData(
+          setId,
+          (setData as any).setName || `Set ${setId}`,
+          (setData as any).champions?.map((c: any) => c.id) || [],
+          (setData as any).traits?.map((t: any) => t.key) || [],
+          (setData as any).items?.map((i: any) => i.id) || [],
+          (setData as any).augments || [],
+          newStatus,
+        );
+        result = true;
+      }
+      setDataService.clearSetCache(setId);
+      return result;
     },
   }
 };

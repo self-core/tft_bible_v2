@@ -163,6 +163,7 @@ export const typeDefs = gql`
     createComposition(input: CreateCompositionInput!): Composition!
     updateComposition(id: ID!, input: UpdateCompositionInput!): Composition!
     deleteComposition(id: ID!): Boolean!
+    setSetStatus(setId: Int!, status: SetStatus!): Boolean!
   }
 
   type SearchResult {

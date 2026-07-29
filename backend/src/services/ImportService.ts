@@ -3,6 +3,8 @@ import { Repository } from './_internal/Repository';
 import { PathResolver } from './_internal/PathResolver';
 import { FileParser } from './_internal/FileParser';
 import { DataTransformer } from './_internal/DataTransformer';
+import { CDragonService } from './_internal/CDragonService';
+import { CDragonTransformer } from './_internal/CDragonTransformer';
 
 const CDN_BASE = 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1';
 
@@ -11,6 +13,7 @@ export class ImportService {
   constructor(
     private repository: Repository,
     private pathResolver: PathResolver,
+    private cdragonService: CDragonService,
   ) {}
 
   async importSet(
@@ -36,6 +39,10 @@ export class ImportService {
     const rawChampions = FileParser.parseChampionFile(championJson, setId);
     const rawTraits = FileParser.parseTraitFile(traitJson, setId);
     const rawItems = FileParser.parseItemFile(itemJson, setId);
+
+    if (rawChampions.length === 0) {
+      throw new Error(`Dragontail has 0 champions for set ${setId} — refusing to save empty data`);
+    }
 
     const champions = rawChampions.map((c: any) => {
       const portraitName = c.imageFullPath
@@ -88,5 +95,42 @@ export class ImportService {
     );
 
     return { champions: champions.length, traits: traits.length, items: items.length };
+  }
+
+  async importFromCDragon(
+    setId: number,
+    status: 'upcoming' | 'active' | 'archived' = 'active',
+  ): Promise<{ champions: number; traits: number; items: number }> {
+    console.log(`[ImportService] CDragon importFromCDragon called for set ${setId}`);
+    const raw = await this.cdragonService.fetch();
+    console.log(`[ImportService] CDragon fetch succeeded for set ${setId}`);
+    const cdnBase = this.cdragonService.getCdnBase();
+    const transformed = CDragonTransformer.transformSet(raw, setId, cdnBase);
+
+    console.log(`[ImportService] CDragon transformed set ${setId}: ${transformed.champions.length} champs, ${transformed.traits.length} traits, ${transformed.items.length} items`);
+
+    if (transformed.champions.length === 0) {
+      throw new Error(`CDragon returned 0 champions for set ${setId} — refusing to save empty data`);
+    }
+
+    await this.repository.saveChampions(transformed.champions);
+    await this.repository.saveTraits(transformed.traits);
+    await this.repository.saveItems(transformed.items);
+
+    await this.repository.saveSetData(
+      setId,
+      transformed.setName,
+      transformed.champions.map((c) => c.id),
+      transformed.traits.map((t) => t.key),
+      transformed.items.map((i) => i.id),
+      transformed.augments,
+      status,
+    );
+
+    return {
+      champions: transformed.champions.length,
+      traits: transformed.traits.length,
+      items: transformed.items.length,
+    };
   }
 }

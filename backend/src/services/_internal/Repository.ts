@@ -21,7 +21,7 @@ export class Repository {
       status: setDoc.status,
       champions: champions.map(doc => ({
         id: doc.id,
-        name: doc.name,
+        name: doc.name || doc.id || 'Unknown',
         cost: doc.cost,
         traits: doc.traits,
         stats: doc.stats,
@@ -45,9 +45,9 @@ export class Repository {
       })),
       items: items.map(doc => ({
         id: doc.id,
-        name: doc.name,
-        description: doc.description,
-        components: doc.components,
+        name: doc.name || doc.id || 'Unknown Item',
+        description: doc.description || '',
+        components: doc.components || [],
         imageUrl: doc.imageUrl,
         unique: doc.unique,
         trait: doc.trait,

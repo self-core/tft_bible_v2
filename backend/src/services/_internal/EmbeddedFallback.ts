@@ -290,7 +290,7 @@ export class EmbeddedFallback {
         id: 'TFT18_Akali',
         name: 'Akali',
         cost: 1,
-        traits: ['Inferno', 'Adaptor', 'Ravager'],
+        traits: ['Inferno', 'Ravager'],
         stats: { hp: 600, mana: 50, damage: 55 },
         ability: {
           name: 'Kunai Strike',
@@ -322,7 +322,7 @@ export class EmbeddedFallback {
         id: 'TFT18_Cinderling',
         name: 'Cinderling',
         cost: 1,
-        traits: ['Riftbeast', 'Hunter'],
+        traits: ['Riftbeast', 'Inferno'],
         stats: { hp: 550, mana: 40, damage: 50 },
         ability: {
           name: 'Razor Leaves',
@@ -338,7 +338,7 @@ export class EmbeddedFallback {
         id: 'TFT18_Taric',
         name: 'Taric',
         cost: 5,
-        traits: ['Emerald Aspect', 'Vanguard'],
+        traits: ['Blossom', 'Coven'],
         stats: { hp: 900, mana: 100, damage: 70 },
         ability: {
           name: 'Emerald Radiance',
@@ -354,7 +354,7 @@ export class EmbeddedFallback {
         id: 'TFT18_Varus',
         name: 'Varus',
         cost: 4,
-        traits: ['Inferno', 'Rapidfire'],
+        traits: ['Inferno', 'Ravager'],
         stats: { hp: 700, mana: 80, damage: 65 },
         ability: {
           name: 'Piercing Arrow',
@@ -370,7 +370,7 @@ export class EmbeddedFallback {
         id: 'TFT18_Karma',
         name: 'Karma',
         cost: 3,
-        traits: ['Blossom', 'Spellweaver'],
+        traits: ['Blossom', 'Riftbeast'],
         stats: { hp: 650, mana: 60, damage: 45 },
         ability: {
           name: 'Karma Spell',
@@ -386,7 +386,7 @@ export class EmbeddedFallback {
         id: 'TFT18_Kobuko',
         name: 'Kobuko',
         cost: 2,
-        traits: ['Sprykin', 'Brawler'],
+        traits: ['Riftbeast', 'Coven'],
         stats: { hp: 750, mana: 70, damage: 50 },
         ability: {
           name: 'Kobuko Shield',
@@ -402,7 +402,7 @@ export class EmbeddedFallback {
         id: 'TFT18_Ornn',
         name: 'Ornn',
         cost: 4,
-        traits: ['Elderwood', 'Defender'],
+        traits: ['Riftbeast', 'Blossom'],
         stats: { hp: 850, mana: 90, damage: 65 },
         ability: {
           name: 'Elderwood Ram',
@@ -418,7 +418,7 @@ export class EmbeddedFallback {
         id: 'TFT18_Leona',
         name: 'Leona',
         cost: 2,
-        traits: ['Solar', 'Defender'],
+        traits: ['Coven', 'Blossom'],
         stats: { hp: 700, mana: 60, damage: 50 },
         ability: {
           name: 'Solar Shield',
@@ -434,7 +434,7 @@ export class EmbeddedFallback {
         id: 'TFT18_Lux',
         name: 'Lux',
         cost: 3,
-        traits: ['Avatar', 'Blossom'],
+        traits: ['Blossom', 'Inferno'],
         stats: { hp: 600, mana: 50, damage: 40 },
         ability: {
           name: 'Final Spark',

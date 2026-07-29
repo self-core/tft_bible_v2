@@ -16,6 +16,7 @@ vi.mock('./_internal/Repository', () => ({
 vi.mock('./ImportService', () => ({
   ImportService: vi.fn().mockImplementation(() => ({
     importSet: vi.fn().mockRejectedValue(new Error('No dragontail files')),
+    importFromCDragon: vi.fn().mockRejectedValue(new Error('CDragon not available')),
   })),
 }));
 

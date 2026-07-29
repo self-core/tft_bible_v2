@@ -64,16 +64,32 @@ export class SetDataService {
 
   async getSetData(setId?: number): Promise<ISetData> {
     const sid = setId ?? this.defaultSetId;
+    console.log(`[SetDataService] getSetData called for setId=${sid}`);
     const cached = this.cache.get(sid);
-    if (cached) return cached;
+    if (cached) {
+      console.log(`[SetDataService] returning cached data for set ${sid}`);
+      return cached;
+    }
 
     try {
       const fromDb = await this.repository.getSetData(sid);
-      if (fromDb) {
+      if (fromDb && fromDb.champions && fromDb.champions.length > 0) {
         this.cache.set(sid, fromDb);
         return fromDb;
       }
     } catch {
+    }
+
+    try {
+      await this.importService.importFromCDragon(sid);
+      const fromCDragon = await this.repository.getSetData(sid);
+      if (fromCDragon) {
+        this.cache.set(sid, fromCDragon);
+        console.log(`[SetDataService] CDragon import succeeded for set ${sid}`);
+        return fromCDragon;
+      }
+    } catch (e) {
+      console.warn(`[SetDataService] CDragon import failed for set ${sid}:`, (e as Error).message);
     }
 
     try {
@@ -93,5 +109,9 @@ export class SetDataService {
     }
 
     throw new Error(`No data available for set ${sid}`);
+  }
+
+  clearSetCache(setId: number): void {
+    this.cache.clear(setId);
   }
 }
