@@ -60,6 +60,17 @@ describe('greedyFill', () => {
     expect(result).toHaveLength(2);
   });
 
+  it('fills remaining slots when board is non-empty', () => {
+    const board = [makeChamp({ id: 'existing', name: 'Existing', cost: 1, traits: ['Blossom'] })];
+    const pool = [
+      makeChamp({ id: 'A', name: 'A', cost: 1, traits: ['Inferno'] }),
+      makeChamp({ id: 'B', name: 'B', cost: 2, traits: ['Ravager'] }),
+    ];
+    const result = greedyFill(board, pool, 3, [], {});
+    expect(result).toHaveLength(3);
+    expect(result[0].id).toBe('existing');
+  });
+
   it('does not exceed available pool size', () => {
     const pool = [makeChamp({ id: '1', name: 'A', cost: 1, traits: ['Blossom'] })];
     const result = greedyFill([], pool, 5, [], {});

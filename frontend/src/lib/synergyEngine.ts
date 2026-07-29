@@ -101,7 +101,7 @@ export function greedyFill(
   const result = [...board];
   const usedIds = new Set(result.map(c => c.id));
 
-  while (result.length < boardSize && usedIds.size < pool.length) {
+  while (result.length < boardSize) {
     const available = pool.filter(c => !usedIds.has(c.id));
     const scored = available.map(c => ({ champ: c, score: scoreCandidate(c, result, traits, emblems).totalScore }));
     scored.sort((a, b) => b.score - a.score);
