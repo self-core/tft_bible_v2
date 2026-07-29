@@ -42,5 +42,16 @@ services:
       - backend
     restart: unless-stopped
 
+  agent:
+    build:
+      context: ./agent
+      dockerfile: Dockerfile
+    container_name: tft-bible-release-agent
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.agent
+    restart: unless-stopped
+
 volumes:
   mongo_data:

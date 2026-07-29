@@ -24,6 +24,7 @@ cimplic.html
 .env.local
 .env.production
 .env.railway
+.env.agent
 
 # Railway specific
 .railway/
