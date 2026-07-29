@@ -11,7 +11,9 @@ export interface Config {
   GITHUB_REPO: string;
   LLM_PROVIDER: LlmProvider;
   OPENAI_API_KEY?: string;
+  OPENAI_MODEL: string;
   CLAUDE_API_KEY?: string;
+  CLAUDE_MODEL: string;
   OLLAMA_BASE_URL: string;
   OLLAMA_MODEL: string;
 }
@@ -41,7 +43,9 @@ export function loadConfig(): Config {
     GITHUB_REPO: process.env.GITHUB_REPO!,
     LLM_PROVIDER: (process.env.LLM_PROVIDER ?? "openai") as LlmProvider,
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+    OPENAI_MODEL: process.env.OPENAI_MODEL ?? "gpt-4o-mini",
     CLAUDE_API_KEY: process.env.CLAUDE_API_KEY,
+    CLAUDE_MODEL: process.env.CLAUDE_MODEL ?? "claude-sonnet-4-20250514",
     OLLAMA_BASE_URL: process.env.OLLAMA_BASE_URL ?? "http://localhost:11434",
     OLLAMA_MODEL: process.env.OLLAMA_MODEL ?? "llama3",
   };

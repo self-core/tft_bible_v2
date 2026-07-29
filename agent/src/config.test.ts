@@ -84,4 +84,28 @@ describe("config", () => {
     const cfg = loadConfig();
     expect(cfg.OLLAMA_MODEL).toBe("llama3");
   });
+
+  it("defaults OPENAI_MODEL to gpt-4o-mini", () => {
+    delete process.env.OPENAI_MODEL;
+    const cfg = loadConfig();
+    expect(cfg.OPENAI_MODEL).toBe("gpt-4o-mini");
+  });
+
+  it("defaults CLAUDE_MODEL to claude-sonnet-4-20250514", () => {
+    delete process.env.CLAUDE_MODEL;
+    const cfg = loadConfig();
+    expect(cfg.CLAUDE_MODEL).toBe("claude-sonnet-4-20250514");
+  });
+
+  it("reads OPENAI_MODEL from env", () => {
+    process.env.OPENAI_MODEL = "gpt-4o";
+    const cfg = loadConfig();
+    expect(cfg.OPENAI_MODEL).toBe("gpt-4o");
+  });
+
+  it("reads CLAUDE_MODEL from env", () => {
+    process.env.CLAUDE_MODEL = "claude-opus-4-20250514";
+    const cfg = loadConfig();
+    expect(cfg.CLAUDE_MODEL).toBe("claude-opus-4-20250514");
+  });
 });
