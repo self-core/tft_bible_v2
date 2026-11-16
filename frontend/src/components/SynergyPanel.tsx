@@ -20,6 +20,11 @@ const costColors: Record<number, string> = {
   5: 'bg-red-100 text-red-800 border-red-300',
 };
 
+const panelStyle: React.CSSProperties = {
+  background: 'var(--bg-secondary)',
+  border: '1px solid var(--bg-accent)',
+};
+
 const SynergyPanel: React.FC<SynergyPanelProps> = ({
   setLabel,
   champions,
@@ -32,117 +37,141 @@ const SynergyPanel: React.FC<SynergyPanelProps> = ({
   const activeCount = board.length;
 
   return (
-    <div className="bg-white rounded-xl shadow-md p-4 space-y-4">
-      {/* Set label */}
-      <div className="text-sm font-medium text-gray-500 uppercase tracking-wide">{setLabel}</div>
+    <div className="rounded-xl p-4 space-y-4" style={panelStyle}>
+      <div className="text-sm font-medium uppercase tracking-wide" style={{ color: 'var(--text-secondary)' }}>
+        {setLabel}
+      </div>
 
-      {/* Board size selector */}
       <div>
-        <label className="block text-xs font-semibold text-gray-600 mb-1">Board Size</label>
-        <div className="flex gap-1">
-          {[5, 6, 7, 8, 9, 10].map(n => (
-            <button
-              key={n}
-              onClick={() => onFiltersChange({ ...filters, boardSize: n })}
-              className={`px-2 py-1 text-xs rounded border transition-all ${
-                filters.boardSize === n
-                  ? 'bg-blue-600 text-white border-blue-600'
-                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-              }`}
-            >
-              {n}
-            </button>
-          ))}
+        <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>
+          Board Size
+        </label>
+        <div className="flex flex-wrap gap-1">
+          {[5, 6, 7, 8, 9, 10].map(n => {
+            const selected = filters.boardSize === n;
+            return (
+              <button
+                key={n}
+                onClick={() => onFiltersChange({ ...filters, boardSize: n })}
+                className="px-2 py-1 text-xs rounded border transition-colors"
+                style={{
+                  background: selected ? 'var(--accent2)' : 'var(--bg-accent)',
+                  color: selected ? '#fff' : 'var(--text-secondary)',
+                  borderColor: selected ? 'var(--accent2)' : 'var(--bg-accent)',
+                }}
+              >
+                {n}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* Cost toggles */}
       <div>
-        <label className="block text-xs font-semibold text-gray-600 mb-1">Costs</label>
-        <div className="flex gap-1">
-          {[1, 2, 3, 4, 5].map(c => (
-            <button
-              key={c}
-              onClick={() => {
-                const was = filters.enabledCosts.includes(c);
-                const next = was
-                  ? filters.enabledCosts.filter(x => x !== c)
-                  : [...filters.enabledCosts, c].sort();
-                onFiltersChange({ ...filters, enabledCosts: next });
-              }}
-              className={`px-2 py-1 text-xs rounded border transition-all ${
-                filters.enabledCosts.includes(c)
-                  ? `${costColors[c]} border-current`
-                  : 'bg-gray-100 text-gray-400 border-gray-200'
-              }`}
-            >
-              {c}★
-            </button>
-          ))}
+        <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>
+          Costs
+        </label>
+        <div className="flex flex-wrap gap-1">
+          {[1, 2, 3, 4, 5].map(c => {
+            const enabled = filters.enabledCosts.includes(c);
+            return (
+              <button
+                key={c}
+                onClick={() => {
+                  const next = enabled
+                    ? filters.enabledCosts.filter(x => x !== c)
+                    : [...filters.enabledCosts, c].sort();
+                  onFiltersChange({ ...filters, enabledCosts: next });
+                }}
+                className={`px-2 py-1 text-xs rounded border transition-all ${
+                  enabled ? `${costColors[c]} border-current` : ''
+                }`}
+                style={enabled ? undefined : {
+                  background: 'var(--bg-accent)',
+                  color: 'var(--text-secondary)',
+                  borderColor: 'var(--bg-accent)',
+                  opacity: 0.6,
+                }}
+              >
+                {c}★
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* Active Traits */}
       <div>
-        <h3 className="text-sm font-semibold text-gray-700 mb-2">Active Traits ({activeCount} units)</h3>
-        <div className="space-y-2 max-h-48 overflow-y-auto">
+        <h3 className="text-sm font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
+          Active Traits ({activeCount} units)
+        </h3>
+        <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
           {activeTraits.map(({ trait, currentCount, nextBreakpoint, isActive }) => (
             <div key={trait.key} className={`text-xs ${isActive ? 'opacity-100' : 'opacity-40'}`}>
-              <div className="flex justify-between items-center">
-                <span className="font-medium text-gray-800">{trait.name}</span>
-                <span className="text-gray-500">
+              <div className="flex justify-between items-center gap-2">
+                <span className="font-medium truncate" style={{ color: 'var(--text-primary)' }}>{trait.name}</span>
+                <span style={{ color: 'var(--text-secondary)' }}>
                   {currentCount}/{nextBreakpoint?.count || trait.breakpoints?.[0]?.count || '—'}
                 </span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-1.5 mt-0.5">
+              <div className="w-full rounded-full h-1.5 mt-0.5" style={{ background: 'var(--bg-accent)' }}>
                 {nextBreakpoint && (
                   <div
-                    className={`h-1.5 rounded-full transition-all ${isActive ? 'bg-blue-500' : 'bg-gray-300'}`}
-                    style={{ width: `${Math.min(100, (currentCount / nextBreakpoint.count) * 100)}%` }}
+                    className="h-1.5 rounded-full transition-all"
+                    style={{
+                      width: `${Math.min(100, (currentCount / nextBreakpoint.count) * 100)}%`,
+                      background: isActive ? 'var(--accent1)' : 'var(--text-secondary)',
+                    }}
                   />
                 )}
               </div>
             </div>
           ))}
           {activeTraits.length === 0 && (
-            <p className="text-xs text-gray-400 italic">No trait data available</p>
+            <p className="text-xs italic" style={{ color: 'var(--text-secondary)' }}>No trait data available</p>
           )}
         </div>
       </div>
 
-      {/* Recommendations */}
       <div>
-        <h3 className="text-sm font-semibold text-gray-700 mb-2">Next Champion</h3>
+        <h3 className="text-sm font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>Next Champion</h3>
         <div className="space-y-2">
           {recommendations.map((rec, i) => (
-            <div key={rec.champion.id} className="flex items-start gap-2 p-2 rounded-lg border border-gray-200 bg-gray-50">
-              <span className="text-xs font-bold text-gray-400 w-4 pt-1">{i + 1}</span>
+            <div
+              key={rec.champion.id}
+              className="flex items-start gap-2 p-2 rounded-lg border"
+              style={{ background: 'var(--bg-accent)', borderColor: 'var(--bg-accent)' }}
+            >
+              <span className="text-xs font-bold w-4 pt-1" style={{ color: 'var(--text-secondary)' }}>{i + 1}</span>
               {rec.champion.imageUrl && (
-                <img src={proxyUrl(rec.champion.imageUrl)} alt={rec.champion.name} className="w-8 h-8 rounded border border-gray-300" />
+                <img
+                  src={proxyUrl(rec.champion.imageUrl)}
+                  alt={rec.champion.name}
+                  className="w-8 h-8 rounded border"
+                  style={{ borderColor: 'var(--bg-primary)' }}
+                />
               )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-sm font-medium text-gray-900 truncate">{rec.champion.name}</span>
+                  <span className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>{rec.champion.name}</span>
                   <span className={`text-xs px-1 rounded ${
-                    costColors[rec.champion.cost]?.split(' ')[0] || 'bg-gray-100 text-gray-600'
+                    costColors[rec.champion.cost]?.split(' ')[0] || ''
                   }`}>
                     {rec.champion.cost}★
                   </span>
                 </div>
-                <div className="text-xs text-gray-500 truncate">{rec.champion.traits.join(', ')}</div>
-                <div className="text-xs text-blue-600 font-medium">+{rec.totalScore} pts</div>
+                <div className="text-xs truncate" style={{ color: 'var(--text-secondary)' }}>{rec.champion.traits.join(', ')}</div>
+                <div className="text-xs font-medium" style={{ color: 'var(--accent1)' }}>+{rec.totalScore} pts</div>
               </div>
             </div>
           ))}
           {recommendations.length === 0 && (
-            <p className="text-xs text-gray-400 italic">
+            <p className="text-xs italic" style={{ color: 'var(--text-secondary)' }}>
               {board.length >= filters.boardSize ? 'Board is full' : 'No champions match filters'}
             </p>
           )}
         </div>
       </div>
 
-      {/* Optimize button */}
       {board.length < filters.boardSize && board.length > 0 && (
         <div>
           <button
@@ -150,20 +179,31 @@ const SynergyPanel: React.FC<SynergyPanelProps> = ({
               const filled = optimizedBoard.slice(board.length);
               console.log('Optimized additions:', filled.map(c => c.name));
             }}
-            className="w-full py-2 px-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-sm font-semibold rounded-lg hover:from-blue-600 hover:to-indigo-700 transition-all shadow-sm"
+            className="w-full py-2 px-3 text-sm font-semibold rounded-lg transition-all shadow-sm"
+            style={{ background: 'var(--accent2)', color: '#fff' }}
           >
-            ✨ Optimize Board ({filters.boardSize - board.length} slots)
+            Optimize Board ({filters.boardSize - board.length} slots)
           </button>
           {optimizedBoard.length > board.length && (
-            <div className="mt-2 p-2 bg-gray-50 rounded border border-gray-200">
-              <p className="text-xs font-semibold text-gray-600 mb-1">Suggested additions:</p>
+            <div
+              className="mt-2 p-2 rounded border"
+              style={{ background: 'var(--bg-accent)', borderColor: 'var(--bg-accent)' }}
+            >
+              <p className="text-xs font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>Suggested additions:</p>
               <div className="space-y-1">
                 {optimizedBoard.slice(board.length).map(c => (
-                  <div key={c.id} className="flex items-center gap-1.5 text-xs text-gray-700">
-                    {c.imageUrl && <img src={proxyUrl(c.imageUrl)} alt={c.name} className="w-5 h-5 rounded border border-gray-300" />}
+                  <div key={c.id} className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--text-primary)' }}>
+                    {c.imageUrl && (
+                      <img
+                        src={proxyUrl(c.imageUrl)}
+                        alt={c.name}
+                        className="w-5 h-5 rounded border"
+                        style={{ borderColor: 'var(--bg-primary)' }}
+                      />
+                    )}
                     <span>{c.name}</span>
-                    <span className={`text-xs px-1 rounded ${costColors[c.cost]?.split(' ')[0] || 'bg-gray-100'}`}>{c.cost}★</span>
-                    <span className="text-gray-400 truncate">{c.traits.join(', ')}</span>
+                    <span className={`text-xs px-1 rounded ${costColors[c.cost]?.split(' ')[0] || ''}`}>{c.cost}★</span>
+                    <span className="truncate" style={{ color: 'var(--text-secondary)' }}>{c.traits.join(', ')}</span>
                   </div>
                 ))}
               </div>

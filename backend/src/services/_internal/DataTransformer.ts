@@ -23,11 +23,17 @@ export class DataTransformer {
       },
       ability: {
         name: raw.ability?.name || '',
-        variables: raw.ability?.variables
+        variables: (raw.ability?.variables
           ? (Array.isArray(raw.ability.variables)
             ? raw.ability.variables
             : Object.entries(raw.ability.variables).map(([name, values]) => ({ name, values: values as number[] })))
-          : [],
+          : []
+        ).map((variable: any) => ({
+          name: variable.name,
+          values: Array.isArray(variable.values)
+            ? variable.values.filter((value: unknown) => typeof value === 'number' && Number.isFinite(value))
+            : [],
+        })),
       },
       imageUrl: raw.imageUrl || this.buildChampionPortraitUrl(raw.name),
       splashUrl: raw.splashUrl || this.buildSplashUrl(raw.name),

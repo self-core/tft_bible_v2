@@ -36,13 +36,56 @@ recommendations. Persisted to MongoDB via Mongoose.
 (row, col) coordinates. The board has two modes: read (viewing saved comps)
 and edit (drag-and-drop placement).
 
+**Sandbox** — A two-board workspace (`/sandbox`). Blue and red boards are
+placed opposite each other (each side's row 3 is its front row); units carry
+stars, items, team augments and a level cap. Running the sandbox produces a
+prediction (aggregate over seeded fights) and a replayable fight.
+
+**Combat engine** — Pure-TypeScript simulation in `frontend/src/engine/`.
+`simulate(blue, red, traits, {seed})` returns one deterministic fight
+(winner, duration, per-unit summary, typed event timeline, coverage);
+`predict(blue, red, traits, {runs})` repeats it over seeds and returns
+win/draw/loss rates. Mechanics are modeled in tiers; the **coverage report**
+lists abilities/items/augments that are not modeled so predictions are
+never silently wrong.
+
+**Mechanics coverage** — Fraction of the fight's mechanics the engine models
+(abilities with numeric variables, item effects, curated pure-stat augments,
+trait variables). Shown next to predictions; unmodeled pieces are flagged
+in the sandbox.
+
+**Augment modifiers** — cdragon carries augment IDs but no numeric effects,
+so the engine keeps a hand-curated pure-stat table in
+`frontend/src/engine/data/augments.ts`; behavioral augments are flagged as
+unmodeled.
+
+**Seed** — Integer driving the engine's RNG. Identical inputs + seed produce
+an identical fight; changing the seed shows the variance behind a
+prediction.
+
 **Dragontail** — Riot's data distribution format. JSON files per set
 (e.g., `tft-champion_Set16.json`) with `{ type, version, data: {…} }`
 structure. Parsed and persisted to MongoDB on initialization.
 
-**CommunityDragon** — CDN for game asset images (champion portraits, item
-icons, trait icons). URL format:
-`https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/tft/champion-portraits/{name}.png`
+**CommunityDragon** — CDN for game data JSON and asset images (champion
+portraits, item icons, trait icons). Raw assets live at
+`https://raw.communitydragon.org/{latest|pbe}/plugins/rcp-be-lol-game-data/global/default/assets/...`
+(no `/v1`). cdragon ships `.tex` paths with an optional
+`.TFT_SetXX[_PostlaunchAugments]` or `.tft_XX_Y` suffix; strip the variant,
+lowercase, and swap the extension to `.png` (see `cdragonAssetUrl` in
+`CDragonTransformer`). Field names are misleading: `tileIcon` is the square
+in-game portrait, `squareIcon` is the wide splash tile. Some sets (e.g. 18)
+only serve files with a literal `.tft_setN` suffix appended to the png name,
+so asset resolution must probe exact, stripped and suffixed forms on both
+`latest` and `pbe`. Augment ids come from `setData.augments`, but their
+display name/icon live on the matching entry of the top-level `items` array.
+
+**PBE Paks** — The Unreal Engine install's packaged game data (IoStore
+`.utoc/.ucas` plus `.pak`). The PBE patch story: the watcher fingerprints
+these files, waits for the Riot Client to stop writing, then extracts and
+re-imports. TFT ships them with unversioned properties, so DataTable rows
+need external mappings to decode — the pipeline treats cdragon as the
+authoritative stat source.
 
 ## Architecture
 
@@ -50,7 +93,9 @@ icons, trait icons). URL format:
 Mongoose. GraphQL at `/graphql`.
 
 **Frontend:** Vite + React + TypeScript, Apollo Client (primary data access),
-Zustand (domain state), React Context (UI state, theme).
+Zustand (domain state), React Context (UI state, theme). The combat engine is
+a framework-free TypeScript package under `frontend/src/engine/` so the
+backend can reuse it later without a rewrite.
 
 **Data flow:** Dragontail JSONs → MongoDB → GraphQL resolvers → Apollo
 Client → Zustand stores → React components.
@@ -66,7 +111,36 @@ Client → Zustand stores → React components.
 - **Board positions as (row, col)**: Champion placement uses grid
   coordinates, not pixel (x, y). Auto-assignment fills empty cells by cost
   tier.
-- **Single TFTBoard component**: One SVG hex board with `editMode` boolean
-  instead of three divergent board implementations.
+- **Single TFTBoard component**: One hex board with an `editMode` boolean and
+  a `presentation` prop — `flat` (SVG, builder) or `arena` (CSS-3D table with
+  standing unit cards and item icons, sandbox) — instead of divergent board
+  implementations.
 - **Frontend state in Zustand**: Stores for champions, traits, items,
-  augments, compositions. Components subscribe via hooks.
+  augments, compositions, sets. Components subscribe via hooks.
+- **Set status casing**: The GraphQL enum is uppercase
+  (`ACTIVE`/`UPCOMING`/`ARCHIVED`); the app contract is lowercase and is
+  normalized once in the Apollo link. UI code never compares raw casing.
+- **Theming**: One palette per theme via `data-theme` CSS variables; pages
+  use tokens (`var(--bg-*)`, `var(--text-*)`), never hardcoded light/dark
+  colors. Theme initializes synchronously from `localStorage`.
+- **Responsive navbar**: Set links live in a `SetsMenu` dropdown. Full labels
+  at `xl`, icon rail at `lg`, hamburger sheet below `lg`. Page grids go
+  single-column on mobile and `main` wraps unbroken data keys
+  (`overflow-wrap: anywhere`) so pages never scroll horizontally.
+- **Ingestion sanitizes client markup**: `sanitizeDescription` and
+  `sanitizeName` in `CDragonTransformer` strip `<row>`/`<expandRow>` blocks,
+  tags and `@…@`/`%i:…%`/`{{…}}` tokens from trait/item/augment text,
+  including names (cdragon stores quest sentences and `@Tier@` templates
+  there). Stored rows from older imports are repaired idempotently with
+  `npm run sanitize` in `backend/`. Item/augment docs are shared between
+  sets and Apollo caches by ID, so after any repair every set's server-side
+  cache must be flushed or stale copies overwrite cleaned entities in the
+  browser.
+- **Asset resolution probes variants**: `npm run repair-images` (also run
+  automatically at the end of `npm run reimport`) builds asset maps from the
+  live latest + pbe cdragon JSON — not the `data/cdragon_*` snapshots, which
+  can predate the current roster — and verifies every champion portrait,
+  splash, trait icon, item icon and embedded set-augment icon with real HTTP
+  checks, trying exact/stripped/`.tft_setN` filename forms. Unresolvable
+  links are cleared so the UI shows its initials fallback instead of a
+  broken image.

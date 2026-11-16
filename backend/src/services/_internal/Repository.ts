@@ -27,11 +27,18 @@ export class Repository {
         stats: doc.stats,
         ability: {
           name: doc.ability?.name || '',
-          variables: doc.ability?.variables
+          description: doc.ability?.description || '',
+          variables: (doc.ability?.variables
             ? (Array.isArray(doc.ability.variables)
               ? doc.ability.variables
               : Object.entries(doc.ability.variables).map(([name, values]) => ({ name, values: values as number[] })))
-            : [],
+            : []
+          ).map((variable: any) => ({
+            name: variable.name,
+            values: Array.isArray(variable.values)
+              ? variable.values.filter((value: unknown) => typeof value === 'number' && Number.isFinite(value))
+              : [],
+          })),
         },
         imageUrl: doc.imageUrl,
         splashUrl: doc.splashUrl,
@@ -41,13 +48,19 @@ export class Repository {
         key: doc.key,
         name: doc.name,
         description: doc.description,
-        breakpoints: doc.breakpoints,
+        imageUrl: doc.imageUrl ?? null,
+        // Older imports stored non-breakpoint effects with a null minUnits.
+        breakpoints: (doc.breakpoints || []).filter(
+          (bp) => typeof bp.count === 'number' && Number.isFinite(bp.count) && bp.count >= 1,
+        ),
       })),
       items: items.map(doc => ({
         id: doc.id,
         name: doc.name || doc.id || 'Unknown Item',
         description: doc.description || '',
         components: doc.components || [],
+        effects: doc.effects || [],
+        rawEffects: doc.rawEffects || [],
         imageUrl: doc.imageUrl,
         unique: doc.unique,
         trait: doc.trait,

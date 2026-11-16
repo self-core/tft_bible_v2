@@ -10,7 +10,10 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint src --ext .ts",
-    "migrate:set": "ts-node src/scripts/migrate-set.ts"
+    "migrate:set": "ts-node src/scripts/migrate-set.ts",
+    "reimport": "ts-node src/scripts/reimport-cdragon.ts",
+    "sanitize": "ts-node src/scripts/sanitize-stored.ts",
+    "repair-images": "ts-node src/scripts/repair-images.ts"
   },
   "keywords": [
     "tft",

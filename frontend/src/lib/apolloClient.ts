@@ -1,6 +1,7 @@
 // src/lib/apolloClient.ts
 import {
   ApolloClient,
+  ApolloLink,
   InMemoryCache,
   createHttpLink,
 } from '@apollo/client';
@@ -36,7 +37,27 @@ const authLink = setContext((_, { headers }) => {
   }
 });
 
+// The schema exposes Set.status as an uppercase enum; the app contract is lowercase.
+const normalizeSetStatus = new ApolloLink((operation, forward) =>
+  forward(operation).map((response) => {
+    const data = response.data as
+      | { sets?: unknown[]; set?: { status?: unknown } }
+      | undefined;
+    if (Array.isArray(data?.sets)) {
+      data!.sets = data!.sets.map((set) =>
+        set && typeof (set as { status?: unknown }).status === 'string'
+          ? { ...set, status: ((set as { status: string }).status).toLowerCase() }
+          : set
+      );
+    }
+    if (data?.set && typeof data.set.status === 'string') {
+      data.set = { ...data.set, status: data.set.status.toLowerCase() };
+    }
+    return response;
+  })
+);
+
 export const apolloClient = new ApolloClient({
-  link: authLink.concat(httpLink),
+  link: ApolloLink.from([authLink, normalizeSetStatus, httpLink]),
   cache: new InMemoryCache(),
 });

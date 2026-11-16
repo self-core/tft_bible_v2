@@ -1,16 +1,26 @@
 // src/interfaces/ISetChampion.ts
+export interface IChampionStats {
+  hp: number;
+  mana: number;
+  damage: number;
+  armor: number;
+  magicResist: number;
+  attackSpeed: number;
+  range: number;
+  initialMana: number;
+  critChance: number;
+  critMultiplier: number;
+}
+
 export interface ISetChampion {
   id: string;         // Unique ID (e.g., TFT12_Ahri)
   name: string;
   cost: number;
   traits: string[];
-  stats: {
-    hp: number;
-    mana: number;
-    damage: number;
-  };
+  stats: IChampionStats;
   ability: {
     name: string;
+    description?: string;
     variables: Array<{ name: string; values: number[] }>; // GraphQL shape
   };
   imageUrl?: string | null;
@@ -19,22 +29,45 @@ export interface ISetChampion {
 }
 
 // src/interfaces/ITrait.ts
+export interface ITraitVariable {
+  name: string;
+  value: number;
+}
+
+/** Hash-keyed values with no in-file name mapping; engine-only, never displayed. */
+export interface ITraitRawVariable {
+  key: string;
+  value: number;
+}
+
+export interface ITraitBreakpoint {
+  count: number;
+  bonus: string;
+  variables: ITraitVariable[];
+  rawVariables: ITraitRawVariable[];
+}
+
 export interface ITrait {
   key: string;
   name?: string;
   description?: string;
-  breakpoints: Array<{
-    count: number;
-    bonus: string;
-  }>;
+  imageUrl?: string | null;
+  breakpoints: ITraitBreakpoint[];
 }
 
 // src/interfaces/IItem.ts
+export interface IItemEffect {
+  name: string;
+  value: number;
+}
+
 export interface IItem {
   id: string;
   name: string;
   description: string;
   components: string[];
+  effects: IItemEffect[];
+  rawEffects: ITraitRawVariable[];
   imageUrl?: string | null;
   unique?: boolean;
   trait?: string | null;

@@ -108,6 +108,7 @@ const mockItems = [
     name: 'B.F. Sword',
     description: 'Attack Damage +15',
     components: [],
+    effects: [{ name: 'AD', value: 0.15 }],
     imageUrl: 'https://example.com/bfsword.png',
     unique: false,
     trait: null,
@@ -117,6 +118,7 @@ const mockItems = [
     name: 'Chain Vest',
     description: 'Armor +25',
     components: [],
+    effects: [{ name: 'Armor', value: 25 }],
     imageUrl: 'https://example.com/chainvest.png',
     unique: false,
     trait: null,
@@ -126,9 +128,25 @@ const mockItems = [
     name: 'Edge of Night',
     description: 'Wearer dodges the first attack that would\'ve killed them.',
     components: ['TFT18_BFSword', 'TFT18_ChainVest'],
+    effects: [],
     imageUrl: 'https://example.com/edgeofnight.png',
     unique: true,
     trait: null,
+  },
+];
+
+const mockAugments = [
+  {
+    id: 'TFT9_Augment_CyberneticBulk3',
+    name: 'Cybernetic Bulk III',
+    description: 'Your team gains Health.',
+    imageUrl: 'https://example.com/augment-cybernetic.png',
+  },
+  {
+    id: 'TFT18_UnknownBehaviorAugment',
+    name: 'Unknown Behavior Augment',
+    description: 'A behavioral augment the engine does not model yet.',
+    imageUrl: 'https://example.com/augment-unknown.png',
   },
 ];
 
@@ -217,6 +235,21 @@ export const handlers = [
       return HttpResponse.json({ data: { set: null } });
     }
     return HttpResponse.json({ data: { set: { ...set, champions: mockChampions, traits: mockTraits, items: mockItems } } });
+  }),
+  graphql.query('GetActiveSet', () => {
+    return HttpResponse.json({
+      data: {
+        activeSet: {
+          setId: 18,
+          setName: 'Enchanted Wilds',
+          status: 'active',
+          champions: mockChampions,
+          traits: mockTraits,
+          items: mockItems,
+          augments: mockAugments,
+        },
+      },
+    });
   }),
   graphql.mutation('CreateComposition', ({ variables }) => {
     const newComp = {

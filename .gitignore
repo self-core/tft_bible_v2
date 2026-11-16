@@ -84,3 +84,12 @@ microservices/jenkins-service/jenkins_home/
 
 # AI generated files
 .qwen/
+
+# Local runtime data
+backend/cache/
+data/pbe_extracted/
+
+# PBE tooling downloads/build output
+tools/dotnet/
+tools/pbe-ingest/extractor/bin/
+tools/pbe-ingest/extractor/obj/

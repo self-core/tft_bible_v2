@@ -178,6 +178,11 @@
     position: relative;
   }
 
+  /* Raw data keys (e.g. @TFTUnitProperty.trait:…) must wrap instead of widening grids */
+  main {
+    overflow-wrap: anywhere;
+  }
+
   /* Subtle grid overlay like Cimplic - enhanced for true dark mode */
   body::after {
     content: '';

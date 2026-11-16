@@ -15,6 +15,7 @@ import ImprovedTeamBuilder from './pages/ImprovedTeamBuilder';
 import SetDetail from './pages/SetDetail'
 import TraitTrackerPage from './pages/TraitTrackerPage'
 import SetPatchInfoPage from './pages/SetPatchInfoPage'
+import SandboxPage from './pages/SandboxPage'
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
             <Route path="/traits" element={<Traits />} />
             <Route path="/augments" element={<Augments />} />
             <Route path="/builder" element={<ImprovedTeamBuilder />} />
+            <Route path="/sandbox" element={<SandboxPage />} />
             <Route path="/trait-tracker" element={<TraitTrackerPage />} />
             <Route path="/sets-info" element={<SetPatchInfoPage />} />
             <Route path="/sets/:setId" element={<SetDetail />} />

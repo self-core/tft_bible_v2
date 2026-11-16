@@ -6,16 +6,16 @@ import { SetData } from '../lib/api';
 const SetPatchInfoPage: React.FC = () => {
   const { data, loading, error } = useQuery(GET_SETS);
 
-  if (loading) return <div className="container mx-auto p-4">Loading set information...</div>;
-  if (error) return <div className="container mx-auto p-4 text-red-500">Error loading set information: {error.message}</div>;
+  if (loading) return <div className="py-8 text-center" style={{ color: 'var(--text-secondary)' }}>Loading set information...</div>;
+  if (error) return <div className="py-8 text-center text-red-500">Error loading set information: {error.message}</div>;
 
   const sets: SetData[] = data?.sets || [];
 
   return (
-    <div className="container mx-auto p-4 min-h-screen" style={{ background: 'var(--bg-primary)' }}>
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>TFT Sets, Patches & Lore</h1>
-        <p style={{ color: 'var(--text-secondary)' }}>Detailed information about current and past TFT sets, patches, and lore</p>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>TFT Sets, Patches &amp; Lore</h1>
+        <p className="mt-1" style={{ color: 'var(--text-secondary)' }}>Detailed information about current and past TFT sets, patches, and lore</p>
       </div>
 
       <div className="space-y-6">
@@ -35,13 +35,17 @@ const SetPatchInfoPage: React.FC = () => {
                 <p className="mt-1" style={{ color: 'var(--text-secondary)' }}>Set ID: {set.setId}</p>
               </div>
               <div
-                className="px-3 py-1 rounded-full text-sm font-medium"
+                className="px-3 py-1 rounded-full text-sm font-medium capitalize"
                 style={{
-                  backgroundColor: 'var(--accent1)',
-                  color: 'var(--bg-primary)'
+                  backgroundColor: set.status === 'active'
+                    ? 'var(--accent1)'
+                    : set.status === 'upcoming'
+                      ? 'var(--accent2)'
+                      : 'var(--bg-secondary)',
+                  color: set.status === 'archived' ? 'var(--text-secondary)' : 'var(--bg-primary)'
                 }}
               >
-                Active
+                {set.status === 'upcoming' ? 'PBE' : set.status}
               </div>
             </div>
 

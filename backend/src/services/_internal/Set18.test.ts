@@ -20,11 +20,13 @@ describe('TFT Set 18 "Enchanted Wilds" Data Test', () => {
     expect(blossom).toBeDefined();
     expect(blossom!.name).toBe('Blossom');
     expect(blossom!.breakpoints.length).toBe(5);
-    expect(blossom!.breakpoints).toContainEqual({ count: 3, bonus: 'Wisps are upgraded' });
-    expect(blossom!.breakpoints).toContainEqual({ count: 5, bonus: 'Wisps appear in every shop' });
-    expect(blossom!.breakpoints).toContainEqual({ count: 7, bonus: 'Gain gold after buying a Wisp' });
-    expect(blossom!.breakpoints).toContainEqual({ count: 9, bonus: 'You can buy 2 Wisps per round' });
-    expect(blossom!.breakpoints).toContainEqual({ count: 11, bonus: 'Wisps overflow with power' });
+    expect(blossom!.breakpoints).toEqual(expect.arrayContaining([
+      expect.objectContaining({ count: 3, bonus: 'Wisps are upgraded' }),
+      expect.objectContaining({ count: 5, bonus: 'Wisps appear in every shop' }),
+      expect.objectContaining({ count: 7, bonus: 'Gain gold after buying a Wisp' }),
+      expect.objectContaining({ count: 9, bonus: 'You can buy 2 Wisps per round' }),
+      expect.objectContaining({ count: 11, bonus: 'Wisps overflow with power' }),
+    ]));
   });
 
   it('should verify specific Set 18 champions exist with three traits and stats', () => {

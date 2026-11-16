@@ -25,6 +25,8 @@ export interface RawCDragonChampion {
   icon: string;
   name: string;
   squareIcon: string;
+  /** Square portrait actually used in-game; despite the name, `squareIcon` is the splash tile. */
+  tileIcon?: string;
   stats: RawCDragonChampionStats;
   traits: string[];
 }
@@ -33,13 +35,16 @@ export interface RawCDragonTraitEffect {
   minUnits: number;
   maxUnits: number;
   style: number | null;
-  variables: Array<{ name: string; value: number[] }>;
+  variables:
+    | Array<{ name: string; value: number[] }>
+    | Record<string, number | number[] | null>
+    | null;
 }
 
 export interface RawCDragonTrait {
   apiName: string;
   desc: string;
-  effects: RawCDragonTraitEffect[];
+  effects: RawCDragonTraitEffect[] | null;
   icon: string;
   name: string;
 }
@@ -47,8 +52,13 @@ export interface RawCDragonTrait {
 export interface RawCDragonItem {
   apiName: string;
   name: string;
-  description: string;
+  description?: string;
+  desc?: string;
   icon: string;
+  composition?: string[];
+  unique?: boolean;
+  associatedTraits?: string[];
+  effects?: Record<string, number | null>;
 }
 
 export interface RawCDragonAugment {
@@ -60,14 +70,21 @@ export interface RawCDragonAugment {
 
 export interface RawCDragonSetData {
   name: string;
-  champions: RawCDragonChampion[];
-  traits: RawCDragonTrait[];
+  number?: number;
+  champions?: RawCDragonChampion[];
+  traits?: RawCDragonTrait[];
+  items?: RawCDragonItem[];
+  augments?: string[];
 }
 
 export interface TftRawData {
+  /** Keyed by an internal index, not the set number — use `number`. */
   setData: Record<string, RawCDragonSetData>;
+  /** Keyed by set number; authoritative roster per set. */
+  sets?: Record<string, { name?: string; champions?: RawCDragonChampion[]; traits?: RawCDragonTrait[] }>;
   items: RawCDragonItem[];
-  augments: RawCDragonAugment[];
+  /** Legacy shape; current cdragon carries augment IDs under `setData`. */
+  augments?: RawCDragonAugment[];
 }
 
 @injectable()
@@ -102,10 +119,11 @@ export class CDragonService {
     this.cache = { data: null, timestamp: 0 };
   }
 
+  /** Base for game assets (`assets/...`), not the `/v1` JSON API. */
   getCdnBase(): string {
     return process.env.CDRAGON_ENDPOINT === 'pbe'
-      ? 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1'
-      : 'https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1';
+      ? 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default'
+      : 'https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default';
   }
 
   private httpGet(url: string): Promise<TftRawData> {

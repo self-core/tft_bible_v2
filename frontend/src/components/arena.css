@@ -1,0 +1,267 @@
+/* Perspective arena used by the sandbox combat boards. */
+
+.arena-scroll {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 92px 6px 52px;
+}
+
+.arena-scene {
+  width: max-content;
+  margin: 0 auto;
+  padding: 0 22px;
+  perspective: 1100px;
+  perspective-origin: 50% 20%;
+}
+
+.arena-plane {
+  position: relative;
+  transform-style: preserve-3d;
+  transform: rotateX(46deg);
+  border-radius: 16px;
+  background:
+    radial-gradient(ellipse at 50% 70%, rgba(56, 189, 248, 0.1), transparent 62%),
+    radial-gradient(ellipse at 50% 15%, rgba(168, 85, 247, 0.08), transparent 55%),
+    linear-gradient(180deg, #0d1729 0%, #060d1a 70%, #030711 100%);
+  box-shadow:
+    0 34px 58px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px rgba(148, 163, 184, 0.16),
+    inset 0 -16px 28px rgba(0, 0, 0, 0.5);
+}
+
+.arena-plane::after {
+  content: '';
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: -9px;
+  height: 14px;
+  border-radius: 0 0 12px 12px;
+  background: linear-gradient(180deg, #101d33, #040912);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.65);
+}
+
+.arena-cell {
+  position: absolute;
+  transform-style: preserve-3d;
+}
+
+.arena-hex-edge,
+.arena-hex {
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+
+.arena-hex-edge {
+  transform: translateY(5px);
+  background: #010409;
+}
+
+.arena-hex {
+  background:
+    linear-gradient(160deg, rgba(52, 74, 112, 0.92), rgba(8, 15, 30, 0.96));
+  box-shadow:
+    inset 0 0 18px rgba(56, 189, 248, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  filter: drop-shadow(0 0 1px rgba(148, 163, 184, 0.45));
+  transition: filter 120ms ease;
+}
+
+.arena-hex--over {
+  z-index: 1;
+  background: linear-gradient(160deg, rgba(56, 189, 248, 0.38), rgba(14, 116, 144, 0.24));
+  filter: drop-shadow(0 0 11px rgba(56, 189, 248, 0.85));
+}
+
+.arena-glow {
+  position: absolute;
+  left: 50%;
+  bottom: 4%;
+  width: 82%;
+  height: 36%;
+  transform: translateX(-50%) translateZ(3px);
+  border-radius: 50%;
+  opacity: 0.55;
+  filter: blur(7px);
+}
+
+.arena-shadow {
+  position: absolute;
+  left: 50%;
+  bottom: 12%;
+  width: 62%;
+  height: 18%;
+  transform: translateX(-50%) translateZ(4px);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  filter: blur(3px);
+}
+
+.arena-gear {
+  position: absolute;
+  left: 50%;
+  bottom: 3%;
+  transform: translateX(-50%) translateZ(12px);
+  display: flex;
+  gap: 2px;
+  padding: 2px 3px;
+  border-radius: 5px;
+  background: rgba(2, 6, 23, 0.85);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(148, 163, 184, 0.28);
+}
+
+.arena-gear-slot {
+  width: 13px;
+  height: 13px;
+  border-radius: 3px;
+  overflow: hidden;
+  background: #0b1220;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.3);
+}
+
+.arena-gear-slot img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.arena-gear-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #38bdf8;
+}
+
+.arena-standee {
+  position: absolute;
+  left: 50%;
+  top: 56%;
+  transform: translate(-50%, -100%) translateZ(22px);
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+
+.arena-standee-inner {
+  position: relative;
+  transform-origin: 50% 100%;
+  transform: rotateX(-46deg);
+  transform-style: preserve-3d;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.arena-stars {
+  display: flex;
+  gap: 1px;
+  height: 14px;
+  line-height: 1;
+  font-size: 12px;
+  color: #fbbf24;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+}
+
+.arena-card {
+  position: relative;
+  width: 48px;
+  height: 60px;
+  border: 2px solid;
+  border-radius: 10px 10px 5px 5px;
+  overflow: hidden;
+  background: #0b1220;
+  cursor: grab;
+  pointer-events: auto;
+  transition: transform 140ms ease, filter 140ms ease;
+}
+
+.arena-standee:hover .arena-card {
+  transform: translateY(-3px);
+  filter: brightness(1.08);
+}
+
+.arena-card:active {
+  cursor: grabbing;
+}
+
+.arena-card-art {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 16%;
+}
+
+.arena-card-fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.arena-card-cost {
+  position: absolute;
+  left: 3px;
+  bottom: 3px;
+  width: 14px;
+  height: 14px;
+  border: 1px solid;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.arena-card-control {
+  position: absolute;
+  top: 10px;
+  z-index: 2;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  pointer-events: auto;
+  opacity: 0;
+  transition: opacity 140ms ease;
+}
+
+.arena-card-control--remove {
+  right: -9px;
+  background: #ef4444;
+  border: 1px solid #fca5a5;
+}
+
+.arena-card-control--star {
+  left: -9px;
+  background: rgba(0, 0, 0, 0.85);
+  border: 1px solid #fbbf24;
+  color: #fbbf24;
+}
+
+.arena-standee:hover .arena-card-control,
+.arena-card-control:focus-visible {
+  opacity: 1;
+}

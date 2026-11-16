@@ -12,17 +12,16 @@ interface ThemeContextType {
 // Create the context
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+const THEMES: Theme[] = ['dark', 'light', 'earthy', 'pastel', 'sunset', 'copper', 'ocean'];
+
+const readStoredTheme = (): Theme => {
+  const saved = localStorage.getItem('tft-theme') as Theme | null;
+  return saved && THEMES.includes(saved) ? saved : 'dark';
+};
+
 // Theme provider component
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-  const [theme, setTheme] = useState<Theme>('dark');
-
-  // Load theme from localStorage on initial render
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('tft-theme') as Theme | null;
-    if (savedTheme && ['dark', 'light', 'earthy', 'pastel', 'sunset', 'copper', 'ocean'].includes(savedTheme)) {
-      setTheme(savedTheme);
-    }
-  }, []);
+  const [theme, setTheme] = useState<Theme>(readStoredTheme);
 
   // Apply theme to document whenever it changes
   useEffect(() => {

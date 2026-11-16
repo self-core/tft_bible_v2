@@ -10,6 +10,31 @@
 
 **Spec:** `docs/superpowers/specs/2026-11-16-sandbox-combat-simulator-design.md` (see also `AGENT.md` "Critical Data Facts").
 
+## Status (2026-11-16)
+
+- Task 1 (full stat block), Task 2 (numeric trait variables + raw hash
+  values, item effects/components/unique/trait), Task 3 (GraphQL surface),
+  Task 4 (BOM-safe re-import CLI with `--file/--pbe/--dry-run`) are
+  implemented with passing backend tests (103 tests).
+- Task 5 (frontend types/queries + `formatBreakpointBonus`) is implemented.
+- Task 6 (trait tracker UI displays numeric bonuses) is still pending. The
+  real on-disk DB import is done: sets 16 and 17 from live cdragon, set 18
+  from the PBE CDN (status `upcoming`). Re-run after data changes with
+  `cd backend && npm run reimport -- 16 17` and
+  `npm run reimport -- --pbe 18` (the watcher does the PBE step
+  automatically once set 19 lands).
+- PBE pak pipeline (`tools/pbe-ingest/`) is implemented and verified against
+  the installed PBE build: CUE4Parse extractor + watchdog watcher with a
+  60s settle debounce that auto-reimports the newest set found in the Paks
+  after each patch. It inventories all 454 DataTables / 10 StringTables and
+  exports the string tables, but **cannot decode DataTable rows**: TFT
+  packages are `PKG_UnversionedProperties` and Riot ships no
+  `.usmap`/`.jmap` (verified: none in the install, none public). DataTable
+  export auto-activates if mappings are dropped into
+  `tools/pbe-ingest/mappings/`. Set 19 stats therefore still come from the
+  PBE cdragon reimport the watcher triggers.
+
+
 ## Global Constraints
 
 - Conventional Commits (`feat:`, `fix:`, `test:`, `chore:`).
@@ -20,6 +45,29 @@
 - Numeric fallback defaults (verbatim): hp 600, mana 40, damage 50, armor 40, magicResist 40, attackSpeed 0.55, range 1, initialMana 0, critChance 0.25, critMultiplier 1.4.
 - Trait variable keys matching `/\{.*\}/` (localization hashes) and null values are dropped, never persisted.
 - Set scope: existing sets (16, 17, 18) from `data/cdragon_en_us.json`. Set 19 ingestion lands via the same script Tuesday.
+
+## Verified Data Corrections (2026-11-16 research — read before Task 4)
+
+These supersede assumptions elsewhere in this doc:
+
+1. `sets[setId]` is the authoritative roster (key = set number). Set
+   membership must come from it, not `apiName.startsWith('TFT{setId}_')` —
+   Set 18 has ~14 non-prefixed champions (`TFT_BlueGolem`) that the current
+   prefix filter drops. `transformSet` must be rewritten accordingly.
+2. `setData` is keyed by an internal index, **not** set number. Match
+   entries with `setData[k].number === setId`; there can be duplicates
+   (one per mode) — dedupe by `apiName`. Set items are objects; augments
+   are ID strings.
+3. Trait `variables` keys are often localization hashes (`{0f90e7a4}`) with
+   no in-file name mapping. Do not throw their values away: persist named
+   variables (display/GraphQL) and hash-keyed variables separately
+   (engine-only, never rendered).
+4. No numeric augment effects exist in cdragon; augment names/descriptions
+   only exist in dragontail (`tft-augments.json`, patch-matched) — ingest
+   IDs always, enrich when possible, otherwise mark "Unavailable".
+5. Local cdragon JSONs are stale snapshots. Tuesday's Set 19 must be
+   imported from the live PBE CDN (`CDRAGON_ENDPOINT=pbe`), so the re-import
+   script must accept a raw JSON path *or* a live fetch.
 
 ## Review Focus
 

@@ -6,6 +6,14 @@ import { useCompositionsStore, useChampionsStore } from '../stores'
 import { Composition, Champion } from '../lib/api'
 import { proxyUrl } from '../lib/imageProxy'
 
+const COST_COLORS: Record<number, string> = {
+  1: '#9aa4af',
+  2: '#2fbf71',
+  3: '#3b82f6',
+  4: '#a855f7',
+  5: '#f0b90b',
+};
+
 const Home = () => {
   const { theme } = useTheme();
 
@@ -46,7 +54,13 @@ const Home = () => {
         // Use the champions store to fetch data
         await useChampionsStore.getState().fetchChampions();
         const state = useChampionsStore.getState();
-        setTrendingChampions(state.champions || []);
+        // Drop non-playable rows (Tome of Traits and other PVE units) so the
+        // trending grid only shows real champions.
+        setTrendingChampions(
+          (state.champions || []).filter(
+            (champ) => champ.cost >= 1 && champ.cost <= 5 && (champ.traits?.length ?? 0) > 0,
+          ),
+        );
       } catch (error: any) {
         setTrendingChampionsError(error.message || 'Failed to fetch trending champions');
       } finally {
@@ -107,10 +121,10 @@ const Home = () => {
 
         <div className="space-y-6">
           <div className="space-y-6">
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-100 font-mono">
+            <h1 className="text-4xl md:text-6xl font-bold text-[var(--text-primary)] font-mono">
               Master <span className="tech-highlight">Teamfight Tactics</span>
             </h1>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl text-[var(--text-secondary)] max-w-3xl mx-auto leading-relaxed">
               Your ultimate companion for TFT success. Discover winning compositions, master champion synergies,
               and optimize your item builds with <span className="tech-highlight">intelligent automation</span>.
             </p>
@@ -126,24 +140,24 @@ const Home = () => {
             </Link>
             <Link
               to="/champions"
-              className="btn-cimplic text-gray-700 px-8 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-all duration-300"
+              className="btn-cimplic px-8 py-3 rounded-lg font-semibold transition-all duration-300"
             >
               <Users className="h-5 w-5 mr-2" />
               Explore Champions
             </Link>
           </div>
 
-          <div className="flex flex-wrap justify-center gap-4 mt-8 text-sm text-gray-400">
+          <div className="flex flex-wrap justify-center gap-4 mt-8 text-sm text-[var(--text-secondary)]">
             <div className="flex items-center space-x-1">
-              <Zap className="h-4 w-4 text-accent1" />
+              <Zap className="h-4 w-4 text-[var(--accent1)]" />
               <span>Algorithm-to-Silicon Mapping</span>
             </div>
             <div className="flex items-center space-x-1">
-              <TrendingUp className="h-4 w-4 text-accent2" />
+              <TrendingUp className="h-4 w-4 text-[var(--accent2)]" />
               <span>Trending Compositions</span>
             </div>
             <div className="flex items-center space-x-1">
-              <Target className="h-4 w-4 text-accent3" />
+              <Target className="h-4 w-4 text-[var(--accent3)]" />
               <span>Custom Team Builder</span>
             </div>
           </div>
@@ -156,8 +170,8 @@ const Home = () => {
           {stats.map(({ label, value, icon: Icon, accent }) => (
             <div key={label} className="text-center group">
               <Icon className={`h-8 w-8 ${accent} mx-auto mb-3 transition-transform group-hover:scale-110`} />
-              <div className="text-2xl font-bold text-gray-100 font-mono">{value}</div>
-              <div className="text-sm text-gray-400">{label}</div>
+              <div className="text-2xl font-bold text-[var(--text-primary)] font-mono">{value}</div>
+              <div className="text-sm text-[var(--text-secondary)]">{label}</div>
             </div>
           ))}
         </div>
@@ -171,7 +185,7 @@ const Home = () => {
           </h2>
           <Link
             to="/compositions"
-            className="text-sm font-medium hover:underline flex items-center gap-1"
+            className="text-sm font-medium hover:underline flex shrink-0 items-center gap-1 whitespace-nowrap"
             style={{ color: 'var(--accent1)' }}
           >
             View All <Zap className="h-4 w-4" />
@@ -242,7 +256,7 @@ const Home = () => {
           </h2>
           <Link
             to="/champions"
-            className="text-sm font-medium hover:underline flex items-center gap-1"
+            className="text-sm font-medium hover:underline flex shrink-0 items-center gap-1 whitespace-nowrap"
             style={{ color: 'var(--accent1)' }}
           >
             View All <Zap className="h-4 w-4" />
@@ -262,85 +276,89 @@ const Home = () => {
         )}
 
         {!trendingChampionsLoading && !trendingChampionsError && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {trendingChampions.map((champ: Champion) => (
-              <div
-                key={champ.id}
-                className="rounded-lg shadow-sm border hover:shadow-md transition-shadow group"
-                style={{
-                  background: 'var(--bg-accent)',
-                  border: '1px solid var(--bg-primary)',
-                  color: 'var(--text-primary)'
-                }}
-              >
-                <div className="p-6">
-                  {/* Champion icon display with gradient background based on cost */}
-                  <div className={`relative mb-4 rounded-lg p-2 ${
-                    champ.cost === 1 ? 'bg-gradient-to-br from-gray-800/50 to-gray-900/50 border-l-2 border-gray-600' :
-                    champ.cost === 2 ? 'bg-gradient-to-br from-green-800/50 to-green-900/50 border-l-2 border-green-600' :
-                    champ.cost === 3 ? 'bg-gradient-to-br from-blue-800/50 to-blue-900/50 border-l-2 border-blue-600' :
-                    champ.cost === 4 ? 'bg-gradient-to-br from-purple-800/50 to-purple-900/50 border-l-2 border-purple-600' : 'bg-gradient-to-br from-yellow-800/50 to-yellow-900/50 border-l-2 border-yellow-600'
-                  }`}>
-                    {champ.iconUrl ? (
-                      <div className="w-20 h-20 mx-auto rounded-xl flex items-center justify-center bg-gray-800">
-                        <img
-                          src={proxyUrl(champ.iconUrl)}
-                          alt={champ.name}
-                          className="w-16 h-16 rounded-lg object-cover"
-                          onError={(e) => {
-                            const target = e.currentTarget;
-                            target.onerror = null;
-                            target.style.display = 'none';
-                            const fallback = target.parentElement?.querySelector('.fallback-home-champ') as HTMLElement | null;
-                            if (fallback) fallback.style.display = 'flex';
-                          }}
-                        />
-                      </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {trendingChampions.map((champ: Champion) => {
+              const color = COST_COLORS[champ.cost] ?? COST_COLORS[1];
+              const icon = proxyUrl(champ.iconUrl);
+              return (
+                <div
+                  key={champ.id}
+                  className="group flex flex-col overflow-hidden rounded-xl transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+                  style={{
+                    background: 'var(--bg-accent)',
+                    border: `2px solid ${color}`,
+                    color: 'var(--text-primary)',
+                  }}
+                >
+                  {/* Full-bleed portrait framed by the cost color */}
+                  <div
+                    className="relative aspect-square overflow-hidden"
+                    style={{ background: `color-mix(in srgb, ${color} 14%, var(--bg-accent))` }}
+                  >
+                    {icon ? (
+                      <img
+                        src={icon}
+                        alt={champ.name}
+                        loading="lazy"
+                        className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-300 group-hover:scale-105"
+                        onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+                      />
                     ) : (
-                      <div className="w-20 h-20 mx-auto rounded-xl flex items-center justify-center bg-gray-800">
-                        <div className="w-16 h-16 rounded-lg bg-gray-700 flex items-center justify-center fallback-home-champ">
-                          <span className="text-2xl font-bold">{champ.name.charAt(0)}</span>
-                        </div>
+                      <div
+                        className="absolute inset-0 flex items-center justify-center text-4xl font-bold"
+                        style={{ color: 'var(--text-secondary)' }}
+                        aria-label={champ.name}
+                      >
+                        {champ.name.charAt(0)}
                       </div>
                     )}
-                    {/* Cost badge */}
-                    <div className={`absolute -top-2 -right-2 w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2 ${
-                      champ.cost === 1 ? 'bg-gray-800 border-gray-600 text-gray-300' :
-                      champ.cost === 2 ? 'bg-green-800 border-green-600 text-green-300' :
-                      champ.cost === 3 ? 'bg-blue-800 border-blue-600 text-blue-300' :
-                      champ.cost === 4 ? 'bg-purple-800 border-purple-600 text-purple-300' : 'bg-yellow-800 border-yellow-600 text-yellow-300'
-                    }`}>
+                    <span
+                      className="absolute left-2 top-2 flex h-6 min-w-6 items-center justify-center rounded-md px-1.5 text-xs font-bold shadow"
+                      style={{ background: color, color: '#0b0b0f' }}
+                      title={`${champ.cost}-cost`}
+                    >
                       {champ.cost}
-                    </div>
+                    </span>
                   </div>
 
-                  <div className="flex items-start justify-between mb-3">
-                    <h3 className="text-lg font-semibold group-hover:text-tft-gold transition-colors text-center w-full" style={{ color: 'var(--text-primary)' }}>
+                  <div className="flex flex-1 flex-col p-3">
+                    <h3
+                      className="truncate text-center text-sm font-semibold group-hover:text-tft-gold transition-colors"
+                      style={{ color: 'var(--text-primary)' }}
+                    >
                       {champ.name}
                     </h3>
-                  </div>
 
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                      <Sword className="h-4 w-4" style={{ color: 'var(--text-secondary)' }} />
-                      <span>AD: {champ.stats?.damage ? champ.stats.damage.toFixed(0) : 'N/A'}</span>
+                    <div className="mt-2 flex items-center justify-center gap-1.5">
+                      <span
+                        className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px]"
+                        style={{ background: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}
+                      >
+                        <Sword className="h-3 w-3" />
+                        {champ.stats?.damage ? champ.stats.damage.toFixed(0) : '—'}
+                      </span>
+                      <span
+                        className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px]"
+                        style={{ background: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}
+                      >
+                        <Shield className="h-3 w-3" />
+                        {champ.stats?.hp ? champ.stats.hp.toFixed(0) : '—'}
+                      </span>
                     </div>
 
-                    <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                      <Shield className="h-4 w-4" style={{ color: 'var(--text-secondary)' }} />
-                      <span>HP: {champ.stats?.hp ? champ.stats.hp.toFixed(0) : 'N/A'}</span>
-                    </div>
+                    <p
+                      className="mt-1.5 truncate text-center text-[11px]"
+                      style={{ color: 'var(--text-secondary)' }}
+                      title={champ.ability?.name}
+                    >
+                      {champ.ability?.name || '—'}
+                    </p>
 
-                    <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                      <Zap className="h-4 w-4" style={{ color: 'var(--text-secondary)' }} />
-                      <span>{champ.ability?.name || 'N/A'}</span>
-                    </div>
-
-                    <div className="flex flex-wrap gap-1 mt-2">
+                    <div className="mt-auto flex flex-wrap justify-center gap-1 pt-2">
                       {champ.traits?.slice(0, 3).map((trait_name, index) => (
                         <span
                           key={index}
-                          className="text-xs px-2 py-1 rounded"
+                          className="rounded px-1.5 py-0.5 text-[10px]"
                           style={{
                             backgroundColor: 'var(--bg-secondary)',
                             color: 'var(--text-secondary)',
@@ -352,7 +370,7 @@ const Home = () => {
                       ))}
                       {champ.traits && champ.traits.length > 3 && (
                         <span
-                          className="text-xs px-2 py-1 rounded"
+                          className="rounded px-1.5 py-0.5 text-[10px]"
                           style={{
                             backgroundColor: 'var(--bg-secondary)',
                             color: 'var(--text-secondary)',
@@ -365,8 +383,8 @@ const Home = () => {
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
@@ -394,10 +412,10 @@ const Home = () => {
                   {theme === 'dark' ? 'Dark Mode' : `${theme.charAt(0).toUpperCase() + theme.slice(1)} Theme`}
                 </span>
               </div>
-              <h3 className="text-xl font-semibold text-gray-100 mb-3 group-hover:text-tft-gold transition-colors font-mono">
+              <h3 className="text-xl font-semibold text-[var(--text-primary)] mb-3 group-hover:text-tft-gold transition-colors font-mono">
                 {title}
               </h3>
-              <p className="text-gray-400 leading-relaxed">
+              <p className="text-[var(--text-secondary)] leading-relaxed">
                 {description}
               </p>
             </Link>

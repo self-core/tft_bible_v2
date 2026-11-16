@@ -1,7 +1,8 @@
 # Sandbox Combat Simulator — Design Doc
 
 **Date:** 2026-11-16
-**Status:** Draft for approval
+**Status:** v1 implemented (engine + `/sandbox`); calibration corpus,
+scenarios, and trivia remain
 **Companion docs:** `CONTEXT.md` (domain language), `AGENT.md` (repo guide)
 
 ## Intent & Why
@@ -203,7 +204,37 @@ dependency and same ghost work anyway).
   the set's lifetime, not a launch-day guarantee; the UI may show
   confidence alongside the prediction.
 
-## What's Left to the Builder
+## Implementation Notes (2026-11-16)
+
+Built to date:
+
+- **Engine** — `frontend/src/engine/` (frameless TS): mirrored 8×4 odd-r hex
+  grid, 100 ms ticks, seeded mulberry32 RNG, attack/mana timing, nearest
+  target lock + movement, armor/MR mitigation, crit, star scaling, trait /
+  item / curated-augment stat modifiers, ability plans from cdragon
+  variables, shields/heals, typed timeline, timeout draw, per-unit summary,
+  and a `CoverageReport`. `simulate(...)` and `predict(..., {runs: 128})`
+  match the interface above.
+- **UI** — `/sandbox`: shared palette with pointer-events DnD onto either
+  4×7 board, per-unit stars/items (`UnitConfigPopover`), per-side level caps,
+  three augments per side (unmodeled flagged), trait panel per side,
+  prediction rates + coverage, and playback with play/pause, restart,
+  0.5×–16× speed, scrubber, HP totals and a typed event log.
+- **Data** — `GET_ACTIVE_SET` now carries champion stats/abilities, trait
+  breakpoints with variables, item numeric effects, and augments. Backend
+  ingestion skips cdragon trait effects that are not breakpoints (no numeric
+  `minUnits`) and normalizes null ability-variable values; the repository
+  also filters legacy rows. Sandbox needs the active set to expose numeric
+  item effects.
+- **Tests** — engine determinism/formulas/abilities/coverage (34), sandbox
+  page load / augment flags / drag + prediction (4), plus transformer and
+  repository regressions.
+
+Still open: calibration corpus + `data/corpus/` harness and the 95% loop,
+scenario save/branch/diff, record-observation capture, trivia share/reveal
+and votes, and richer Tier-3 mechanics. The development DB currently marks
+Set 17 ACTIVE (Set 18 UPCOMING), so the sandbox exercises Set 17 data until
+set statuses/reimport are reconciled for the Set 18/19 rollout.
 
 - Exact package layout and file names (suggest `frontend/src/engine/` or a
   workspace package, consistent with repo conventions).

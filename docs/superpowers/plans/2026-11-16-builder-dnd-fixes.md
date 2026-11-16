@@ -10,6 +10,8 @@
 
 **Spec:** `docs/superpowers/specs/2026-11-16-sandbox-combat-simulator-design.md` (Approaches §4). The sandbox (Plan 3) reuses this DnD layer and the bench convention.
 
+**Status (2026-11-16):** Tasks 1–4 implemented. `DndProvider`/hooks ship with an injectable `hitTest`; `TFTBoard` uses full-cell drop targets, bench, and overflow; `UnitConfigPopover` + `BuilderTraitPanel` are wired into `ImprovedTeamBuilder`; `react-dnd` deps removed; `e2e/builder-dnd.spec.ts` passes on Chromium. Frontend: 98 vitest tests green, production build clean. Frontend ESLint still has no config (pre-existing), and only Chromium was run for e2e locally.
+
 ## Global Constraints
 
 - Conventional Commits (`feat:`, `fix:`, `test:`, `chore:`).

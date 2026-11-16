@@ -19,10 +19,18 @@ export const typeDefs = gql`
     hp: Int!
     mana: Int!
     damage: Int!
+    armor: Int!
+    magicResist: Int!
+    attackSpeed: Float!
+    range: Int!
+    initialMana: Int!
+    critChance: Float!
+    critMultiplier: Float!
   }
 
   type Ability {
     name: String!
+    description: String
     variables: [AbilityVariable!]!
   }
 
@@ -35,12 +43,19 @@ export const typeDefs = gql`
     key: String!
     name: String
     description: String
+    imageUrl: String
     breakpoints: [TraitBreakpoint!]!
   }
 
   type TraitBreakpoint {
     count: Int!
     bonus: String!
+    variables: [TraitVariable!]!
+  }
+
+  type TraitVariable {
+    name: String!
+    value: Float!
   }
 
   type Item {
@@ -48,9 +63,15 @@ export const typeDefs = gql`
     name: String!
     description: String!
     components: [String!]!
+    effects: [ItemEffect!]!
     imageUrl: String
     unique: Boolean
     trait: String
+  }
+
+  type ItemEffect {
+    name: String!
+    value: Float!
   }
 
   enum SetStatus {

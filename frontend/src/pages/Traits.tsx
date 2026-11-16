@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useTraitsStore } from '../stores'
 import { Filter, ChevronDown, ChevronUp } from 'lucide-react'
 import { Trait } from '../lib/api'
+import { proxyUrl } from '../lib/imageProxy'
 
 const Traits = () => {
   const [search, setSearch] = useState('')
@@ -44,7 +45,7 @@ const Traits = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>Traits</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>Traits</h1>
           <p className="mt-1" style={{ color: 'var(--text-secondary)' }}>Explore all TFT traits and their breakpoints</p>
         </div>
       </div>
@@ -72,8 +73,19 @@ const Traits = () => {
             style={{ background: 'var(--bg-accent)', border: '1px solid var(--bg-primary)', color: 'var(--text-primary)' }}
           >
             <div className="p-6">
-              <div className="flex items-start justify-between mb-3">
-                <h3 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>{trait.name || trait.key}</h3>
+              <div className="flex items-start justify-between mb-3 gap-3">
+                <div className="flex items-center gap-2 min-w-0">
+                  {trait.imageUrl && (
+                    <img
+                      src={proxyUrl(trait.imageUrl)}
+                      alt={trait.name || trait.key}
+                      loading="lazy"
+                      className="h-9 w-9 rounded object-contain shrink-0"
+                      onError={(e) => { (e.target as HTMLImageElement).style.visibility = 'hidden' }}
+                    />
+                  )}
+                  <h3 className="text-lg font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{trait.name || trait.key}</h3>
+                </div>
                 <span className="px-2 py-1 rounded-full text-xs font-medium" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}>
                   {trait.breakpoints?.length || 0} tiers
                 </span>

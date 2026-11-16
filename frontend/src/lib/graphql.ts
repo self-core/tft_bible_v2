@@ -16,9 +16,17 @@ export const GET_CHAMPIONS = gql`
         hp
         mana
         damage
+        armor
+        magicResist
+        attackSpeed
+        range
+        initialMana
+        critChance
+        critMultiplier
       }
       ability {
         name
+        description
         variables {
           name
           values
@@ -43,9 +51,17 @@ export const GET_CHAMPIONS_BY_SET = gql`
         hp
         mana
         damage
+        armor
+        magicResist
+        attackSpeed
+        range
+        initialMana
+        critChance
+        critMultiplier
       }
       ability {
         name
+        description
         variables {
           name
           values
@@ -70,9 +86,17 @@ export const GET_CHAMPION = gql`
         hp
         mana
         damage
+        armor
+        magicResist
+        attackSpeed
+        range
+        initialMana
+        critChance
+        critMultiplier
       }
       ability {
         name
+        description
         variables {
           name
           values
@@ -89,9 +113,11 @@ export const GET_TRAITS = gql`
       key
       name
       description
+      imageUrl
       breakpoints {
         count
         bonus
+        variables { name value }
       }
     }
   }
@@ -104,9 +130,11 @@ export const GET_TRAIT = gql`
       key
       name
       description
+      imageUrl
       breakpoints {
         count
         bonus
+        variables { name value }
       }
     }
   }
@@ -158,22 +186,34 @@ export const GET_SETS = gql`
           hp
           mana
           damage
+          armor
+          magicResist
+          attackSpeed
+          range
+          initialMana
+          critChance
+          critMultiplier
         }
         ability {
           name
+          description
           variables {
             name
             values
           }
         }
+        imageUrl
+        iconUrl
       }
       traits {
         key
         name
         description
+        imageUrl
         breakpoints {
           count
           bonus
+          variables { name value }
         }
       }
       items {
@@ -181,6 +221,7 @@ export const GET_SETS = gql`
         name
         description
         components
+        effects { name value }
         imageUrl
         unique
         trait
@@ -211,22 +252,34 @@ export const GET_SET = gql`
           hp
           mana
           damage
+          armor
+          magicResist
+          attackSpeed
+          range
+          initialMana
+          critChance
+          critMultiplier
         }
         ability {
           name
+          description
           variables {
             name
             values
           }
         }
+        imageUrl
+        iconUrl
       }
       traits {
         key
         name
         description
+        imageUrl
         breakpoints {
           count
           bonus
+          variables { name value }
         }
       }
       items {
@@ -234,6 +287,7 @@ export const GET_SET = gql`
         name
         description
         components
+        effects { name value }
         imageUrl
         unique
         trait
@@ -264,15 +318,24 @@ export const GET_ACTIVE_SET = gql`
           hp
           mana
           damage
+          armor
+          magicResist
+          attackSpeed
+          range
+          initialMana
+          critChance
+          critMultiplier
         }
         ability {
           name
+          description
           variables {
             name
             values
           }
         }
         imageUrl
+        iconUrl
       }
       traits {
         key
@@ -281,7 +344,24 @@ export const GET_ACTIVE_SET = gql`
         breakpoints {
           count
           bonus
+          variables { name value }
         }
+      }
+      items {
+        id
+        name
+        description
+        components
+        effects { name value }
+        imageUrl
+        unique
+        trait
+      }
+      augments {
+        id
+        name
+        description
+        imageUrl
       }
     }
   }
@@ -376,9 +456,17 @@ export const SEARCH_ENTITIES = gql`
           hp
           mana
           damage
+          armor
+          magicResist
+          attackSpeed
+          range
+          initialMana
+          critChance
+          critMultiplier
         }
         ability {
           name
+          description
           variables {
             name
             values
@@ -392,6 +480,7 @@ export const SEARCH_ENTITIES = gql`
         breakpoints {
           count
           bonus
+          variables { name value }
         }
       }
       items {

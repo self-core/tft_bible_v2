@@ -1,14 +1,61 @@
 import { ISetData, ISetChampion, ITrait, IItem } from '../../interfaces';
 
+const STAT_FALLBACKS = {
+  hp: 600,
+  mana: 40,
+  damage: 50,
+  armor: 40,
+  magicResist: 40,
+  attackSpeed: 0.55,
+  range: 1,
+  initialMana: 0,
+  critChance: 0.25,
+  critMultiplier: 1.4,
+};
+
+function normalizeChampion(c: any): ISetChampion {
+  return {
+    ...c,
+    stats: {
+      ...STAT_FALLBACKS,
+      ...(c.stats || {}),
+    },
+    ability: {
+      name: c.ability?.name || '',
+      description: c.ability?.description || '',
+      variables: c.ability?.variables || [],
+    },
+  };
+}
+
+function normalizeTrait(t: any): ITrait {
+  return {
+    ...t,
+    breakpoints: (t.breakpoints || []).map((bp: any) => ({
+      ...bp,
+      variables: bp.variables || [],
+      rawVariables: bp.rawVariables || [],
+    })),
+  };
+}
+
+function normalizeItem(i: any): IItem {
+  return {
+    ...i,
+    effects: i.effects || [],
+    rawEffects: i.rawEffects || [],
+  };
+}
+
 export class EmbeddedFallback {
   static getSetData(setId: number): ISetData | null {
     const SET16_DATA: ISetData = {
       setId: 16,
       setName: "Lore & Legends",
       status: 'active',
-      champions: EmbeddedFallback.getEmbeddedChampions(),
-      traits: EmbeddedFallback.getEmbeddedTraits(),
-      items: EmbeddedFallback.getEmbeddedItems(),
+      champions: EmbeddedFallback.getEmbeddedChampions().map(normalizeChampion),
+      traits: EmbeddedFallback.getEmbeddedTraits().map(normalizeTrait),
+      items: EmbeddedFallback.getEmbeddedItems().map(normalizeItem),
       augments: EmbeddedFallback.getAugmentsForSet16(),
       mechanics: {},
     };
@@ -17,9 +64,9 @@ export class EmbeddedFallback {
       setId: 18,
       setName: "Enchanted Wilds",
       status: 'active',
-      champions: EmbeddedFallback.getChampionsForSet18(),
-      traits: EmbeddedFallback.getTraitsForSet18(),
-      items: EmbeddedFallback.getItemsForSet18(),
+      champions: EmbeddedFallback.getChampionsForSet18().map(normalizeChampion),
+      traits: EmbeddedFallback.getTraitsForSet18().map(normalizeTrait),
+      items: EmbeddedFallback.getItemsForSet18().map(normalizeItem),
       augments: EmbeddedFallback.getAugmentsForSet18(),
       mechanics: { wisp: "Wisps mechanic activated" },
     };
@@ -43,7 +90,7 @@ export class EmbeddedFallback {
     return data?.items ?? null;
   }
 
-  private static getEmbeddedChampions(): ISetChampion[] {
+  private static getEmbeddedChampions(): any[] {
     return [
       {
         id: 'TFT16_Ahri',
@@ -133,7 +180,7 @@ export class EmbeddedFallback {
     ];
   }
 
-  private static getEmbeddedTraits(): ITrait[] {
+  private static getEmbeddedTraits(): any[] {
     return [
       {
         key: 'Arcane',
@@ -187,7 +234,7 @@ export class EmbeddedFallback {
     ];
   }
 
-  private static getEmbeddedItems(): IItem[] {
+  private static getEmbeddedItems(): any[] {
     return [
       {
         id: 'TFT16_BFSword',
@@ -284,7 +331,7 @@ export class EmbeddedFallback {
     ];
   }
 
-  private static getChampionsForSet18(): ISetChampion[] {
+  private static getChampionsForSet18(): any[] {
     return [
       {
               id: 'TFT18_Akali',
@@ -449,7 +496,7 @@ export class EmbeddedFallback {
     ];
   }
 
-  private static getTraitsForSet18(): ITrait[] {
+  private static getTraitsForSet18(): any[] {
     return [
       {
         key: 'Blossom',
@@ -505,7 +552,7 @@ export class EmbeddedFallback {
     ];
   }
 
-  private static getItemsForSet18(): IItem[] {
+  private static getItemsForSet18(): any[] {
     return [
       {
         id: 'TFT18_BFSword',

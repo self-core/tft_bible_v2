@@ -18,9 +18,17 @@ export const GET_CHAMPIONS = gql`
         hp
         mana
         damage
+        armor
+        magicResist
+        attackSpeed
+        range
+        initialMana
+        critChance
+        critMultiplier
       }
       ability {
         name
+        description
         variables {
           name
           values
@@ -44,9 +52,17 @@ export const GET_CHAMPIONS_BY_SET = gql`
         hp
         mana
         damage
+        armor
+        magicResist
+        attackSpeed
+        range
+        initialMana
+        critChance
+        critMultiplier
       }
       ability {
         name
+        description
         variables {
           name
           values
@@ -70,9 +86,17 @@ export const GET_CHAMPION = gql`
         hp
         mana
         damage
+        armor
+        magicResist
+        attackSpeed
+        range
+        initialMana
+        critChance
+        critMultiplier
       }
       ability {
         name
+        description
         variables {
           name
           values
@@ -88,9 +112,11 @@ export const GET_TRAITS = gql`
       key
       name
       description
+      imageUrl
       breakpoints {
         count
         bonus
+        variables { name value }
       }
     }
   }
@@ -102,9 +128,11 @@ export const GET_TRAIT = gql`
       key
       name
       description
+      imageUrl
       breakpoints {
         count
         bonus
+        variables { name value }
       }
     }
   }
@@ -117,6 +145,10 @@ export const GET_ITEMS = gql`
       name
       description
       components
+      effects {
+        name
+        value
+      }
       imageUrl
       unique
       trait
@@ -131,6 +163,10 @@ export const GET_ITEM = gql`
       name
       description
       components
+      effects {
+        name
+        value
+      }
       imageUrl
       unique
       trait
@@ -153,9 +189,17 @@ export const GET_SETS = gql`
           hp
           mana
           damage
+          armor
+          magicResist
+          attackSpeed
+          range
+          initialMana
+          critChance
+          critMultiplier
         }
         ability {
           name
+          description
           variables {
             name
             values
@@ -169,6 +213,7 @@ export const GET_SETS = gql`
         breakpoints {
           count
           bonus
+          variables { name value }
         }
       }
       items {
@@ -176,6 +221,10 @@ export const GET_SETS = gql`
         name
         description
         components
+        effects {
+          name
+          value
+        }
         imageUrl
         unique
         trait
@@ -205,9 +254,17 @@ export const GET_SET = gql`
           hp
           mana
           damage
+          armor
+          magicResist
+          attackSpeed
+          range
+          initialMana
+          critChance
+          critMultiplier
         }
         ability {
           name
+          description
           variables {
             name
             values
@@ -221,6 +278,7 @@ export const GET_SET = gql`
         breakpoints {
           count
           bonus
+          variables { name value }
         }
       }
       items {
@@ -228,6 +286,10 @@ export const GET_SET = gql`
         name
         description
         components
+        effects {
+          name
+          value
+        }
         imageUrl
         unique
         trait
@@ -325,9 +387,17 @@ export const SEARCH_ENTITIES = gql`
           hp
           mana
           damage
+          armor
+          magicResist
+          attackSpeed
+          range
+          initialMana
+          critChance
+          critMultiplier
         }
         ability {
           name
+          description
           variables {
             name
             values
@@ -341,6 +411,7 @@ export const SEARCH_ENTITIES = gql`
         breakpoints {
           count
           bonus
+          variables { name value }
         }
       }
       items {
@@ -486,6 +557,13 @@ export interface ChampionStats {
   hp: number;
   mana: number;
   damage: number;
+  armor?: number;
+  magicResist?: number;
+  attackSpeed?: number;
+  range?: number;
+  initialMana?: number;
+  critChance?: number;
+  critMultiplier?: number;
 }
 
 export interface Stat {
@@ -500,7 +578,15 @@ export interface AbilityVariable {
 
 export interface Ability {
   name: string;
+  description?: string;
   variables: AbilityVariable[];
+}
+
+export interface BoardUnit {
+  championId: string;
+  position: { row: number; col: number };
+  starLevel: number;
+  items: string[];
 }
 
 export interface Champion {
@@ -515,16 +601,28 @@ export interface Champion {
   iconUrl?: string;
 }
 
+export interface TraitVariable {
+  name: string;
+  value: number;
+}
+
 export interface TraitBreakpoint {
   count: number;
   bonus: string;
+  variables?: TraitVariable[];
 }
 
 export interface Trait {
   key: string;
   name?: string;
   description?: string;
+  imageUrl?: string | null;
   breakpoints: TraitBreakpoint[];
+}
+
+export interface ItemEffect {
+  name: string;
+  value: number;
 }
 
 export interface Item {
@@ -532,6 +630,7 @@ export interface Item {
   name: string;
   description: string;
   components: string[];
+  effects?: ItemEffect[];
   imageUrl?: string;
   unique?: boolean;
   trait?: string;

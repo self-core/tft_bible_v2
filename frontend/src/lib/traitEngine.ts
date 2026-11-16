@@ -13,6 +13,17 @@ export interface TraitState {
 export interface Breakpoint {
   count: number;
   bonus: string;
+  variables?: Array<{ name: string; value: number }>;
+}
+
+export function formatBreakpointBonus(bp: Breakpoint): string {
+  if (!bp.variables || bp.variables.length === 0) return bp.bonus;
+  return bp.variables
+    .map((v) => {
+      const display = v.value > 0 && v.value <= 1 ? `${Math.round(v.value * 100)}%` : String(v.value);
+      return `${v.name}: ${display}`;
+    })
+    .join(', ');
 }
 
 export interface ActiveBonus {
@@ -29,6 +40,88 @@ export interface PredictedBreakpoint {
   unitsNeeded: number;
 }
 
+export interface TraitResolutionUnit {
+  id?: string;
+  traitNames: string[];
+  emblemTraits?: string[];
+}
+
+export interface ResolvedTrait {
+  key: string;
+  name: string;
+  count: number;
+  activeBreakpoint: Breakpoint | null;
+  nextBreakpoint: Breakpoint | null;
+  trait: Trait | null;
+  unitIndexes: number[];
+}
+
+/**
+ * Single source of truth for trait counting.
+ *
+ * Counts unique units per trait (a unit contributes once even with a native
+ * trait plus an emblem), matches champion trait names against trait.key or
+ * trait.name (PBE trait keys differ from display names, e.g. DA_18_Slayer
+ * vs "Ravager"), and resolves the highest active breakpoint.
+ */
+export function resolveTraitStates(
+  units: TraitResolutionUnit[],
+  traits: Trait[]
+): ResolvedTrait[] {
+  const contributors = new Map<string, number[]>();
+
+  units.forEach((unit, index) => {
+    const names = new Set<string>([
+      ...unit.traitNames,
+      ...(unit.emblemTraits ?? []),
+    ]);
+    for (const name of names) {
+      const list = contributors.get(name) ?? [];
+      list.push(index);
+      contributors.set(name, list);
+    }
+  });
+
+  const resolved: ResolvedTrait[] = [];
+  const matchedNames = new Set<string>();
+
+  for (const trait of traits) {
+    const name = trait.name || trait.key;
+    const unitIndexes = contributors.get(name) ?? contributors.get(trait.key) ?? [];
+    matchedNames.add(name);
+    matchedNames.add(trait.key);
+
+    const sorted = [...trait.breakpoints].sort((a, b) => a.count - b.count);
+    const activeBreakpoint = [...sorted].reverse().find(bp => unitIndexes.length >= bp.count) ?? null;
+    const nextBreakpoint = sorted.find(bp => bp.count > unitIndexes.length) ?? null;
+
+    resolved.push({
+      key: trait.key,
+      name,
+      count: unitIndexes.length,
+      activeBreakpoint,
+      nextBreakpoint,
+      trait,
+      unitIndexes,
+    });
+  }
+
+  for (const [name, unitIndexes] of contributors) {
+    if (matchedNames.has(name)) continue;
+    resolved.push({
+      key: name,
+      name,
+      count: unitIndexes.length,
+      activeBreakpoint: null,
+      nextBreakpoint: null,
+      trait: null,
+      unitIndexes,
+    });
+  }
+
+  return resolved;
+}
+
 /**
  * Calculates trait states for a given board
  */
@@ -37,38 +130,28 @@ export function calculateTraitStates(
   traits: Trait[],
   championMap: Map<string, Champion>
 ): TraitState[] {
-  // Count trait occurrences
-  const traitCounts = new Map<string, number>();
-  const traitUnits = new Map<string, string[]>();
+  const units: TraitResolutionUnit[] = board.map(unit => ({
+    id: unit.championId,
+    traitNames: championMap.get(unit.championId)?.traits ?? [],
+  }));
 
-  for (const unit of board) {
-    const champion = championMap.get(unit.championId);
-    if (!champion) continue;
+  return resolveTraitStates(units, traits).map(resolved => {
+    const activeBreakpoints = resolved.trait
+      ? [...resolved.trait.breakpoints]
+        .sort((a, b) => a.count - b.count)
+        .filter(bp => resolved.count >= bp.count)
+      : [];
 
-    for (const traitName of champion.traits) {
-      traitCounts.set(traitName, (traitCounts.get(traitName) || 0) + 1);
-      const units = traitUnits.get(traitName) || [];
-      units.push(unit.championId);
-      traitUnits.set(traitName, units);
-    }
-  }
-
-  // Build trait states
-  return traits.map(trait => {
-    const currentCount = traitCounts.get(trait.key) || 0;
-    const sortedBreakpoints = [...trait.breakpoints].sort((a, b) => a.count - b.count);
-    
-    const activeBreakpoints = sortedBreakpoints.filter(bp => currentCount >= bp.count);
-    const nextBreakpoint = sortedBreakpoints.find(bp => bp.count > currentCount) || null;
-    
     return {
-      traitKey: trait.key,
-      name: trait.name || trait.key,
-      currentCount,
+      traitKey: resolved.key,
+      name: resolved.name,
+      currentCount: resolved.count,
       activeBreakpoints,
-      nextBreakpoint,
+      nextBreakpoint: resolved.nextBreakpoint,
       isActive: activeBreakpoints.length > 0,
-      unitsContributing: traitUnits.get(trait.key) || [],
+      unitsContributing: resolved.unitIndexes
+        .map(index => units[index].id)
+        .filter((id): id is string => Boolean(id)),
     };
   });
 }
@@ -84,7 +167,7 @@ export function getActiveBonuses(traitStates: TraitState[]): ActiveBonus[] {
       bonuses.push({
         traitName: state.name,
         breakpoint: bp,
-        description: `${state.name} (${bp.count}): ${bp.bonus}`,
+        description: `${state.name} (${bp.count}): ${formatBreakpointBonus(bp)}`,
       });
     }
   }
@@ -123,8 +206,7 @@ export function predictBreakpoints(
     const currentCount = currentCounts.get(trait.key) || 0;
     const sortedBreakpoints = [...trait.breakpoints].sort((a, b) => a.count - b.count);
     const nextBreakpoint = sortedBreakpoints.find(bp => bp.count > currentCount);
-    const maxBreakpoint = sortedBreakpoints[sortedBreakpoints.length - 1];
-    
+
     return {
       traitKey: trait.key,
       name: trait.name || trait.key,

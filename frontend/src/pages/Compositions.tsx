@@ -25,7 +25,7 @@ const Compositions = () => {
         <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
           <h3 className="text-lg font-semibold text-red-800 mb-2">Failed to Load Compositions</h3>
           <p className="text-red-600 mb-4">{error}</p>
-          <p className="text-sm text-gray-600 mb-4">
+          <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
             This might be because the backend server is not running or there are connection issues.
           </p>
           <button
@@ -44,8 +44,8 @@ const Compositions = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Team Compositions</h1>
-          <p className="text-gray-600 mt-1">Discover winning TFT strategies and team builds</p>
+          <h1 className="text-2xl sm:text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>Team Compositions</h1>
+          <p className="mt-1" style={{ color: 'var(--text-secondary)' }}>Discover winning TFT strategies and team builds</p>
         </div>
       </div>
 

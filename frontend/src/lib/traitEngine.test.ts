@@ -4,8 +4,8 @@ import {
   getActiveBonuses,
   getSynergyScore,
   predictBreakpoints,
-  TraitState,
-  ActiveBonus,
+  resolveTraitStates,
+  formatBreakpointBonus,
 } from './traitEngine';
 import { Champion, Trait, BoardUnit } from './api';
 
@@ -147,7 +147,6 @@ describe('Trait Engine', () => {
     });
 
     it('activates multiple breakpoints when count exceeds thresholds', () => {
-      const championMap = new Map(mockChampions.map(c => [c.id, c]));
       const board = [
         createMockBoardUnit({ championId: 'TFT18_Akali' }),
         createMockBoardUnit({ championId: 'TFT18_Varus' }),
@@ -375,5 +374,74 @@ describe('Trait Engine', () => {
       const result = calculateTraitStates(board, mockTraits, championMap);
       expect(result).toBeDefined();
     });
+  });
+});
+describe('resolveTraitStates', () => {
+  const traitDoc = (key: string, name: string): Trait =>
+    createMockTrait({
+      key,
+      name,
+      breakpoints: [
+        { count: 2, bonus: 'First' },
+        { count: 4, bonus: 'Second' },
+      ],
+    });
+
+  it('matches champion trait names to trait documents by name when keys differ', () => {
+    // Set 18: champion traits store display names, trait docs use DA_18_* keys
+    const traits = [traitDoc('DA_18_Slayer', 'Ravager')];
+    const resolved = resolveTraitStates(
+      [{ traitNames: ['Ravager'] }, { traitNames: ['Ravager'] }],
+      traits,
+    );
+
+    expect(resolved).toHaveLength(1);
+    expect(resolved[0].key).toBe('DA_18_Slayer');
+    expect(resolved[0].name).toBe('Ravager');
+    expect(resolved[0].count).toBe(2);
+    expect(resolved[0].activeBreakpoint?.count).toBe(2);
+    expect(resolved[0].nextBreakpoint?.count).toBe(4);
+  });
+
+  it('falls back to matching by trait key', () => {
+    const traits = [traitDoc('Inferno', 'Inferno')];
+    const resolved = resolveTraitStates([{ traitNames: ['Inferno'] }], traits);
+    expect(resolved[0].count).toBe(1);
+    expect(resolved[0].activeBreakpoint).toBeNull();
+  });
+
+  it('counts emblem traits once per unit even when duplicated with native traits', () => {
+    const traits = [traitDoc('Coven', 'Coven')];
+    const resolved = resolveTraitStates(
+      [{ traitNames: ['Coven'], emblemTraits: ['Coven'] }],
+      traits,
+    );
+
+    expect(resolved[0].count).toBe(1);
+    expect(resolved[0].unitIndexes).toEqual([0]);
+  });
+
+  it('keeps unmatched trait names as count-only entries', () => {
+    const resolved = resolveTraitStates([{ traitNames: ['Mystery'] }], []);
+    expect(resolved).toHaveLength(1);
+    expect(resolved[0].trait).toBeNull();
+    expect(resolved[0].name).toBe('Mystery');
+    expect(resolved[0].count).toBe(1);
+  });
+});
+
+describe('formatBreakpointBonus', () => {
+  it('formats numeric variables with percent scaling', () => {
+    expect(formatBreakpointBonus({ count: 2, bonus: '', variables: [{ name: 'AttackSpeedPercent', value: 0.15 }] }))
+      .toBe('AttackSpeedPercent: 15%');
+  });
+
+  it('keeps values above 1 as raw numbers', () => {
+    expect(formatBreakpointBonus({ count: 4, bonus: '', variables: [{ name: 'AP', value: 20 }] }))
+      .toBe('AP: 20');
+  });
+
+  it('falls back to the display bonus when no variables exist', () => {
+    expect(formatBreakpointBonus({ count: 2, bonus: '+20 AP', variables: [] })).toBe('+20 AP');
   });
 });

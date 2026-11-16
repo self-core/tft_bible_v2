@@ -9,6 +9,7 @@ describe('CompositionModel', () => {
     const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/tft_bible_test';
     try {
       await mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 2000 });
+      await CompositionModel.init();
       isConnected = true;
     } catch {
       console.warn('MongoDB not available, skipping model tests');
