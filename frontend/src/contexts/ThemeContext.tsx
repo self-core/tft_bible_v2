@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 // Define theme types
 export type Theme = 'dark' | 'light' | 'earthy' | 'pastel' | 'sunset' | 'copper' | 'ocean';

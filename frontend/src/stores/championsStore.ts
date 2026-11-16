@@ -6,7 +6,7 @@ interface ChampionsState {
   loading: boolean;
   error: string | null;
 
-  fetchChampions: () => Promise<void>;
+  fetchChampions: (options?: { limit?: number }) => Promise<void>;
   fetchChampionById: (id: string) => Promise<void>;
   clearError: () => void;
 }

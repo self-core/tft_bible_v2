@@ -19,12 +19,12 @@ export class RiotApiClient {
   private limiter = new RateLimiter({ maxTokens: 500, refillRate: 50, refillIntervalMs: 1000 });
 
   constructor(
-    @inject('RIOT_API_KEY') private apiKey: string,
-  ) {
-    if (!apiKey) {
-      console.warn('[RiotApiClient] RIOT_API_KEY not set — Riot API calls will be unavailable');
+      @inject('RIOT_API_KEY') private apiKey: string
+    ) {
+      if (!apiKey) {
+        throw new Error('RIOT_API_KEY not configured');
+      }
     }
-  }
 
   buildUrl(platform: string, path: string): string {
     const host = PLATFORM_HOSTS[platform];

@@ -1,22 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Filter, ChevronDown, ChevronUp, Zap, Shield, Target } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Search, Filter, ChevronDown, ChevronUp } from 'lucide-react';
 import { useChampionsStore } from '../stores';
+import { Champion } from '../lib/api';
 
-interface Champion {
-  id: string;
-  name: string;
-  cost: number;
-  traits: string[];
-  health: number;
-  attack_damage: number;
-  play_rate: number;
-  avg_placement: number;
-  icon_url: string;
-  trait_images: string[]; // URLs for trait icons
+interface ExtendedChampion extends Champion {
+  play_rate?: number;
+  avg_placement?: number;
+  health?: number;
+  attack_damage?: number;
+  trait_images?: string[];
 }
 
 interface ChampionCardProps {
-  champion: Champion;
+  champion: ExtendedChampion;
 }
 
 interface ChampionsFilterProps {
@@ -32,6 +28,7 @@ interface ChampionsFilterProps {
 
 const ChampionCard: React.FC<ChampionCardProps> = ({ champion }) => {
   const [showTooltip, setShowTooltip] = useState(false);
+  const extChamp = champion as ExtendedChampion;
 
   const getCostColor = (cost: number) => {
     switch (cost) {
@@ -53,7 +50,7 @@ const ChampionCard: React.FC<ChampionCardProps> = ({ champion }) => {
       {/* Champion image */}
       <div className="relative">
         <img 
-          src={champion.icon_url || 'https://placehold.co/150x150?text=?'} 
+          src={champion.iconUrl || champion.imageUrl || 'https://placehold.co/150x150?text=?'} 
           alt={champion.name} 
           className="w-full h-40 object-cover"
         />
@@ -65,7 +62,7 @@ const ChampionCard: React.FC<ChampionCardProps> = ({ champion }) => {
         
         {/* Traits */}
         <div className="absolute bottom-2 left-2 flex space-x-1">
-          {(champion.trait_images || []).slice(0, 3).map((trait, idx) => (
+          {(extChamp.trait_images || []).slice(0, 3).map((trait, idx) => (
             <img
               key={idx}
               src={trait}
@@ -78,9 +75,9 @@ const ChampionCard: React.FC<ChampionCardProps> = ({ champion }) => {
               }}
             />
           ))}
-          {champion.trait_images && champion.trait_images.length > 3 && (
+          {extChamp.trait_images && extChamp.trait_images.length > 3 && (
             <div className="w-6 h-6 rounded-full bg-gray-700 flex items-center justify-center text-xs">
-              +{champion.trait_images.length - 3}
+              +{extChamp.trait_images.length - 3}
             </div>
           )}
         </div>
@@ -94,11 +91,11 @@ const ChampionCard: React.FC<ChampionCardProps> = ({ champion }) => {
         <div className="mt-3 text-sm text-gray-300">
           <div className="flex justify-between">
             <span>Play Rate:</span>
-            <span>{champion.play_rate?.toFixed(1) || 'N/A'}%</span>
+            <span>{extChamp.play_rate?.toFixed(1) || 'N/A'}%</span>
           </div>
           <div className="flex justify-between">
             <span>Avg. Placement:</span>
-            <span>{champion.avg_placement?.toFixed(1) || 'N/A'}</span>
+            <span>{extChamp.avg_placement?.toFixed(1) || 'N/A'}</span>
           </div>
         </div>
       </div>
@@ -108,8 +105,8 @@ const ChampionCard: React.FC<ChampionCardProps> = ({ champion }) => {
         <div className="absolute z-10 bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-64 bg-gray-900 border border-gray-700 rounded-lg p-3 shadow-lg">
           <div className="text-center text-white font-bold mb-2">{champion.name}</div>
           <div className="grid grid-cols-2 gap-2 text-sm">
-            <div className="bg-gray-800 p-2 rounded">Health: {champion.health || 'N/A'}</div>
-            <div className="bg-gray-800 p-2 rounded">AD: {champion.attack_damage || 'N/A'}</div>
+            <div className="bg-gray-800 p-2 rounded">Health: {extChamp.health || extChamp.stats?.hp || 'N/A'}</div>
+            <div className="bg-gray-800 p-2 rounded">AD: {extChamp.attack_damage || extChamp.stats?.damage || 'N/A'}</div>
             <div className="bg-gray-800 p-2 rounded">Cost: {champion.cost}</div>
             <div className="bg-gray-800 p-2 rounded">Traits: {champion.traits?.join(', ') || 'None'}</div>
           </div>
@@ -243,38 +240,6 @@ export const DetailedChampions: React.FC = () => {
     }
   }, [fetchChampions]);
 
-  // Mock data to use if API fails
-  useEffect(() => {
-    if ((!champions || champions.length === 0) && !loading && !error) {
-      const mockChampions = [
-        {
-          id: 'jinx',
-          name: 'Jinx',
-          cost: 5,
-          traits: ['Big Shot', 'Deadeye'],
-          health: 700,
-          attack_damage: 80,
-          play_rate: 15.2,
-          avg_placement: 4.1,
-          icon_url: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/222.png',
-          trait_images: ['https://placehold.co/30x30?text=BS', 'https://placehold.co/30x30?text=DD']
-        },
-        {
-          id: 'caitlyn',
-          name: 'Caitlyn',
-          cost: 1,
-          traits: ['Big Shot', 'Rapid Fire'],
-          health: 550,
-          attack_damage: 50,
-          play_rate: 8.7,
-          avg_placement: 3.9,
-          icon_url: 'https://raw.communitydragon.org/pbe/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/51.png',
-          trait_images: ['https://placehold.co/30x30?text=BS', 'https://placehold.co/30x30?text=RF']
-        }
-      ];
-    }
-  }, [champions, loading, error]);
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-900 text-white p-4">
@@ -337,20 +302,22 @@ export const DetailedChampions: React.FC = () => {
   }
 
   // Sort champions
-  filteredChampions.sort((a, b) => {
-    switch (sortBy) {
-      case 'cost':
-        return a.cost - b.cost;
-      case 'play_rate':
-        return (b.play_rate || 0) - (a.play_rate || 0);
-      case 'avg_placement':
-        return (a.avg_placement || 0) - (b.avg_placement || 0);
-      default: // name
-        return a.name.localeCompare(b.name);
-    }
-  });
+    filteredChampions.sort((a, b) => {
+      const extA = a as ExtendedChampion;
+      const extB = b as ExtendedChampion;
+      switch (sortBy) {
+        case 'cost':
+          return a.cost - b.cost;
+        case 'play_rate':
+          return (extB.play_rate || 0) - (extA.play_rate || 0);
+        case 'avg_placement':
+          return (extA.avg_placement || 0) - (extB.avg_placement || 0);
+        default: // name
+          return a.name.localeCompare(b.name);
+      }
+    });
 
-  return (
+    return (
     <div className="min-h-screen bg-gray-900 text-white p-4">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold mb-6">Champions</h1>

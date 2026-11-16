@@ -287,10 +287,10 @@ export class EmbeddedFallback {
   private static getChampionsForSet18(): ISetChampion[] {
     return [
       {
-        id: 'TFT18_Akali',
-        name: 'Akali',
-        cost: 1,
-        traits: ['Inferno', 'Ravager'],
+              id: 'TFT18_Akali',
+              name: 'Akali',
+              cost: 1,
+              traits: ['Inferno', 'Adaptor', 'Ravager'],
         stats: { hp: 600, mana: 50, damage: 55 },
         ability: {
           name: 'Kunai Strike',
@@ -335,17 +335,17 @@ export class EmbeddedFallback {
         iconUrl: 'https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/cinderling.png'
       },
       {
-        id: 'TFT18_Taric',
-        name: 'Taric',
-        cost: 5,
-        traits: ['Blossom', 'Coven'],
-        stats: { hp: 900, mana: 100, damage: 70 },
-        ability: {
-          name: 'Emerald Radiance',
-          variables: [
-            { name: 'Shield', values: [400, 600, 2000] }
-          ]
-        },
+              id: 'TFT18_Taric',
+              name: 'Taric',
+              cost: 5,
+              traits: ['Emerald Aspect', 'Vanguard'],
+              stats: { hp: 900, mana: 100, damage: 70 },
+              ability: {
+                name: 'Emerald Radiance',
+                variables: [
+                  { name: 'Shield', values: [400, 600, 2000] }
+                ]
+              },
         imageUrl: 'https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/44.png',
         splashUrl: 'https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/44.png',
         iconUrl: 'https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/44.png'

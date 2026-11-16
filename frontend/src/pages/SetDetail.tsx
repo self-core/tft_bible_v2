@@ -1,7 +1,6 @@
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@apollo/client';
 import { GET_SET } from '../lib/graphql';
-import { useState } from 'react';
 import { proxyUrl } from '../lib/imageProxy';
 
 const SetDetail = () => {

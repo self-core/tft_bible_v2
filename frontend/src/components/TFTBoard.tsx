@@ -1,5 +1,4 @@
 import { useCallback, useMemo } from 'react';
-import { Star, Trash2 } from 'lucide-react';
 import { proxyUrl } from '../lib/imageProxy';
 
 export interface BoardChampion {
@@ -27,7 +26,7 @@ const BOARD_COLS = 7;
 
 const HEX_SIZE = 38;
 const HEX_W = HEX_SIZE * Math.sqrt(3);
-const HEX_H = HEX_SIZE * 2;
+// const HEX_H = HEX_SIZE * 2; // Unused
 const HEX_HORIZ = HEX_W;
 const HEX_VERT = HEX_SIZE * 1.5;
 const PAD_X = HEX_SIZE;
@@ -96,16 +95,6 @@ function hexPath(cx: number, cy: number): string {
 
 const TFTBoard = ({ champions = [], editMode = false, onBoardChange, title = 'TFT Board' }: TFTBoardProps) => {
   const placedChampions = useMemo(() => autoPlaceChampions(champions), [champions]);
-
-  const championAt = useMemo(() => {
-    const map = new Map<string, BoardChampion>();
-    for (const u of placedChampions) {
-      if (u.row >= 0 && u.row < BOARD_ROWS && u.col >= 0 && u.col < BOARD_COLS) {
-        map.set(`${u.row},${u.col}`, u);
-      }
-    }
-    return map;
-  }, [placedChampions]);
 
   const removeUnit = useCallback((id: string) => {
     if (!onBoardChange) return;
@@ -309,19 +298,18 @@ const TFTBoard = ({ champions = [], editMode = false, onBoardChange, title = 'TF
                     </g>
 
                     {/* Drag handle (invisible rect for dragging) */}
-                    <rect
-                      x={cx - r}
-                      y={cy - 4 - r}
-                      width={r * 2}
-                      height={r * 2}
-                      fill="transparent"
-                      style={{ cursor: 'grab' }}
-                      draggable
-                      onDragStart={(e) => {
-                        e.dataTransfer.setData('text/unit-id', unit.id);
-                        e.dataTransfer.setData('text/plain', '');
-                      }}
-                    />
+                                        <rect
+                                          x={cx - r}
+                                          y={cy - 4 - r}
+                                          width={r * 2}
+                                          height={r * 2}
+                                          fill="transparent"
+                                          style={{ cursor: 'grab' }}
+                                          onDragStart={(e) => {
+                                            e.dataTransfer.setData('text/unit-id', unit.id);
+                                            e.dataTransfer.setData('text/plain', '');
+                                          }}
+                                        />
                   </>
                 )}
               </g>

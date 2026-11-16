@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { ArrowLeft, Star, ThumbsUp, Clock, Users, Target, Zap, Shield, Sword, Heart, Swords } from 'lucide-react'
+import { ArrowLeft, Star, ThumbsUp, Clock, Users, Target, Zap, Sword, Heart, Swords } from 'lucide-react'
 import { useCompositionsStore } from '../stores'
 import TFTBoard, { BoardChampion as TFTBoardChampion } from '../components/TFTBoard'
 import { ChampionInComposition } from '../lib/api'
