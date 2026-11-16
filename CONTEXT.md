@@ -144,3 +144,9 @@ Client → Zustand stores → React components.
   checks, trying exact/stripped/`.tft_setN` filename forms. Unresolvable
   links are cleared so the UI shows its initials fallback instead of a
   broken image.
+- **Secrets stay out of git**: real env files (`.env` and every `.env.*`
+  variant) are gitignored, with `*.env.example` templates tracked, and a
+  local pre-commit hook rejects staged env files. Dev credentials exist only
+  in each checkout's env file or are passed as process env at server start.
+  The 2026-11-16 snapshot also lives in a separate git worktree on branch
+  `wip/2026-11-16-art-repair-and-sandbox` (pushed to origin).

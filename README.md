@@ -72,6 +72,13 @@ docker run -p 4000:4000 tft-bible-backend
 PORT=4000
 ```
 
+Real environment files are never committed: `.env` and every `.env.*`
+variant are gitignored (only `*.env.example` templates are tracked), and a
+pre-commit hook rejects staged `.env` files. Start from the matching example
+(`backend/.env.example`, `frontend/.env.example`) and fill in local values.
+See `AGENT.md` for the authenticated dev `MONGODB_URI` and the worktree
+setup.
+
 ## 📁 Project Structure
 
 ```

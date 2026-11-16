@@ -172,6 +172,27 @@ Start the dev DB with `docker compose up -d mongo` (root creds in
 `docker-compose.yml`). Reimports (`npm run reimport ...`) load
 `backend/.env`, so `MONGODB_URI` is picked up automatically.
 
+## Local Environment & Secrets
+
+- **Secrets never enter git.** `.env` and every `.env.*` variant are
+  gitignored; only `*.env.example` templates are tracked. A local
+  pre-commit hook (`.git/hooks/pre-commit`, not versioned — recreate it per
+  clone) aborts any commit that stages a real `.env`, including
+  `git add -f`.
+- `backend/.env` needs the authenticated dev `MONGODB_URI`
+  (`mongodb://admin:…@localhost:27017/tft_bible?authSource=admin`), `PORT`
+  and `RIOT_API_KEY`. `frontend/.env` is optional in dev — the Vite proxy
+  forwards `/graphql` to the backend.
+- The 2026-11-16 snapshot is also checked out in the external worktree
+  `../tft_bible_v2-worktrees/2026-11-16` on branch
+  `wip/2026-11-16-art-repair-and-sandbox` (pushed to `origin`). Its
+  `backend/.env` is the template copy, which points at the no-auth dev DB —
+  start the server there with the real values passed as process env, since
+  dotenv does not override existing vars:
+  `MONGODB_URI="$(grep -m1 '^MONGODB_URI=' ../tft_bible_v2/backend/.env | cut -d= -f2-)" RIOT_API_KEY=… PORT=4000 npm run dev`.
+- To run the worktree standalone, put real values in its `backend/.env`
+  (copy from the primary checkout) rather than relying on inline vars.
+
 ## Testing Conventions
 
 - Vitest + jsdom + `@testing-library/react`; MSW 2.x mocks GraphQL+REST
@@ -266,6 +287,16 @@ Canonical planning docs (keep them in sync; they predate implementation):
 
 ## Session History (context, not instructions)
 
+- 2026-11-16: **branch/worktree snapshot, env guard, remote backup**. All
+  work committed as `8de12364` on `wip/2026-11-16-art-repair-and-sandbox`,
+  checked out in `../tft_bible_v2-worktrees/2026-11-16`, fast-forwarded into
+  `main` (`3f9f1dba`), and both branches pushed to `origin`. `.gitignore`
+  now blocks all `.env.*` except `*.env.example`; a local pre-commit hook
+  rejects staged real `.env` files. The worktree got `npm ci` in both
+  packages and env files copied from the examples, and served `:4000` with
+  the real DB URI passed inline before every project dev server (ts-node and
+  vite instances) was stopped at the end of the day. All dev servers are
+  off; restart explicitly before demoing.
 - 2026-11-16: **Home trending-champion card redesign**. Cards now lead with a
   full-bleed `aspect-square` portrait (hover zoom, initials fallback) and a
   2px cost-colored border instead of cost dominating the card; cost shows as
