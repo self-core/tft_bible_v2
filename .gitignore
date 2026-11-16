@@ -19,12 +19,11 @@ Thumbs.db
 *test_fixing_log.md
 cimplic.html
 
-# Environment variables
+# Environment variables — real env files are never committed
 .env
-.env.local
-.env.production
-.env.railway
-.env.agent
+.env.*
+!.env.example
+!*.env.example
 
 # Railway specific
 .railway/
