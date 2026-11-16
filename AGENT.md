@@ -193,6 +193,28 @@ Start the dev DB with `docker compose up -d mongo` (root creds in
 - To run the worktree standalone, put real values in its `backend/.env`
   (copy from the primary checkout) rather than relying on inline vars.
 
+### Running local servers through Docker Desktop
+
+With Docker Desktop running (WSL2 backend, Compose v2 — `docker compose`,
+not `docker-compose`), the stack can run in containers from the repo root:
+
+- `docker compose up -d mongo` — dev DB only on `localhost:27017`
+  (`admin`/`password`), for when backend/frontend run via `npm`.
+- `docker compose up -d --build` — full stack: Mongo, backend on
+  `localhost:4000` (`/graphql`, compiled `dist/server.js`), frontend behind
+  nginx on `localhost:80`, and the release agent on `localhost:3000`
+  (needs a local `.env.agent` from `.env.agent.example`; gitignored). Do not
+  also run the npm dev servers on 4000/3000 — the ports collide.
+- Container backend ignores host `backend/.env`: compose injects
+  `MONGODB_URI=mongodb://admin:password@mongo:27017/tft_bible` and
+  `PORT=4000`. It also bind-mounts a hardcoded dragontail directory
+  (`C:\Users\puppets\Documents\League of Legends\dragontail-16.10.1`) — keep
+  that path or edit the volume before `--build`.
+- `docker compose down` stops the stack; add `-v` only to deliberately wipe
+  the Mongo data volume. `docker-compose-simple.yml` is an older alternate
+  stack (backend :8080, frontend :3000, Mongo 7) — prefer
+  `docker-compose.yml`.
+
 ## Testing Conventions
 
 - Vitest + jsdom + `@testing-library/react`; MSW 2.x mocks GraphQL+REST
